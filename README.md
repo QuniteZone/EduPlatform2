@@ -1,2 +1,2 @@
-# EduPlatform2
-用于临时存储项目代码
+# EduPlatform
+用于存储共享协作开发代码

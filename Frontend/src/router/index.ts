@@ -7,6 +7,7 @@ import Func5 from '../views/Func5.vue'
 import Func6 from '../views/Func6.vue'
 import Func7 from '../views/Func7.vue'
 import Func8 from '../views/Func8.vue'
+import Func10 from '../views/Func10.vue'
 
 import PageEditor from '../views/Func1_page/PageEditor.vue'
 import PagePreview from '../views/Func1_page/PagePreview.vue'
@@ -79,6 +80,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Test',
     component: Test
   },
+  {
+    path: '/function10',
+    name: 'Function10',
+    component: Func10
+  }
 ]
 
 const router = createRouter({

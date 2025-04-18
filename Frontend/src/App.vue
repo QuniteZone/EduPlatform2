@@ -7,7 +7,11 @@
       <el-menu-item index="/function3" ><el-icon><Monitor /></el-icon>PPT生成</el-menu-item>
       <el-menu-item index="/function4" ><el-icon><DataLine /></el-icon>班会稿生成</el-menu-item>
       <el-menu-item index="/function5" ><el-icon><DataLine /></el-icon>智能出题</el-menu-item>
-      <el-menu-item index="/function6"  disabled><el-icon><DataLine /></el-icon>主观题批阅</el-menu-item>
+      <el-menu-item index="/function6" ><el-icon><DataLine /></el-icon>主观题批阅</el-menu-item>
+      <el-menu-item index="/function7" ><el-icon><DataLine /></el-icon>作业辅导</el-menu-item>
+      <el-menu-item index="/function8" ><el-icon><DataLine /></el-icon>AI学习计划</el-menu-item>
+
+
 
       <el-sub-menu index="-1">
         <template #title>测试1</template>

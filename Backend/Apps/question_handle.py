@@ -12,9 +12,11 @@ ques_handle_bp = Blueprint('ques_handle', __name__)
 
 
 
-@ques_handle_bp.route('/ppt', methods=['GET'])
-def generate_ppt():
-    return jsonify({"message": "This is the PPT generator blueprint!"})
+@ques_handle_bp.route('/get_LLM_key', methods=['GET'])
+def get_LLM_key():
+    key = os.environ["OPENAI_API_KEY"]
+    print(f"key:{key}")
+    return jsonify({"api_key": key})
 
 
 #####多模态的问题问答
@@ -24,7 +26,6 @@ def upload_file():
         return jsonify({"content": "没有文件上传", 'status': 0})
 
     file = request.files['file']
-
     if file.filename == '':
         return jsonify({"content": "没有选择文件", 'status': -1})
 

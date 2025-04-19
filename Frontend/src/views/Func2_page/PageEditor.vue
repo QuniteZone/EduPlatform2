@@ -9,7 +9,7 @@
     <!-- 逐字稿要求部分 -->
     <div class="transcription_requirements">
       <p>逐字稿要求</p>
-      <textarea v-model="require" placeholder="请输入逐字稿要求..."></textarea>
+      <textarea v-model="requires" placeholder="请输入逐字稿要求..."></textarea>
     </div>
 
     <!-- 提交按钮 -->
@@ -26,7 +26,7 @@ import axios from 'axios'
 const emit = defineEmits(['update-preview'])
 
 const fileData = ref<File[]>([])
-const require = ref('')
+const requires = ref('')
 
 const handleFileUpload = (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -60,19 +60,21 @@ const generateContent = async () => {
     alert('请至少上传一个文件！')
     return
   }
-  if (!require.value) {
+  if (!requires.value) {
     alert('请填写逐字稿要求！')
     return
   }
 
   const formData = new FormData()
   fileData.value.forEach(file => formData.append('files', file))
-  formData.append('require', require.value)
+  formData.append('requires', requires.value)
 
   try {
-    const response = await axios.post('api/plan/lesson_script', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const response = await axios.post('api/plan/lesson_script',
+     formData, 
+     {headers: { 'Content-Type': 'multipart/form-data' }}
+    )
+    console.log('请求返回结果:', response.data)
     emit('update-preview', response.data)
   } catch (error) {
     alert('生成失败')

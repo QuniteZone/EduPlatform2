@@ -109,66 +109,164 @@ const form = reactive({
   fileIPs: []
 });
 
+let LLMs_messages= []; // 用于存储 LLMs 的消息
+
+
+// typeWriter 函数用于模拟打字机效果，逐字符地将文本内容显示到指定的元素中。
 function typeWriter(text, element, speed = 30) {
-  let i = 0;
-  element.answer = "";
+  let i = 0; // 当前处理的字符索引
+  const currentAnswer = element.answer || ""; // 获取当前的 answer 内容
+  element.answer = currentAnswer; // 初始化目标元素的 answer 属性为当前内容
+
   return new Promise((resolve) => {
+    /**
+     * 内部递归函数 typing，逐字符处理文本内容。
+     */
     function typing() {
-      if (i < text.length) {
-        if (text.charAt(i) === '\n') {
-          element.answer += '<br>';
-        } else if (text.charAt(i) === ' ') {
-          element.answer += '&nbsp;';
-        } else {
+      if (i < text.length) { // 如果还未处理完所有字符
+        if (text.charAt(i) === '\n') { // 如果当前字符是换行符
+          element.answer += '<br>'; // 添加 HTML 换行标签
+        } else if (text.charAt(i) === ' ') { // 如果当前字符是空格
+          element.answer += '&nbsp;'; // 添加 HTML 空格实体
+        } else { // 其他字符直接添加
           element.answer += text.charAt(i);
         }
-        i++;
-        setScrollToBottom();
-        setTimeout(typing, speed);
+        i++; // 移动到下一个字符
+        setScrollToBottom(); // 调用滚动到底部的函数，确保新内容可见
+        setTimeout(typing, speed); // 延迟调用自身，实现逐字符显示效果
       } else {
-        resolve();
+        resolve(); // 所有字符处理完毕后 resolve Promise
       }
     }
-    typing();
+    typing(); // 开始执行递归函数
   });
 }
 
-async function sendMsg() {
-  if (form.input.length > 0) {
-    const user_question = form.input;
+
+
+function parseLLMContent(llm_return_content) {
+  let think_content = ""; // 存储 <think> 标签内的思考过程
+  let other_content = ""; // 存储非 <think> 标签的输出内容
+  let inside_think = false; // 标记是否在 <think> 标签内
+  let buffer = ""; // 缓存 <think> 标签内的内容
+
+  // 按行分割内容（假设每行以换行符分隔）
+  const lines = llm_return_content.split("\n");
+
+  // 遍历每一行内容
+  for (const line of lines) {
+    if (line.includes("<think>")) {
+      // 进入 <think> 标签
+      inside_think = true;
+      // 提取 <think> 标签后的内容
+      const start_index = line.indexOf("<think>") + "<think>".length;
+      buffer += line.substring(start_index).trim() + "\n";
+    } else if (line.includes("</think>")) {
+      // 离开 </think> 标签
+      inside_think = false;
+      // 提取 </think> 标签前的内容
+      const end_index = line.indexOf("</think>");
+      buffer += line.substring(0, end_index).trim() + "\n";
+      think_content += buffer.trim() + "\n"; // 将缓存内容添加到 think_content
+      buffer = ""; // 清空缓存
+      // 提取 </think> 标签后的内容
+      other_content += line.substring(end_index + "</think>".length).trim() + "\n";
+    } else if (inside_think) {
+      // 在 <think> 标签内，继续收集内容
+      buffer += line.trim() + "\n";
+    } else {
+      // 不在 <think> 标签内，直接添加到 other_content
+      other_content += line.trim() + "\n";
+    }
+  }
+
+  // 返回解析结果
+  return {
+    think_content: think_content.trim(), // 去除多余的换行符
+    other_content: other_content.trim() // 去除多余的换行符
+  };
+}
+
+
+/**
+ * sendMsg 函数用于发送用户输入的消息，并通过 API 获取 AI 的回复，同时支持流式接收和显示回复内容。
+ */
+ async function sendMsg() {
+  if (form.input.length > 0) { // 如果用户输入框中有内容
+    const user_question = form.input; // 获取用户输入的内容
     const msg = {
-      question: user_question,
-      answer: "AI生成中..."
+      question: user_question, // 用户问题
+      answer: "AI生成中..." // 初始状态显示“AI生成中...”
     };
-    form.msgList.push(msg);
-    form.input = "";
-    setScrollToBottom();
+    form.msgList.push(msg); // 将消息对象添加到消息列表中
+    form.input = ""; // 清空输入框
+    setScrollToBottom(); // 滚动到底部，确保新消息可见
+
+    const llm_cont={
+      'role':'user',
+      'content':user_question,
+    }
+    let llm_return_content="" //LLMs返回的内容
+    LLMs_messages.push(llm_cont);
+    console.log('LLMs_messages'+LLMs_messages);
+
     try {
+      // 发送 POST 请求到服务器，获取 AI 回复
       const response = await fetch("/api/ques/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          message: user_question,
-          image_urls: form.fileIPs || []
+          // message: user_question, // 用户问题
+          message: LLMs_messages, // 用户问题
+          image_urls: form.fileIPs || [] // 文件上传后的 IP 地址列表
         })
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let resultData = "";
-      const lastMsgIndex = form.msgList.length - 1;
-      // eslint-disable-next-line no-constant-condition
+      
+
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); // 如果响应状态码不为 2xx，抛出错误
+
+      const reader = response.body.getReader(); // 获取流式数据读取器
+      const decoder = new TextDecoder(); // 创建解码器，用于将二进制数据转换为字符串
+      const lastMsgIndex = form.msgList.length - 1; // 获取最后一条消息的索引
+      let flag = 0;
+      // 使用 while 循环流式读取服务器返回的数据
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        resultData += decoder.decode(value, { stream: true });
-        await typeWriter(resultData, form.msgList[lastMsgIndex], 10);
+        const { done, value } = await reader.read(); // 读取流中的数据
+        if (done) break; // 如果读取完成，退出循环
+        const chunk = decoder.decode(value, { stream: true }); // 解码当前数据块
+        console.log("flag:", flag)
+        flag += 1;
+        console.log("Received chunk:", chunk) 
+        await typeWriter(chunk, form.msgList[lastMsgIndex], 10); // 使用 typeWriter 函数逐字符显示当前数据块
+        llm_return_content += chunk; // 将当前数据块添加到 LLMs_messages 中
+        
       }
+
+      //llm_return_content //待解析对象内容
+      let think_content="" // LLMs的思考过程
+      let other_content="" // LLMs的输出
+      let parse_result=parseLLMContent(llm_return_content);
+      if(parse_result.think_content.length>0){
+        think_content=parse_result.think_content;
+        other_content=parse_result.other_content;
+      }else{
+        think_content=llm_return_content;
+      }
+      console.log("think_content:", think_content);
+      console.log("other_content:", other_content);
+
+      LLMs_messages.push({
+          'role':'assistant',
+          'content':other_content,
+        });
+
+
     } catch (error) {
-      console.error("Error:", error);
-      form.msgList[form.msgList.length - 1].answer = "生成失败，请稍后重试";
+      console.error("Error:", error); // 捕获并打印错误信息
+      form.msgList[form.msgList.length - 1].answer = "生成失败，请稍后重试"; // 更新最后一条消息的状态为“生成失败”
     }
   }
 }

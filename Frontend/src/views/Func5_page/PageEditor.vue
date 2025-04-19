@@ -105,7 +105,7 @@ const difficultyOptions = [
 // 生成内容方法
 const generateContent = async () => {
   try {
-    const response = await axios.post('/api/plan/gen_question', {
+    const response = await axios.post('/api/plan/question_generate', {
       subject: subject.value,
       grade: grade.value,
       textbook: textbook.value,

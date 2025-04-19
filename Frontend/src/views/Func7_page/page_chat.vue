@@ -1,14 +1,3 @@
-<script>
-export default {
-  props: {
-    msg: {
-      type: Object,
-      required: true
-    }
-  }
-};
-</script>
-
 <template>
   <div class="chat">
     <!-- 问题 -->
@@ -17,10 +6,57 @@ export default {
     </div>
     <!-- AI回答 -->
     <div style="text-align: left;">
-      <div class="el-card chat-left">{{ msg.answer }}</div>
+      <div class="el-card chat-left" ref="aiResponse">{{ aiAnswer }}</div>
+    </div>
+    <!-- 输入框 -->
+    <div>
+      <el-input v-model="userMessage" placeholder="请输入你的问题"></el-input>
+      <el-button @click="sendMessage">发送</el-button>
     </div>
   </div>
 </template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  props: {
+    msg: {
+      type: Object,
+      required: true
+    }
+  },
+  data() {
+    return {
+      userMessage: '',
+      aiAnswer: ''
+    };
+  },
+  methods: {
+    async sendMessage() {
+      this.aiAnswer = ''; // 清空之前的回答
+      const response = await axios.post('/chat', {
+        message: this.userMessage,
+        image_urls: [] // 根据实际情况添加图片URL
+      }, {
+        responseType: 'stream'
+      });
+
+      const reader = response.data.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        const chunk = decoder.decode(value, { stream: !done });
+        this.aiAnswer += chunk;
+        this.$refs.aiResponse.scrollTop = this.$refs.aiResponse.scrollHeight; // 滚动到底部
+      }
+    }
+  }
+};
+</script>
 
 <style scoped>
 .chat {
@@ -46,6 +82,8 @@ export default {
   max-width: 100%;
   padding: 12px 16px;
   white-space: pre-wrap;
+  overflow-y: auto; /* 添加滚动条 */
+  height: 200px; /* 设置高度 */
 }
 
 .chat-right {

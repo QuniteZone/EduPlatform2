@@ -1,3 +1,21 @@
+<template>
+    <div style="border: 1px solid #ccc">
+        <!-- 工具栏 -->
+        <Toolbar
+            :editor="editorRef"
+            :defaultConfig="toolbarConfig"
+            style="border-bottom: 1px solid #ccc"
+        />
+        <!-- 编辑器 -->
+        <Editor
+            v-model="valueHtml"
+            :defaultConfig="editorConfig"
+            style="height: 500px; overflow-y: hidden;"
+            @onCreated="handleCreated"
+        />
+    </div>
+</template>
+
 <script setup>
 import { onBeforeUnmount, ref, shallowRef, onMounted } from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
@@ -32,24 +50,6 @@ onBeforeUnmount(() => {
     editor.destroy()
 })
 </script>
-
-<template>
-    <div style="border: 1px solid #ccc">
-        <!-- 工具栏 -->
-        <Toolbar
-            :editor="editorRef"
-            :defaultConfig="toolbarConfig"
-            style="border-bottom: 1px solid #ccc"
-        />
-        <!-- 编辑器 -->
-        <Editor
-            v-model="valueHtml"
-            :defaultConfig="editorConfig"
-            style="height: 500px; overflow-y: hidden;"
-            @onCreated="handleCreated"
-        />
-    </div>
-</template>
 
 <!-- 别忘了引入样式 -->
 <style src="@wangeditor/editor/dist/css/style.css"></style>

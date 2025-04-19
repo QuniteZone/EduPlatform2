@@ -7,6 +7,7 @@ import Func5 from '../views/Func5.vue'
 import Func6 from '../views/Func6.vue'
 import Func7 from '../views/Func7.vue'
 import Func8 from '../views/Func8.vue'
+import Func9 from '../views/Func9.vue'
 import Func10 from '../views/Func10.vue'
 
 import PageEditor from '../views/Func1_page/PageEditor.vue'
@@ -54,6 +55,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/function8',
     name: 'Function8',
     component: Func8
+  },
+  {
+    path: '/function9',
+    name: 'Function9',
+    component: Func9
   },
   {
     path: '/editor',

@@ -3,12 +3,10 @@ import json
 from flask import Flask, jsonify
 from flask_cors import CORS
 # 导入蓝图
-from Backend.Apps.lesson_plan import lesson_plan_bp
-
-# from Apps.lesson_plan import lesson_plan_bp
-from Backend.Apps.question_handle import ques_handle_bp
-from Backend.Apps.DatabaseTables import db, User, Question
-import Backend.Apps.config
+from Apps.lesson_plan import lesson_plan_bp
+from Apps.question_handle import ques_handle_bp
+from Apps.DatabaseTables import db, User, Question
+import Apps.config
 
 app = Flask(__name__)
 
@@ -17,7 +15,7 @@ app.register_blueprint(lesson_plan_bp, url_prefix='/plan')  # 可以设置 URL �
 app.register_blueprint(ques_handle_bp, url_prefix='/ques')  # 可以设置 URL 前缀
 CORS(app)
 
-app.config.from_object(Backend.Apps.config)
+app.config.from_object(Apps.config)
 db.init_app(app)
 
 @app.route('/')
@@ -261,4 +259,4 @@ def add_questions():
 if __name__ == '__main__':
     with app.app_context():  # 进入应用上下文
         db.create_all()  # 创建表格
-    app.run(host='0.0.0.0',port=5000, debug=True)
+    app.run(host='0.0.0.0',port=5001, debug=True)

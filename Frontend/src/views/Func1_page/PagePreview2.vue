@@ -31,8 +31,11 @@
             return '<div class="error-message">内容加载失败，请稍后重试</div>';
           }
           // 解析Markdown并进行安全过滤
+          console.log('Parsed CONTENT:', this.content.content); // 添加调试信息
           const html = marked.parse(this.content.content || '');
-          return DOMPurify.sanitize(html);
+          console.log('Parsed HTML:', html); // 添加调试信息
+          return html
+          //return DOMPurify.sanitize(html);
         } catch (error) {
           return '<div class="error-message">内容解析失败</div>';
         }

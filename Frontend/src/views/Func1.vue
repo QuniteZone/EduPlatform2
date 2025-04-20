@@ -37,6 +37,7 @@ export default {
   },
   methods: {
     updatePreview(newData) {
+      console.log("updatePreview NEWDATA", newData);
       this.previewContent = newData;  // 直接更新预览内容
     },
   },

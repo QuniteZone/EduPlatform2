@@ -49,7 +49,7 @@ const generateContent = async () => {
       subject: subject.value,
       knowledge: content.value
       });
-    console.log('Editor_content:', response.data);
+    console.log('Editor_content:', response);
     emit('update-preview', response.data)
   } catch (error) {
     alert('生成失败');

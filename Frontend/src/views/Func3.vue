@@ -24,7 +24,7 @@ export default {
   name: 'AiPptDemo',
   data() {
     return {
-      apiKey: process.env.VUE_APP_API_KEY || 'ak_64Dx9tETsrFppvB1jq', // 从环境变量获取
+      apiKey: process.env.PPT_API_KEY || 'ak_64Dx9tETsrFppvB1jq', // 从环境变量获取
       uid: '200109',
       limit: null,
       token: null,
@@ -98,7 +98,7 @@ export default {
         lang: 'zh',
         mode: 'light',
         isMobile: false,
-        background: 'linear-gradient(-157deg,	#87CEFA, #E0FFFF)',
+        background: 'linear-gradient(-157deg, #87CEFA, #E0FFFF)',
         padding: '40px 20px 0px',
         onMessage: this.handleMessage
       });

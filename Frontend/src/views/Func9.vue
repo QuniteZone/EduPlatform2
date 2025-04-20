@@ -94,7 +94,7 @@ export default {
               messages: [
                 {
                   role: 'system',
-                  content: `我将设计思维导图，请以markdown格式输出`
+                  content: `我是一名设计思维导图设计师，我将会详细分析用户的提出的知识点与要求，设计较为详细的思维导图，并严格按照markdown格式输出`
                 },
                 {
                   role: 'user',

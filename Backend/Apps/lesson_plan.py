@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 from .genericFunction import LLM,lesson_plan_prompt,allowed_file,extract_text_from_pdf,extract_text_from_docx,ragflow,script_gen_prompt,jugement_ques_prompt
-from .config import TextbookRetr_AgentID
+from .config import TextbookRetr_AgentID,QuesGen_AgentID
 
 #这是教案生成
 lesson_plan_bp = Blueprint('lesson_plan', __name__)
@@ -83,47 +83,14 @@ def handle_lesson_script():
             return jsonify(content)
 
         content["content"] = response_data
+        print(f"lesson_script:{content}")
+
         return jsonify(content)
     except Exception as e:
         content["status"] = 0 #报错
         content["content"] = e
         return jsonify(content)
 
-
-
-
-
-
-##仅作为一个测试示例
-@lesson_plan_bp.route("/gen_question", methods=["POST"])
-def get_info():
-    data = request.get_json()# 从请求中获取 JSON 数据
-
-    # 检查必需的参数是否存在
-    required_fields = ['subject', 'grade', 'textbook', 'topic', 'questionType', 'difficulty', 'questionCount',
-                       'knowledgePoints', 'otherRequirements']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({
-        "content": None,
-        "status": 0  #缺少参数
-    })
-
-    # 提取参数
-    subject = data['subject']  #学科
-    grade = data['grade']  #年级
-    textbook = data['textbook']  #教材名称
-    topic = data['topic']  #主题
-    question_type = data['questionType']  #题型
-    difficulty = data['difficulty']  #难度
-    question_count = data['questionCount']  #问题数量
-    knowledge_points = data['knowledgePoints']   #知识点
-    other_requirements = data['otherRequirements']   #其他要求
-
-    return jsonify({
-        "content": "智能出题测试示例",
-        "status": 1
-    })
 
 
 ##仅作为一个测试示例
@@ -271,6 +238,75 @@ def question_judgment():
 
 
 
+
+@lesson_plan_bp.route('/question_generate', methods=['POST'])
+def question_generate():
+    data = request.get_json()  # 从请求中获取 JSON 数据
+
+    # 检查必需的参数是否存在
+    required_fields = [
+        'subject', 'grade', 'textbook', 'topic',
+        'questionType', 'difficulty', 'questionCount',
+        'knowledgePoints', 'otherRequirements'
+    ]
+    for field in required_fields:
+        if field not in data:
+            return jsonify({
+                "content": f"缺少参数: {field}",
+                "status": 0
+            })
+
+    # 提取参数
+    subject = data['subject']
+    grade = data['grade']
+    textbook = data['textbook']
+    topic = data['topic']
+    question_type = data['questionType']
+    difficulty = data['difficulty']
+    question_count = data['questionCount']
+    knowledge_points = data['knowledgePoints']
+    other_requirements = data['otherRequirements']
+
+    # 构建代理 Agent 会话
+    important_para = {
+        "subject": subject,
+        "grade": grade,
+        "textbook": textbook,
+        "topic": topic,
+        "questionType": question_type,
+        "difficulty": difficulty,
+        "questionCount": question_count,
+        "knowledgePoints": knowledge_points,
+        "otherRequirements": other_requirements
+    }
+
+    agent_session_id = ragflow.create_agent_session(
+        QuesGen_AgentID,
+        important_para=important_para
+    )
+
+    # 构建提问内容
+    question = (
+        f"请生成{question_count}道{grade}{subject}试题，"
+        f"关于{topic}，包括{knowledge_points}，难度{difficulty}，"
+        f"题型{question_type}，其他要求如下：{other_requirements}"
+    )
+
+    # 发送消息给 Agent
+    response_data = ragflow.send_agent_message(
+        QuesGen_AgentID,
+        question,
+        stream=False,
+        session_id=agent_session_id
+    )
+
+    # 删除会话
+    ragflow.delete_agent_session(QuesGen_AgentID, agent_session_id)
+
+    return jsonify({
+        "content": response_data,
+        "status": 1
+    })
 
 
 

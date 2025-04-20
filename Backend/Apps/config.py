@@ -48,6 +48,8 @@ ragflow_BASE_URL = "http://127.0.0.1"  # rag_flow的后端地址
 ragflow_API_KEY="ragflow-NhN2I5ODZhMTg0MzExZjA4OThkNWFiZW" #qgz 的api key密钥
 
 TextbookRetr_AgentID=f"8249059c1a9011f0ae7f9213fbf6b9fc" #RAGflow中从知识库中检索教材知识点的AgentID
+QuesGen_AgentID="cca846541d1d11f09a85ba9f4c68f6ef"
+
 
 
 

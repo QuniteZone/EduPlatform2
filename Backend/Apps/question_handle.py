@@ -12,9 +12,11 @@ ques_handle_bp = Blueprint('ques_handle', __name__)
 
 
 
-@ques_handle_bp.route('/ppt', methods=['GET'])
-def generate_ppt():
-    return jsonify({"message": "This is the PPT generator blueprint!"})
+@ques_handle_bp.route('/get_LLM_key', methods=['GET'])
+def get_LLM_key():
+    key = os.environ["OPENAI_API_KEY"]
+    print(f"key:{key}")
+    return jsonify({"api_key": key})
 
 
 #####多模态的问题问答
@@ -24,7 +26,6 @@ def upload_file():
         return jsonify({"content": "没有文件上传", 'status': 0})
 
     file = request.files['file']
-
     if file.filename == '':
         return jsonify({"content": "没有选择文件", 'status': -1})
 
@@ -51,25 +52,50 @@ def upload_file():
 @ques_handle_bp.route('/chat', methods=['POST'])
 def chat():
     data = request.json
-    image_urls = data.get('image_urls')  # 从请求中获取图片URL
+    image_urls = data.get('image_urls')  # 从请求中获取图片URL，至少是一个空list
     # files_urls = data.get('files_urls')  # 从请求中获取文件的URL
-    user_message = data.get('message')  # 从请求中获取用户消息
+    user_message = data.get('message')  # 从请求中获取用户消息及历史记录
 
-    content_images=[]
-    for image_url in image_urls:
-        obj_img={
-            "type": "image_url",
-            "image_url": {"url": image_url},
-        }
-        content_images.append(obj_img)
-    content_images.append({"type": "text", "text": user_message})
+    user_mesg = user_message[-1]['content']  # 获取最新一条的用户消息提问
+    del user_message[-1]
+
+    content_images = []  # 构建最新一条的user提问消息内容
+    if image_urls != []:
+        for image_url in image_urls:
+            obj_img = {
+                "type": "image_url",
+                "image_url": {"url": image_url},
+            }
+            content_images.append(obj_img)
+    content_images.append({"type": "text", "text": user_mesg})
 
     # 创建聊天完成请求
-    messages = [{
-            "role": "user",
-            "content": content_images}]
+    messages=[]
+    for message in user_message:
+        if message['role']=="user":
+            messages.append({
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": message['content'],
+                    }
+                ]
+            })
+        else:
+            messages.append(message)
 
-    return Response(stream_with_context(LLMs_StreamOutput(messages)), content_type='text/plain')
+
+    messages.append({
+        "role": "user",
+        "content": content_images})
+
+    print(f"最终message:{messages}")
+
+    response = Response(stream_with_context(LLMs_StreamOutput(messages)), content_type='text/plain')
+
+    return response
+
 
 
 

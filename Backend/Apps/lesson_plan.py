@@ -83,6 +83,8 @@ def handle_lesson_script():
             return jsonify(content)
 
         content["content"] = response_data
+        print(f"lesson_script:{content}")
+
         return jsonify(content)
     except Exception as e:
         content["status"] = 0 #报错

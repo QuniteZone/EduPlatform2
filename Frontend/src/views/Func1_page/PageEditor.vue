@@ -2,17 +2,13 @@
   <section class="editor">
     <textarea v-model="content" placeholder="请输入内容..."></textarea>
     <div class="select_box">
-      <div class="grade_select">
-        <p>选择年级</p>
-        <el-select v-model="grade" placeholder="Select" class="select">
-          <el-option v-for="item in gradeOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
+      <div class="course grade_select">
+         <p class="label-text">输入年级</p>
+          <input v-model="grade" placeholder="请输入..." />
       </div>
-      <div class="course_select">
-        <p>选择课程</p>
-        <el-select v-model="subject" placeholder="Select" class="select">
-          <el-option v-for="item in subjectOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
+      <div class="course course_select">
+           <p class="label-text">输入学科</p>
+          <input v-model="subject" placeholder="请输入..." />
       </div>
       <el-button type="primary" @click="generateContent" class="button">
         生成内容
@@ -27,20 +23,12 @@ import axios from 'axios'
 
 const emit = defineEmits(['update-preview'])
 
-const grade = ref('未选择')
-const subject = ref('未选择')
-const content = ref('')
-const gradeOptions = [
-  { value: '高一', label: '高一' },
-  { value: '高二', label: '高二' },
-  { value: '高三', label: '高三' },
-]
 
-const subjectOptions = [
-  { value: '数学', label: '数学' },
-  { value: '语文', label: '语文' },
-  { value: '英语', label: '英语' },
-]
+const content = ref('')
+const grade = ref('')
+const subject = ref('')
+
+
 
 const generateContent = async () => {
   try {
@@ -105,22 +93,40 @@ textarea:focus {
 
 /* 选择框容器样式 */
 .select_box {
-  display: flex;
-  gap: 5%;                        /* 默认间距 */
+    display: flex; /* 启用 Flexbox 布局 */
+   flex-wrap: nowrap; /* 禁止子元素换行 */
+  justify-content: space-between; /* 子组件之间的间距均匀分布 */
+  align-items: center; /* 垂直居中对齐 */
+  gap: 10px; /* 子组件间距 */
   margin-top: 0px;
   padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  flex-wrap: wrap;                /* 允许换行 */
+  background-color:#ffffff;
+  border-radius: 8px;                /* 允许换行 */
+}
+.course{
+  display: flex;
+  flex-direction: column;
+}
+/* 选择框标签样式 */
+.course p{
+ margin-bottom: 5px;
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: 500;
 }
 
-/* 选择框标签样式 */
-.grade_select p,
-.course_select p {
-  margin-bottom: 8px;             /* 标签与下拉框的间距 */
-  font-size: 16px;                /* 标签字体大小 */
-  color: #2c3e50;                 /* 标签文字颜色 */
-  font-weight: 500;               /* 字体粗细 */
+.course input{
+   width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+  color: #333;
+  flex-grow: 0; /* 不允许增长以侵占其他组件的空间 */
+  flex-shrink: 1; /* 允许在空间不足时缩小 */
 }
 
 /* Element Plus 选择器样式覆盖 */
@@ -170,22 +176,22 @@ textarea:focus {
     height: 60vh;               /* 移动端容器高度 */
     padding: 15px;              /* 移动端内边距 */
   }
-  
+
   textarea {
     height: 35vh;               /* 移动端文本区域高度 */
     font-size: 14px;            /* 移动端字体大小 */
     padding: 10px;              /* 移动端内边距 */
   }
-  
+
   .select_box {
     flex-direction: column;      /* 移动端垂直排列 */
     gap: 15px;                  /* 移动端间距 */
   }
-  
+
   :deep(.select) {
     width: 100%;                /* 移动端选择框宽度 */
   }
-  
+
   .button {
     width: 50%;                /* 移动端按钮宽度 */
     margin-left: 0;             /* 移动端左侧外边距 */

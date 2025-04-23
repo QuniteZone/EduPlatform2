@@ -9,17 +9,21 @@
           <label>学科 <span style="color: red;">(必填)</span></label>
           <input v-model="subject" placeholder="请输入..." />
         </div>
-        <!-- 教材名称 -->
-        <div class="input_box">
-          <label>教材名称 <span style="color: red;">(必填)</span></label>
-          <input v-model="textbook" placeholder="请输入..." />
+        <!--体量-->
+         <div class="input_box">
+        <label>题量<span style="color: red;">(必填)</span></label>
+        <input v-model="questionCount" type="number" placeholder="请输入..." />
         </div>
+        <!-- 题型 -->
+
         <div class="select_box">
             <label>题型 <span style="color: red;">(必填)</span></label>
             <el-select v-model="questionType" placeholder="请选择" class="select">
               <el-option v-for="item in questionTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
         </div>
+
+
       </div>
       <!-- 第二列 -->
       <div class="column">
@@ -27,11 +31,12 @@
           <label>年级 <span style="color: red;">(必填)</span></label>
           <input v-model="grade" placeholder="请输入..." />
         </div>
-        <!-- 主题 -->
+
+        <!-- 知识点 -->
         <div class="input_box">
-          <label>主题 <span style="color: red;">(必填)</span></label>
-          <input v-model="topic" placeholder="请输入..." />
-        </div>
+        <label>知识点 <span style="color: red;">(必填)</span></label>
+        <input v-model="knowledgePoints" placeholder="请输入..." />
+      </div>
         <!-- 难度 -->
         <div class="select_box">
           <label>难度 <span style="color: red;">(必填)</span></label>
@@ -40,21 +45,11 @@
           </el-select>
         </div>
       </div>
+
     </div>
 
     <!-- 其他字段 -->
     <div class="single-column-layout">
-      <!-- 题量 -->
-      <div class="input_box">
-        <label>题量 <span style="color: red;">(必填)</span></label>
-        <input v-model="questionCount" type="number" placeholder="请输入..." />
-      </div>
-
-      <!-- 知识点 -->
-      <div class="input_box">
-        <label>知识点 <span style="color: red;">(必填)</span></label>
-        <textarea v-model="knowledgePoints" placeholder="请输入..." />
-      </div>
 
       <!-- 其他要求 -->
       <div class="input_box">
@@ -68,6 +63,7 @@
       生成
     </el-button>
   </section>
+
 </template>
 
 <script lang="ts" setup>
@@ -77,15 +73,13 @@ import axios from 'axios'
 const emit = defineEmits(['update-preview'])
 
 // 数据绑定变量
-const grade = ref('')
-const subject = ref('')
-const textbook = ref('')
-const topic = ref('')
-const questionType = ref('不限')
-const difficulty = ref('不限')
-const questionCount = ref(0)
-const knowledgePoints = ref('')
-const otherRequirements = ref('')
+const grade = ref('') // 年级
+const subject = ref('') // 学科
+const questionType = ref('不限') // 题型
+const difficulty = ref('不限') // 难度
+const questionCount = ref(0) // 题量
+const knowledgePoints = ref('') // 知识点
+const otherRequirements = ref('') // 其他要求
 
 // 下拉选项
 const questionTypeOptions = [
@@ -108,8 +102,6 @@ const generateContent = async () => {
     const response = await axios.post('/api/plan/question_generate', {
       subject: subject.value,
       grade: grade.value,
-      textbook: textbook.value,
-      topic: topic.value,
       questionType: questionType.value,
       difficulty: difficulty.value,
       questionCount: questionCount.value,
@@ -248,13 +240,16 @@ textarea {
 
 /* 按钮样式 */
 .button {
+  margin-left: 0;
   align-self: flex-end;
   width: 100%;
-  max-width: 100px;
+  max-width: 180px;
   height: 40px;
   font-size: 16px;
-  border-radius: 3px;
+  border-radius: 6px;
   transition: all 0.3s ease;
+  margin-top: auto; /* 将按钮推到容器顶部 */
+  margin-bottom: 0px;
 }
 
 .button:hover {
@@ -289,8 +284,6 @@ textarea {
     width: 100%;
   }
 
-  .button {
-    width: 50%;
-  }
+
 }
 </style>

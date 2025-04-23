@@ -7,7 +7,6 @@
         <span class="header-text">主观题</span>
         <span class="header-text">当前学生：2023031011</span>
       </div>
-      <el-button type="primary" @click="handleSubmitResults">提交阅卷结果</el-button>
     </div>
 
     <!-- 题目和学生答案区域 -->
@@ -178,9 +177,6 @@ export default {
         message: '跳转到下一份',
         duration: 500, // 设置显示时间为 1 秒
       });
-    },
-    handleSubmitResults() {
-      this.$message.success('阅卷结果已提交');
     },
   },
 };

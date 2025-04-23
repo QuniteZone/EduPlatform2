@@ -1,14 +1,18 @@
 <template>
   <div class="mian_container">
     <div class="about">
-      <h2>班会稿生成</h2>
-      <h4>助教场景：AI辅助班会稿生成</h4>
+      <h2>班会策划生成</h2>
+      <h4>助教场景：AI辅助班会策划生成</h4>
     </div>
     <div class="editor-preview-container">
       <!-- @update-preview="updatePreview"：监听子组件Editor 触发的自定义事件 update-preview。
       当 Editor 组件触发该事件时，调用父组件中的方法 updatePreview。 -->
-      <Editor class="editor" @update-preview="updatePreview" />
-      <Preview class="preview" :content="previewContent" />
+     <div class="editor-container">
+        <Editor class="editor" @update-preview="updatePreview" />
+      </div>
+      <div class="preview-container">
+        <Preview2 class="preview" :content="previewContent" />
+      </div>
     </div>
   </div>
 </template>
@@ -16,10 +20,12 @@
 <script>
 import Editor from "./Func4_page/PageEditor.vue";
 import Preview from "./Func4_page/PagePreview.vue";
+import Preview2 from "@/views/Func5_page/PagePreview2.vue";
 
 export default {
   name: 'FunctionOne',
   components: {
+    Preview2,
     Editor,
     Preview,
   },
@@ -59,7 +65,7 @@ body {
   justify-content: center;         /* 垂直居中 */
   text-align: center;              /* 文本居中对齐 */
   margin: 2rem auto;               /* 上下外边距2rem，左右自动居中 */
-  background: linear-gradient(135deg, #eea0b4 0%, #e9ecef 100%); /* 浅灰色渐变背景 */
+  background: linear-gradient(135deg, #a2ddec 0%, #e9ecef 100%); /* 浅灰色渐变背景 */
   border-radius: 1rem;             /* 圆角边框 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 阴影效果 */
   border: 1px solid rgba(255, 255, 255, 0.3); /* 半透明白色边框 */
@@ -101,6 +107,9 @@ body {
   width: 100%;                     /* 占满父容器宽度 */
 }
 
+.editor-container{
+  width: calc(50%);
+}
 /* 编辑器和预览区域共用样式 */
 .editor,
 .preview {

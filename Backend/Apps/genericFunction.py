@@ -20,7 +20,12 @@ def format_lesson_plan(text,is_json):
         match = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
         if match:
             # 提取匹配到的内容并去掉前后的空白
-            return match.group(1).strip()
+            json_str=match.group(1).strip()
+            try:
+                # 将字符串解析为 JSON 对象
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                return False  # 如果解析失败，返回 False
         else:
             return False
     else:

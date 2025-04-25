@@ -8,12 +8,6 @@
           <el-option v-for="item in gradeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </div>
-      <div class="course_select">
-        <p>选择课程</p>
-        <el-select v-model="subject" placeholder="Select" class="select">
-          <el-option v-for="item in subjectOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </div>
       <el-button type="primary" @click="generateContent" class="button">
         生成内容
       </el-button>
@@ -28,7 +22,6 @@ import axios from 'axios'
 const emit = defineEmits(['update-preview'])
 
 const grade = ref('未选择')
-const subject = ref('未选择')
 const content = ref('')
 const gradeOptions = [
   { value: '高一', label: '高一' },
@@ -36,17 +29,11 @@ const gradeOptions = [
   { value: '高三', label: '高三' },
 ]
 
-const subjectOptions = [
-  { value: '数学', label: '数学' },
-  { value: '语文', label: '语文' },
-  { value: '英语', label: '英语' },
-]
 
 const generateContent = async () => {
   try {
-    const response = await axios.post('/api/plan/lesson_plan', {
+    const response = await axios.post('/api/plan/class_meeting', {
       grade: grade.value,
-      subject: subject.value,
       knowledge: content.value
       });
     console.log('Editor_content:', response.data);

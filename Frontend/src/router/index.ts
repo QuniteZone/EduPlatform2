@@ -9,6 +9,8 @@ import Func7 from '../views/Func7.vue'
 import Func8 from '../views/Func8.vue'
 import Func9 from '../views/Func9.vue'
 import Func10 from '../views/Func10.vue'
+import student from '../views/student/analysis.vue'
+import KnowledgeOrganization from "../views/Knowledge_Organization.vue";
 
 import PageEditor from '../views/Func1_page/PageEditor.vue'
 import PagePreview from '../views/Func1_page/PagePreview.vue'
@@ -20,6 +22,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/function1',
     name: 'Function1',
     component: Func1
+  },
+  {
+    path: '/Knowledge_Organization',
+    name: 'Knowledge_Organization',
+    component: KnowledgeOrganization
+  },
+  {
+    path: '/student',
+    name: 'student',
+    component: student,
   },
   {
     path: '/function2',
@@ -90,7 +102,8 @@ const routes: Array<RouteRecordRaw> = [
     path: '/function10',
     name: 'Function10',
     component: Func10
-  }
+  },
+
 ]
 
 const router = createRouter({

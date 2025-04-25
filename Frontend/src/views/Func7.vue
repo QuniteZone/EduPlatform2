@@ -1,10 +1,8 @@
 <template>
   <div class="main_container">
     <div class="about">
-      <div class="about-header">
-        <h2>作业辅导</h2>
-        <h4>助学场景：AI作业辅导</h4>
-      </div>
+      <h2>作业辅导</h2>
+      <h4>助学场景：AI作业辅导</h4>
     </div>
     <div class="common-layout">
       <el-container>
@@ -326,7 +324,7 @@ async function setScrollToBottom() {
 }
 </script>
 
-<style>
+<style scoped>
 html,
 body {
   margin: 0;
@@ -340,26 +338,81 @@ body {
   height: 100%;
 }
 .main_container {
-  padding: 20px 0;
+  margin-right: 80px;
+  /* 右侧外边距 */
+  margin-left: 80px;
+  /* 左侧外边距 */
+  margin-top: 40px;
+  /* 顶部外边距 */
 }
 .about {
   display: flex;
+  /* 使用flex布局 */
   flex-direction: column;
+  /* 垂直方向排列 */
   align-items: center;
+  /* 水平居中 */
   justify-content: center;
-  background: linear-gradient(135deg, #eea0b4 0%, #e9ecef 100%);
+  /* 垂直居中 */
+  text-align: center;
+  /* 文本居中对齐 */
+  margin: 2rem auto;
+  /* 上下外边距2rem，左右自动居中 */
+  background: linear-gradient(135deg, #a7e6e5 0%, #e9ecef 100%);
+  /* 浅灰色渐变背景 */
   border-radius: 1rem;
+  /* 圆角边框 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  /* 阴影效果 */
   border: 1px solid rgba(255, 255, 255, 0.3);
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 20px;
+  /* 半透明白色边框 */
+  max-width: 10000px;
+  /* 最大宽度限制 */
+  height: 200px;
+  /* 固定高度 */
 }
-.about-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+
+.about h2 {
+  color: #458fd8;
+  /* 文字颜色 */
+  font-size: 2.5rem;
+  /* 字体大小 */
+  font-weight: 700;
+  /* 字体粗细 */
+  margin-top: 0;
+  /* 移除顶部外边距 */
+  margin-bottom: 0.5rem;
+  /* 减小底部外边距 */
+  letter-spacing: -0.5px;
+  /* 字间距 */
+  position: relative;
+  /* 相对定位 */
+  padding-top: -10rem;
+  /* 添加顶部内边距 */
 }
+
+/* 副标题样式 */
+.about h4 {
+  color: #518fc5;
+  /* 文字颜色 */
+  font-size: 1.3rem;
+  /* 字体大小 */
+  font-weight: 400;
+  /* 字体粗细 */
+  margin: 0;
+  /* 移除外边距 */
+  padding: 0.8rem 1.5rem;
+  /* 内边距 */
+  background: rgba(255, 255, 255, 0.9);
+  /* 半透明白色背景 */
+  border-radius: 1rem;
+  /* 圆角边框 */
+  display: inline-block;
+  /* 行内块级元素 */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  /* 细边框 */
+}
+
 .common-layout {
   height: calc(100vh - 260px);
   display: flex;

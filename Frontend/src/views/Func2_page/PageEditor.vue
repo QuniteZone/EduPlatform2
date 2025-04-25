@@ -71,7 +71,7 @@ const generateContent = async () => {
 
   try {
     const response = await axios.post('api/plan/lesson_script',
-     formData, 
+     formData,
      {headers: { 'Content-Type': 'multipart/form-data' }}
     )
     console.log('请求返回结果:', response.data)
@@ -87,18 +87,18 @@ const generateContent = async () => {
 <style scoped>
 /* 编辑器容器样式 */
 .editor {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  border: 2px solid #3498db;
-  border-radius: 10px;
-  padding: 20px;
+  width: 100%;                    /* 容器宽度自适应 */
+  max-width: 800px;               /* 最大宽度 */
+  margin: 0 auto;                 /* 水平居中 */
+  border: 2px solid #3498db;      /* 边框样式 */
+  border-radius: 10px;            /* 圆角大小 */
+  padding: 20px;                  /* 内边距 */
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: #fff;         /* 背景色 */
   box-sizing: border-box;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+  transition: all 0.3s ease;      /* 添加过渡效果 */
 }
 
 /* 文件上传部分样式 */

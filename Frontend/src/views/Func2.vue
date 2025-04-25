@@ -7,8 +7,12 @@
     <div class="editor-preview-container">
       <!-- @update-preview="updatePreview"：监听子组件Editor 触发的自定义事件 update-preview。
       当 Editor 组件触发该事件时，调用父组件中的方法 updatePreview。 -->
-      <Editor class="editor" @update-preview="updatePreview" />
-      <Preview class="preview" :content="previewContent" />
+      <div class="editor-container">
+        <Editor class="editor" @update-preview="updatePreview" />
+      </div>
+      <div class="preview-container">
+        <Preview2 class="preview" :content="previewContent" />
+      </div>
     </div>
   </div>
 </template>
@@ -16,10 +20,12 @@
 <script>
 import Editor from "./Func2_page/PageEditor.vue";
 import Preview from "./Func2_page/PagePreview2.vue";
+import Preview2 from "@/views/Func5_page/PagePreview2.vue";
 
 export default {
   name: 'FunctionOne',
   components: {
+    Preview2,
     Editor,
     Preview,
   },
@@ -39,9 +45,12 @@ export default {
 <style scoped>
 /* 全局样式设置 */
 body {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;  /* 设置默认字体 */
-  margin: 0;                       /* 清除默认外边距 */
-  padding: 0;                      /* 清除默认内边距 */
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  /* 设置默认字体 */
+  margin: 0;
+  /* 清除默认外边距 */
+  padding: 0;
+  /* 清除默认内边距 */                    /* 清除默认内边距 */
 }
 
 /* 主容器样式 */
@@ -99,6 +108,10 @@ body {
   height: 50vh;                    /* 设置固定高度 */
   margin-top: 20px;                /* 添加上边距 */
   width: 100%;                     /* 占满父容器宽度 */
+}
+
+.editor-container{
+  width: calc(50%);
 }
 
 /* 编辑器和预览区域共用样式 */

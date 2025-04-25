@@ -1,5 +1,4 @@
 <template>
-
   <div class="mian_container">
     <div class="about">
       <h2>智能出题</h2>
@@ -21,13 +20,11 @@
 
 <script>
 import Editor from "./Func5_page/PageEditor.vue";
-import Preview from "./Func5_page/PagePreview.vue";
 import Preview2 from "./Func5_page/PagePreview2.vue";
 export default {
   name: 'FunctionOne',
   components: {
     Editor,
-    Preview, //文本框
     Preview2 //富文本编辑框
   },
   data() {
@@ -78,7 +75,7 @@ body {
   /* 文本居中对齐 */
   margin: 2rem auto;
   /* 上下外边距2rem，左右自动居中 */
-  background: linear-gradient(135deg, #4bafac 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #aef3e3 0%, #e9ecef 100%);
   /* 浅灰色渐变背景 */
   border-radius: 1rem;
   /* 圆角边框 */
@@ -140,7 +137,7 @@ body {
   /* 使用flex布局 */
   gap: 25px;
   /* 子元素间距 */
-  height: 70vh;
+  height: 50vh;
   /* 设置固定高度 */
   margin-top: 20px;
   /* 添加上边距 */

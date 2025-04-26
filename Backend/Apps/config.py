@@ -4,7 +4,7 @@ import os
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
 USERNAME = 'root'
-PASSWORD = 'qweQWE123!'
+PASSWORD = '123456'
 HOST = '127.0.0.1'
 PORT = '3306'
 #远程连接qgz的MySQL数据库 94686t61i9.zicp.fun:53604
@@ -45,6 +45,7 @@ Public_ip="https://94686t61i9.zicp.fun/"
 
 #rag_flow 基本配置信息
 ragflow_BASE_URL = "http://127.0.0.1"  # rag_flow的后端地址
+# ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
 # ragflow_API_KEY = "ragflow-QwMDMzYWMyMTgzMzExZjBhZGI0MDI0Mm"  # rag_flow的 API Key
 ragflow_API_KEY="ragflow-NhN2I5ODZhMTg0MzExZjA4OThkNWFiZW" #qgz 的api key密钥
 

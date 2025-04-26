@@ -1,11 +1,13 @@
 import json
 import logging
+import os
+
 from flask import Flask, jsonify
 from flask_cors import CORS
 # 导入蓝图
 from Apps.lesson_plan import lesson_plan_bp
 from Apps.question_handle import ques_handle_bp
-from Apps.DatabaseTables import db, User, Question
+from Apps.DatabaseTables import db, User, Question, KnowledgePoint, Offline_Resource
 import Apps.config
 
 
@@ -22,6 +24,53 @@ db.init_app(app)
 @app.route('/')
 def home():
     return "你好呀，这里是EduPlatform系统！"
+
+
+@app.route('/knowledge/add', methods=['GET'])
+def add_knowledge_points_from_file():
+    try:
+        file_path = os.path.join(app.static_folder, 'knowledges.json')
+        with open(file_path, 'r', encoding='utf-8') as file:
+            knowledge_points = json.load(file)
+
+        for k in knowledge_points:
+            new_knowledge_point = KnowledgePoint(
+                content=k['content'],
+                weight=k['weight']
+            )
+            db.session.add(new_knowledge_point)
+
+        db.session.commit()
+        return jsonify({'message': 'Knowledge Points added successfully!'}), 201
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
+
+@app.route('/resources/add', methods=['GET'])
+def add_offline_resources_from_file():
+    try:
+        file_path = os.path.join(app.static_folder, 'offline_resources.json')
+        with open(file_path, 'r', encoding='utf-8') as file:
+            resources = json.load(file)
+
+        for r in resources:
+            new_resource = Offline_Resource(
+                title=r['title'],
+                link=r['link'],
+                duration=r['duration'],
+                views=r.get('views', 0),
+                likes=r.get('likes', 0),
+                favorites=r.get('favorites', 0),
+                shares=r.get('shares', 0),
+                tags=r.get('tags', None)
+            )
+            db.session.add(new_resource)
+
+        db.session.commit()
+        return jsonify({'message': 'Offline Resources added successfully!'}), 201
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
 
 
 # 增加用户
@@ -260,5 +309,5 @@ def add_questions():
 if __name__ == '__main__':
     with app.app_context():  # 进入应用上下文
         db.create_all()  # 创建表格
-    # app.run(host='0.0.0.0',port=5001, debug=True)
-    app.run(port=5001, debug=True)
+    app.run(host='0.0.0.0',port=5001, debug=True)
+    # app.run(port=5001, debug=True)

@@ -1,9 +1,6 @@
 <template>
   <div id="app">
     <el-container>
-      <el-aside width="200px">
-        <PageSidebar />
-      </el-aside>
       <el-main>
         <PageMainContent />
       </el-main>
@@ -12,12 +9,11 @@
 </template>
 
 <script>
-import PageSidebar from './Func6_page/PageSidebar.vue';
+
 import PageMainContent from './Func6_page/PageMainContent.vue';
 
 export default {
   components: {
-    PageSidebar,
     PageMainContent
   }
 };

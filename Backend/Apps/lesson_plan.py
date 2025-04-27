@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
-from .genericFunction import LLM,lesson_plan_prompt,allowed_file,extract_text_from_pdf,extract_text_from_docx,ragflow,script_gen_prompt,jugement_ques_prompt
+from .genericFunction import LLM,lesson_plan_prompt,class_meeting_prompt,allowed_file,extract_text_from_pdf,extract_text_from_docx,ragflow,script_gen_prompt,jugement_ques_prompt
 from .config import TextbookRetr_AgentID,QuesGen_AgentID
 
 #这是教案生成
@@ -21,6 +21,32 @@ def get_lesson_plan():
     promtp=lesson_plan_prompt.format(grade=grade, subject=subject, knowledge=knowledge)
     messages = [{"role": "system",
                  "content": "你是一个教案生成专家，严格按Markdown格式输出结构化教案内容，确保键值命名与层级关系绝对准确"},
+                {"role": "user", "content": promtp}]
+
+    return_result=LLM(messages,is_json=False)
+    content={} #返回结构
+    if return_result==False:
+        content["status"]=0 #报错
+        content["content"]=None
+    else:
+        content["status"]=1
+        content["content"]=return_result
+    return_result=jsonify(content)
+    return return_result
+
+
+#自动生成班会稿
+@lesson_plan_bp.route('/class_meeting', methods=['GET', 'POST'])
+def get_lesson_plan2():
+    if request.method == 'POST':
+        grade=request.json.get('grade')
+        knowledge=request.json.get('knowledge')
+    else:
+        grade = request.args.get('grade')
+        knowledge = request.args.get('knowledge')
+    promtp=class_meeting_prompt.format(grade=grade, knowledge=knowledge)
+    messages = [{"role": "system",
+                 "content": "你是一个班会稿生成专家，严格按Markdown格式输出结构化班会稿内容，确保键值命名与层级关系绝对准确"},
                 {"role": "user", "content": promtp}]
 
     return_result=LLM(messages,is_json=False)
@@ -204,7 +230,7 @@ def create_study_plan():
 
 
 
-# 主观题判题 question_judgment
+# 主观题判题 question_judgment   http://192.168.31.172:5001/plan/question_judgment
 @lesson_plan_bp.route('/question_judgment', methods=['POST'])
 def question_judgment():
     data = request.get_json()# 从请求中获取 JSON 数据

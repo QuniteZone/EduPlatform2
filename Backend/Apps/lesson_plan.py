@@ -230,7 +230,7 @@ def create_study_plan():
 
 
 
-# 主观题判题 question_judgment
+# 主观题判题 question_judgment   http://192.168.31.172:5001/plan/question_judgment
 @lesson_plan_bp.route('/question_judgment', methods=['POST'])
 def question_judgment():
     data = request.get_json()# 从请求中获取 JSON 数据

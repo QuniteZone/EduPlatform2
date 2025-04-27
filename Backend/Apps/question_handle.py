@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 
@@ -7,7 +8,7 @@ from openai import OpenAI
 from flask import Blueprint, jsonify, request, stream_with_context, Response
 from werkzeug.utils import secure_filename
 
-from .genericFunction import LLMs_allowed_file, LLMs_StreamOutput, LLM
+from .genericFunction import LLMs_allowed_file, LLMs_StreamOutput, LLM, ragflow, get_globalWeb_source
 from .config import LLMs_IMAGE_UPLOAD_FOLDER,LLMs_FILE_UPLOAD_FOLDER,Public_ip,LLMs_model
 
 ques_handle_bp = Blueprint('ques_handle', __name__)
@@ -240,73 +241,266 @@ def questionBankTagged():
 #构造一个学习路径推荐的路由 学习路径——示例
 @ques_handle_bp.route('/recommend/learningPath', methods=['GET'])
 def recommend_learningPath():
-    EmbedModel_auth_token = "sk-ppzjdoyclsjocxncdmbytziuaiobxcrpfxkejzorhmxkmtxd"
-    EmbedModel_api_url = "https://api.siliconflow.cn/v1/embeddings"
-    RerankModel_auth_token = "sk-ppzjdoyclsjocxncdmbytziuaiobxcrpfxkejzorhmxkmtxd"
-    RerankModel_api_url = "https://api.siliconflow.cn/v1/rerank"
+    need_study_knowledge=[
+        {"knowledge_ID": 1, "content": "HTML基础语法", "weight": 0.55},
+        {"knowledge_ID": 2, "content": "CSS基础语法", "weight": 0.54},
+        {"knowledge_ID": 3, "content": "JavaScript基本语法", "weight": 0.56},
+        {"knowledge_ID": 4, "content": "响应式设计原理", "weight": 0.50},
+        {"knowledge_ID": 5, "content": "DOM操作与事件处理", "weight": 0.53},
+        {"knowledge_ID": 6, "content": "CSS布局模型", "weight": 0.48},
+        {"knowledge_ID": 7, "content": "CSS选择器的使用", "weight": 0.45},
+        {"knowledge_ID": 8, "content": "JavaScript异步编程", "weight": 0.50},
+        {"knowledge_ID": 9, "content": "Web标准与最佳实践", "weight": 0.40},
+        {"knowledge_ID": 10, "content": "CSS预处理器（如Sass、Less）", "weight": 0.42},
+        {"knowledge_ID": 11, "content": "JavaScript框架（如React、Vue）", "weight": 0.51},
+        {"knowledge_ID": 12, "content": "前端构建工具（如Webpack）", "weight": 0.49},
+        {"knowledge_ID": 13, "content": "版本控制工具（如Git）", "weight": 0.44},
+        {"knowledge_ID": 14, "content": "表单验证与处理", "weight": 0.47},
+        {"knowledge_ID": 15, "content": "API与前后端交互", "weight": 0.52},
+        {"knowledge_ID": 16, "content": "浏览器开发者工具使用", "weight": 0.46},
+        {"knowledge_ID": 17, "content": "CSS框架（如Bootstrap、Tailwind）", "weight": 0.55},
+        {"knowledge_ID": 18, "content": "网页加载优化技巧", "weight": 0.48},
+        {"knowledge_ID": 19, "content": "跨域问题及解决方案", "weight": 0.45},
+        {"knowledge_ID": 20, "content": "JavaScript设计模式", "weight": 0.50},
+        {"knowledge_ID": 21, "content": "图形与动画（如Canvas、SVG）", "weight": 0.41},
+        {"knowledge_ID": 22, "content": "国际化与本地化", "weight": 0.39},
+        {"knowledge_ID": 23, "content": "SEO基础知识", "weight": 0.37},
+        {"knowledge_ID": 24, "content": "Web安全基础（如XSS、CSRF）", "weight": 0.54},
+        {"knowledge_ID": 25, "content": "CSS变量与自定义属性", "weight": 0.43},
+        {"knowledge_ID": 26, "content": "模块化JavaScript", "weight": 0.46},
+        {"knowledge_ID": 27, "content": "前端性能监控", "weight": 0.38},
+        {"knowledge_ID": 28, "content": "浏览器兼容性处理", "weight": 0.40},
+        {"knowledge_ID": 29, "content": "Web组件概念", "weight": 0.33},
+        {"knowledge_ID": 30, "content": "前端架构模式", "weight": 0.35},
+        {"knowledge_ID": 31, "content": "单页应用（SPA）开发", "weight": 0.49},
+        {"knowledge_ID": 32, "content": "多页面应用（MPA）开发", "weight": 0.45},
+        {"knowledge_ID": 33, "content": "Websocket及实时通信", "weight": 0.43},
+        {"knowledge_ID": 34, "content": "前端测试基础（如Jest）", "weight": 0.42},
+        {"knowledge_ID": 35, "content": "类型检查与TypeScript", "weight": 0.41},
+        {"knowledge_ID": 36, "content": "图形用户界面设计原则", "weight": 0.37},
+        {"knowledge_ID": 37, "content": "UX/UI设计基础", "weight": 0.36},
+        {"knowledge_ID": 38, "content": "移动端适配技巧", "weight": 0.39},
+        {"knowledge_ID": 39, "content": "服务工作者与离线应用", "weight": 0.32},
+        {"knowledge_ID": 40, "content": "CSS Grid布局", "weight": 0.48},
+        {"knowledge_ID": 41, "content": "Flexbox布局", "weight": 0.44},
+        {"knowledge_ID": 42, "content": "编写可访问性友好的网站", "weight": 0.46},
+        {"knowledge_ID": 43, "content": "使用图标字体与SVG", "weight": 0.34},
+        {"knowledge_ID": 44, "content": "前端部署与发布流程", "weight": 0.38},
+        {"knowledge_ID": 45, "content": "Web前端框架选择", "weight": 0.35},
+        {"knowledge_ID": 46, "content": "自定义事件与事件总线", "weight": 0.42},
+        {"knowledge_ID": 47, "content": "Webpack配置与使用", "weight": 0.35},
+        {"knowledge_ID": 48, "content": "代码优化与重构", "weight": 0.41},
+        {"knowledge_ID": 49, "content": "小型与大型项目管理", "weight": 0.36},
+        {"knowledge_ID": 50, "content": "邮件模板编写", "weight": 0.33},
+        {"knowledge_ID": 51, "content": "动态数据绑定原理", "weight": 0.50},
+        {"knowledge_ID": 52, "content": "客户端路由管理", "weight": 0.45},
+        {"knowledge_ID": 53, "content": "环境变量与配置管理", "weight": 0.40},
+        {"knowledge_ID": 54, "content": "前端代码规范与Lint工具", "weight": 0.39},
+        {"knowledge_ID": 55, "content": "使用状态管理库（如Redux）", "weight": 0.52},
+        {"knowledge_ID": 56, "content": "TypeScript在前端开发中的应用", "weight": 0.46},
+        {"knowledge_ID": 57, "content": "使用图形库进行可视化（如D3.js）", "weight": 0.38},
+        {"knowledge_ID": 58, "content": "UI组件库的使用与定制", "weight": 0.49},
+        {"knowledge_ID": 59, "content": "异步请求的优化", "weight": 0.44},
+        {"knowledge_ID": 60, "content": "客户端存储技术（如LocalStorage、SessionStorage）", "weight": 0.50},
+        {"knowledge_ID": 61, "content": "使用微服务架构进行前端开发", "weight": 0.46},
+        {"knowledge_ID": 62, "content": "使用RESTful API设计规范", "weight": 0.43},
+        {"knowledge_ID": 63, "content": "使用GraphQL进行数据获取", "weight": 0.52},
+        {"knowledge_ID": 64, "content": "日期与时间处理库（如Moment.js）", "weight": 0.37},
+        {"knowledge_ID": 65, "content": "用户身份验证与授权", "weight": 0.55},
+        {"knowledge_ID": 66, "content": "动态导入与代码分割", "weight": 0.40},
+        {"knowledge_ID": 67, "content": "使用CSS动画增强用户体验", "weight": 0.35},
+        {"knowledge_ID": 68, "content": "前端开发中的数据格式（如JSON、XML）", "weight": 0.43},
+        {"knowledge_ID": 69, "content": "利用状态管理优化复杂应用", "weight": 0.48},
+        {"knowledge_ID": 70, "content": "本地开发环境的搭建与使用", "weight": 0.36},
+        {"knowledge_ID": 71, "content": "视频与音频处理", "weight": 0.30},
+        {"knowledge_ID": 72, "content": "使用安全框架提高应用安全性", "weight": 0.45},
+        {"knowledge_ID": 73, "content": "可重用组件的设计与架构", "weight": 0.42},
+        {"knowledge_ID": 74, "content": "开发环境与生产环境的区别", "weight": 0.38},
+        {"knowledge_ID": 75, "content": "网站性能分析工具的使用", "weight": 0.31},
+        {"knowledge_ID": 76, "content": "使用客户反馈改善用户体验", "weight": 0.41},
+        {"knowledge_ID": 77, "content": "文档编写与团队协作", "weight": 0.36},
+        {"knowledge_ID": 78, "content": "使用配置文件管理项目设置", "weight": 0.34},
+        {"knowledge_ID": 79, "content": "数据可视化的前端技术", "weight": 0.30},
+        {"knowledge_ID": 80, "content": "访问性测试与审核", "weight": 0.32},
+        {"knowledge_ID": 81, "content": "相关工具与技术栈的选择", "weight": 0.33},
+        {"knowledge_ID": 82, "content": "自适应与响应式设计的区别", "weight": 0.35},
+        {"knowledge_ID": 83, "content": "前端框架生态概述", "weight": 0.29},
+        {"knowledge_ID": 84, "content": "搭建本地服务器进行调试", "weight": 0.30},
+        {"knowledge_ID": 85, "content": "小型项目快速开发技巧", "weight": 0.36},
+        {"knowledge_ID": 86, "content": "处理移动端特有的问题", "weight": 0.40},
+        {"knowledge_ID": 87, "content": "和后端协作的有效沟通", "weight": 0.34},
+        {"knowledge_ID": 88, "content": "数据流管理与优化", "weight": 0.35},
+        {"knowledge_ID": 89, "content": "模块化CSS的实践", "weight": 0.32},
+        {"knowledge_ID": 90, "content": "使用方言与框架的优缺点", "weight": 0.29},
+        {"knowledge_ID": 91, "content": "了解Web Components的标准", "weight": 0.30},
+        {"knowledge_ID": 92, "content": "编写文档与开发规范", "weight": 0.31},
+        {"knowledge_ID": 93, "content": "图像优化与处理技术", "weight": 0.33},
+        {"knowledge_ID": 94, "content": "动画与交互设计基础", "weight": 0.35},
+        {"knowledge_ID": 95, "content": "使用第三方库与框架", "weight": 0.32},
+        {"knowledge_ID": 96, "content": "微服务前端架构探讨", "weight": 0.28},
+        {"knowledge_ID": 97, "content": "CMS的前端整合", "weight": 0.37},
+        {"knowledge_ID": 98, "content": "客户端的性能考量", "weight": 0.39},
+        {"knowledge_ID": 99, "content": "Web应用的法律合规", "weight": 0.30},
+        {"knowledge_ID": 100, "content": "前端开发者与用户的支持技巧", "weight": 0.36}
+    ]
 
-    def encode_model(input_text):
-        payload = {
-            "model": "BAAI/bge-large-zh-v1.5",
-            "input": input_text,
-            "encoding_format": "float"
-        }
-        headers = {
-            "Authorization": f"Bearer {EmbedModel_auth_token}",
-            "Content-Type": "application/json"
-        }
+    study_aim="想一周之内，经过达到前端Web开发基础知识内容，并进行项目实战"
 
-        response = requests.post(EmbedModel_api_url, json=payload, headers=headers)
-        if response.status_code == 200:
-            json_response = response.json()
-            embedding = json_response['data'][0]['embedding']
-            return np.array(embedding), None
-        else:
-            print(f"Request failed with status code: {response.status_code}")
-            print("Response text:", response.text)
-            return None, response.text
+    student_type="视觉型学习者"
+    result1,result2=get_globalWeb_source(study_aim)
+    onlineSearch=result1+result2
 
-    def rerank_model(query, documents):
-        payload = {
-            "model": "BAAI/bge-reranker-v2-m3",
-            "query": query,
-            "documents": documents,
-            "top_n": len(documents),
-            "return_documents": False,
-            "max_chunks_per_doc": 1024,
-            "overlap_tokens": 80
-        }
-        headers = {
-            "Authorization": f"Bearer {RerankModel_auth_token}",
-            "Content-Type": "application/json"
-        }
-
-        response = requests.post(RerankModel_api_url, json=payload, headers=headers)
-        if response.status_code == 200:
-            json_response = response.json()
-            scores = [result['relevance_score'] for result in json_response['results']]
-            return scores, None
-        else:
-            print(f"Request failed with status code: {response.status_code}")
-            print("Response text:", response.text)
-            return None, response.text
-
-    def rerank_results(results, query_vector):
-        texts = [result[1] for result in results]
-        ranks, error = rerank_model(query_vector, texts)
-        if error:
-            return results  # Return original results in case of error
-        sorted_indices = np.argsort(ranks)[::-1]
-        return [results[i] for i in sorted_indices]
+    # query = request.args.get('user')
+    resourceFinder_AgentID="6c3e724a226611f08d100242ac120006"
 
 
-    query = request.args.get('user')
+    ###### RAGflow中检索资源库内容
+    # 构建代理Agent会话
+    agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
+
+    # 进行代理Agent聊天
+    question = f"{study_aim}"
+
+    source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,session_id=agent_session_id)
+
+    # 删除该Agent会话
+    ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
+    ###### RAGflow中检索资源库内容
 
 
+    prompt = """
+            一、任务描述：你需要根据用户输入的学习目标、学习风格和知识点要求，结合已有的推荐资源，制定一个清晰的学习路径。学习路径包括阶段规划和时间安排，同时清晰说明每个阶段的学习任务和目标。
 
+            二、用户输入
+            用户输入包括学习目标、学习风格、需要掌握的知识点和推荐资源，请根据这些要素制定学习路径。
+            学习目标：{study_aim}
+            学习风格：{student_type}
+            --------------------------
+            以下是知识点掌握情况，知识点的权值是指知识点掌握情况。取值为0-1，值越大掌握情况越好：
+            {knowledge_point}
+            以上是知识点掌握情况。
+            --------------------------
+            以下是从资源库中检索的资源情况（后面输出tasks的resources部分从该库中选择）：
+            {source_response_data}
+            以上是从资源库中检索的资源情况。
+            --------------------------
+            以下是网络相关资讯库，实时检索的博客视频等相关资讯（后面输出tasks的online_source部分从该库中选择）：
+            {onlineSearch}
+            以上是网络相关资讯库。
+            
+            三、要求
+            1. 学习路径应包括多个阶段，每个阶段有明确的学习目标和时间安排。
+            2. 每个阶段应包含多个学习任务，每个任务应包括任务名称、任务描述、所需资源、在线资源等。
+            3. 学习路径应考虑到不同学习风格的需求，如视觉型学习者应优先考虑视频教程和图片资料等。
+            4. 学习路径应尽可能涵盖用户需要掌握的所有知识点，并确保每个知识点都有相应的学习任务。
+            5. 学习路径应提供实际可行的建议，帮助用户在实际操作中提升学习效果。
+            8. 学习路径应考虑到用户的实际需求，例如，如果用户要求规定在一周内完成任务，则整体任务必须规定在一周内。
+            9. 学习路径应尽可能提供多样化的学习资源，如在线课程、书籍、视频等。
+            10.从选用的任何resources，都需要原内容输出。不允许修改。
+            11.输出tasks的resources部分和online_source部分尽量不要为空，尽量保持还有一个。
 
+            四、输出格式
+            输出格式需遵循以下格式，确保信息清晰有序；同时请确保你的输出能被Python的json.loads函数解析，此外不要输出其他任何内容！
+            ```json
+                {{
+                    "learningPath": [
+                    {{
+                        "stage": "第一阶段",
+                        "duration": "2025.4.26-2025.4.30",
+                        "goal": "达到基础口语交流能力",
+                        
+                        "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+                        "tasks": [
+                            {{
+                                "taskName": "学习日常对话",
+                                "taskDescription": "学习日常对话，包括问候、介绍、询问天气等基本对话内容。",#尽量详细点，按照总分，通过xx达到xx目标等形式。
+                                "learningObjectives":["基本问候语（如你好、早上好）","自我介绍的常用句型","询问对方姓名的方式","询问天气的常用句子","日常生活中的常见对话场景（如购物、点餐）","基本感谢与道歉的表达方式","询问时间和日期的句型","描述天气状况的常用形容词（如晴天、雨天）","进行闲聊的常用话题（如兴趣爱好）","结束对话的礼貌用语"],#该任务涉及需要学习、强化的知识点。list对象呈现
+                                "resources": [
+                                    {{   
+                                        "title":"【HTML+CSS+JS+Vue】比大学课程还详细的Web前端教程，整整180集，学完即可兼职就业！附学习文档PDF，随时都能学_前端开发_WEB入门",
+                                        "link":"https://www.bilibili.com/video/BV1d4411v7u7/",
+                                        "upload_time":"2022-12-26 00:00:00",
+                                        "duration":"180集",
+                                        "tags":["HTML","CSS","JS","Vue","前端开发","WEB入门"],
+                                        "video_summary":"比大学课程还详细的Web前端教程，整整180集，学完即可兼职就业！附学习文档PDF，随时都能学。"
+                                    }},
+                                    {{
+                                        "title":"【零基础入门】Web前端开发学习路线，前端开发学习路线图，前端开发学习路线图2023，前端开发学习路线图2024",
+                                        "link":"https://www.bilibili.com/video/BV1d4411v7u7/",
+                                        "upload_time":"2022-12-26 00:00:00",
+                                        "duration":"180集",
+                                        "tags":["HTML","CSS","JS","Vue","前端开发","WEB入门"],
+                                        "video_summary":"比大学课程还详细的Web前端教程，整整180集，学完即可兼职就业",
+                                    }}],  # 请从资源库中检索资源，包括各种链接等。忠于“资源库中检索的资源情况”内容。
+                                "online_source": [
+                                    {{
+                                        "title": "B站最强学习资源汇总（数据科学，机器学习，Python） - 豫南- 博客园",
+                                        "link": "https://www.cnblogs.com/lqshang/p/17281644.html",
+                                        "introcude": "这门课程将学会理解业界构建深度神经网络应用最有效的做法； 能够高效地使用神经网络通用的技巧，包括初始化、L2和dropout正则化、Batch归一化、梯度检验",
+                                        "is_video":0,
+                                    }},
+                                    {{
+                                        "title": "机器学习技术与实现——MATLAB大数据处理- MATLAB",
+                                        "link": "https://it.mathworks.com/videos/matlab-machine-learning-techniques-for-big-data-processing-100945.html",
+                                        "introcude": "相关资源. 相关产品. MATLAB · 使用MATLAB 衔接无线通信设计与测试 · 阅读 ... 基础教学：符号. 58:23 视频长度为58:23 · MATLAB大学基础教学: 符号数学 ...",
+                                        “times":"27:36",
+                                        "update_time":"2022年7月31日",
+                                        "image_url":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcUtGr9vKE1cCl4s5m7p4dYjqChUyl7o6LlDtsO9GeOCTa&s",
+                                        "is_video":1,
+                                    }},
+                                ] #请从网络检索工具中检索资源，包括各种链接等。忠于“网络相关资讯库”内容。
+                            }},
+                            {{
+                                "taskName": "练习发音技巧",
+                                "taskDescription": "练习发音技巧，包括音标、连读、重音等。",
+                                "resources": ......,
+                                "online_source": ......
+                            }}
+                        ]
+                    }},
+                    {{
+                        "stage": "第二阶段",
+                        "duration": "2025.5.1-2025.5.7",
+                        "goal": "达到流利口语交流能力",
+                        "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+                        "tasks": [
+                            {{
+                                "taskName": "参与讨论活动",
+                                "taskDescription": "通过讨论活动提高口语流利度。",
+                                "resources": ......,
+                                "online_source": ......
+                            }},
+                            {{
+                                "taskName": "加强听力练习",
+                                "taskDescription": "通过听新闻、播客等素材来提升听力理解能力。",
+                                "resources": ......,
+                                "online_source": ......
+                            }}
+                        ]
+                    }}
+                    ],
+                    "suggestion": [
+                        "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+                        "建议每日练习与模拟对话，设定每日的口语练习时间，比如30分钟，进行英语口语的自我练习。这可以包括朗读课文、跟读英语视频或音频，或与语言交换伙伴进行对话练习",
+                        "观看和模仿英语影视作品,选择一些您喜欢的英语电影、电视剧或YouTube频道，观看时注意人物的对话和语音语调。暂停并模仿他们的发音和表达方式。"
+                    ] #请根据学生的学习进度和表现，给出个性化的3-5条学习建议。
+                }}
+            ```
+          """
 
-    print(f"query:{query}")
+    new_prompt = prompt.format(study_aim=study_aim, student_type=student_type, knowledge_point=need_study_knowledge, source_response_data=source_response_data, onlineSearch=onlineSearch)
+    print("#" * 50)
+    print(f"new_prompt:{new_prompt}")
+    print("#"*50)
+    messages = [{"role": "user", "content": new_prompt}]
+
+    message = LLM(messages)
+
+    print("*"*50)
+    #json缩进形式打印message
+    print(json.dumps(message, indent=4, ensure_ascii=False))
+
+    print("*" * 50)
 
     return "test"
 #

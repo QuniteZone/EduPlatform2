@@ -6,13 +6,10 @@
          <p class="label-text">输入年级</p>
           <input v-model="grade" placeholder="请输入..." />
       </div>
-<<<<<<< HEAD
-=======
       <div class="course course_select">
            <p class="label-text">输入学科</p>
           <input v-model="subject" placeholder="请输入..." />
       </div>
->>>>>>> 9104cd3601d81d365121772bf577370912f65d20
       <el-button type="primary" @click="generateContent" class="button">
         生成内容
       </el-button>
@@ -26,25 +23,15 @@ import axios from 'axios'
 
 const emit = defineEmits(['update-preview'])
 
-<<<<<<< HEAD
-const grade = ref('未选择')
-const content = ref('')
-const gradeOptions = [
-  { value: '高一', label: '高一' },
-  { value: '高二', label: '高二' },
-  { value: '高三', label: '高三' },
-]
-
-=======
 const content = ref('')
 const grade = ref('')
 const subject = ref('')
->>>>>>> 9104cd3601d81d365121772bf577370912f65d20
 
 const generateContent = async () => {
   try {
-    const response = await axios.post('/api/plan/class_meeting', {
+    const response = await axios.post('/api/plan/lesson_plan', {
       grade: grade.value,
+      subject: subject.value,
       knowledge: content.value
       });
     console.log('Editor_content:', response.data);

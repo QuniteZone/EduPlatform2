@@ -353,28 +353,28 @@ class RAGflow:
 
 
 
-
-# #使用示例
-ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
-ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
-ragflow = RAGflow(ragflow_BASE_URL,ragflow_API_KEY)
-TextbookRetr_AgentID=f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
-
-
-important_para = {"lesson_plan": "覃国忠"}
-
-agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID,important_para=important_para)
-print(f"agent_session_id:{agent_session_id}")
-
-# 进行代理Agent聊天
-question = "输出原内容"
-response_data = ragflow.send_agent_message(TextbookRetr_AgentID, question, stream=False, session_id=agent_session_id)
-print(f"response_data:{response_data}")
-
-
-# 删除该Agent会话
-ragflow.delete_agent_session(TextbookRetr_AgentID, agent_session_id)
-
+#
+# # #使用示例
+# ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
+# ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
+# ragflow = RAGflow(ragflow_BASE_URL,ragflow_API_KEY)
+# TextbookRetr_AgentID=f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
+#
+#
+# important_para = {"lesson_plan": "覃国忠"}
+#
+# agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID,important_para=important_para)
+# print(f"agent_session_id:{agent_session_id}")
+#
+# # 进行代理Agent聊天
+# question = "输出原内容"
+# response_data = ragflow.send_agent_message(TextbookRetr_AgentID, question, stream=False, session_id=agent_session_id)
+# print(f"response_data:{response_data}")
+#
+#
+# # 删除该Agent会话
+# ragflow.delete_agent_session(TextbookRetr_AgentID, agent_session_id)
+#
 
 
 

@@ -310,6 +310,6 @@ if __name__ == '__main__':
     with app.app_context():  # 进入应用上下文
         db.create_all()  # 创建表格
     # app.run(host='0.0.0.0', port=5001)
-    # app.run(host='0.0.0.0', port=5001, debug=True)
-    app.run(host='127.0.0.1',port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
+    # app.run(host='127.0.0.1',port=5001, debug=True)
     # app.run(port=5001, debug=True)

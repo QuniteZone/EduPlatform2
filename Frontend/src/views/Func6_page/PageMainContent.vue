@@ -3,19 +3,19 @@
     <!-- Header -->
     <div class="grading-header">
       <div class="header-left">
-        <el-button type="primary">第2组</el-button>
         <span class="header-text">主观题</span>
-        <span class="header-text">当前学生：2023031011</span>
+        <span class="header-text">当前学生：{{studentId}}</span>
       </div>
+       <el-button type="primary" @click="studentNext" class="submit-button finish">下一位</el-button>
     </div>
 
     <!-- 题目和学生答案区域 -->
     <div class="question-answer-container">
       <!-- 题目内容 -->
       <div class="question-container">
-        <h3 class="question-title">第1题</h3>
+
         <div class="question-content">
-          <p>请简述数据结构中栈和队列的区别，并举例说明它们的应用场景。</p>
+          <p>{{question}}</p>
         </div>
       </div>
 
@@ -23,14 +23,30 @@
       <div class="student-answer-container">
         <h3 class="answer-title">学生答案</h3>
         <div class="answer-content">
-          <p>栈是一种后进先出（LIFO）的数据结构，队列是一种先进先出（FIFO）的数据结构。栈的应用场景包括函数调用和表达式求值，队列的应用场景包括任务调度和消息传递。</p>
+          <p>{{studentAnswer}}</p>
         </div>
       </div>
     </div>
 
-    <!-- 评分和评语区域 -->
+    <!-- 参考答案 -->
     <div class="grading-content">
-      <el-row :gutter="20">
+      <el-row :gutter="15">
+          <!-- 教师评语 -->
+        <el-col :span="8">
+          <el-card class="teacher-comment">
+            <div class="section-title">参考答案</div>
+               <label>请输入参考答案</label>
+              <el-input
+                type="textarea"
+                :rows="5"
+                placeholder="请输入(可选)"
+                v-model="comment"
+                readonly
+              ></el-input>
+          </el-card>
+        </el-col>
+
+
         <!-- AI 打分和评语 -->
         <el-col :span="8">
           <el-card class="ai-section">
@@ -39,9 +55,7 @@
               <label>AI 给出的分数</label>
               <el-input v-model="aiScore" placeholder="AI 打分" disabled></el-input>
             </div>
-            <div class="ai-actions">
-              <el-button type="primary" @click="handleAiReview" :loading="aiReviewing">AI 评阅</el-button>
-            </div>
+               <el-button type="primary" @click="handleAiReview" :loading="aiReviewing" class="submit-button">AI 评阅</el-button>
             <div class="comment-section">
               <label>AI 评语</label>
               <el-input
@@ -53,6 +67,7 @@
               ></el-input>
             </div>
           </el-card>
+
         </el-col>
 
         <!-- 教师打分 -->
@@ -61,32 +76,14 @@
             <div class="section-title">教师评分</div>
             <div class="score-input">
               <label>教师打分：</label>
-              <el-input v-model="teacherScore" placeholder="请输入教师打分"></el-input>
+              <el-input
+                  :rows="1"
+                  placeholder="请输入教师打分"
+                  type="number"
+                  v-model.number="teacherScore"
+              ></el-input>
             </div>
-            <div class="score-buttons">
-              <el-button-group>
-                <el-button
-                  v-for="score in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
-                  :key="score"
-                  type="primary"
-                  @click="setTeacherScore(score)"
-                  :class="{ active: teacherScore === score }"
-                >
-                  {{ score }}
-                </el-button>
-              </el-button-group>
-              <div class="special-scores">
-                <el-button type="info" @click="setTeacherScore(0)">0分</el-button>
-                <el-button type="success" @click="setTeacherScore(10)">满分</el-button>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-
-        <!-- 教师评语 -->
-        <el-col :span="8">
-          <el-card class="teacher-comment">
-            <div class="section-title">教师评语</div>
+            <label>教师评语：</label>
             <div class="comment-input">
               <el-input
                 type="textarea"
@@ -97,31 +94,37 @@
             </div>
           </el-card>
         </el-col>
+
+
       </el-row>
     </div>
 
     <!-- 按钮区域 -->
     <div class="action-buttons">
-      <el-button type="primary" @click="handleSubmit" class="submit-button">批改完成</el-button>
-      <el-button type="danger" @click="handleNext" class="next-button">下一份</el-button>
+      <el-button type="primary" @click="questionNext" class="submit-button finish">下一题</el-button>
+      <el-button type="primary" @click="handleSubmit" class="submit-button finish">批改完成</el-button>
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
+
 export default {
   data() {
     return {
+      comment: '', // 参考答案
+      studentId: '123456', // 学生ID
       aiScore: '', // AI 打分
       aiComment: '', // AI 评语
       teacherScore: '', // 教师打分
-      teacherComment: '', // 教师评语
+      teacherComment: '无评语', // 教师评语
       aiReviewing: false, // AI 评阅状态
       question: '请简述数据结构中栈和队列的区别，并举例说明它们的应用场景。', // 题目内容
       studentAnswer: '栈是一种后进先出（LIFO）的数据结构，队列是一种先进先出（FIFO）的数据结构。栈的应用场景包括函数调用和表达式求值，队列的应用场景包括任务调度和消息传递。', // 学生答案
     };
   },
+
   methods: {
     async handleAiReview() {
       this.aiReviewing = true;
@@ -141,14 +144,25 @@ export default {
         'Content-Type': 'application/json', // 设置为 JSON 格式
       },
         });
-
+        //后端返回的json格式
+        //{
+        // content: '{"ai_score": 85, "ai_comment": "abc"}',
+        // status: 1
+        // }
+        console.log('后端返回的数据:', response);
         // 解析后端返回的数据
         const { content, status } = response.data;
         if (status === 1 && content) {
           try {
-            const parsedContent = JSON.parse(content); // 解析 JSON 字符串
+            const parsedContent = JSON.parse(content) ; // 解析 JSON 字符串
             this.aiScore = parsedContent.ai_score; // 设置 AI 分数
             this.aiComment = parsedContent.ai_comment; // 设置 AI 评语
+            //aiScore 的数据
+            console.log('后端返回的aiscore:', this.aiScore);
+            //
+            this.teacherScore=this.aiScore;
+            this.teacherComment=this.aiComment;
+
           } catch (error) {
             throw new Error('无法解析后端返回的 content 数据');
           }
@@ -161,23 +175,33 @@ export default {
         this.aiReviewing = false;
       }
     },
-    setTeacherScore(score) {
-      this.teacherScore = score;
-      this.$message.success(`已设置分数为：${score}`);
-    },
+
+
+
+
+
     handleSubmit() {
+      //这里面还要增加把分数和评语提交的代码
       if (!this.teacherScore || !this.teacherComment) {
-        this.$message.error({ message: '请完成评分和评语后再提交', duration: 500 });
+
+           this.$message.error({ message: '请完成评分和评语后再提交', duration: 500 });
         return;
+
       }
-      this.$message.success({ message: '批改完成', duration: 500 });
+      this.$message.success({ message: '学生成绩已提交', duration: 500 });
     },
-    handleNext() {
-      this.$message.info({
-        message: '跳转到下一份',
-        duration: 500, // 设置显示时间为 1 秒
-      });
+
+  studentNext() {
+      //这里面还要增加学生更换
+
+      this.$message.success({ message: '下一位学生', duration: 500 });
     },
+
+    questionNext() {
+      //这里面还要增加题目更换
+      this.$message.success({ message: '下一题', duration: 500 });
+    },
+
   },
 };
 </script>

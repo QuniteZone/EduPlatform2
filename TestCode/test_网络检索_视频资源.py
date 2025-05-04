@@ -77,3 +77,19 @@ print(result)
 print("*"*50)
 print(result2)
 print("*"*50)
+
+# 输出整理后的资源
+for video in result:
+    print(f"位置: {video['position']}")
+    print(f"标题: {video['title']}")
+    print(f"链接: {video['link']}")
+    print(f"简介: {video['introduce']}")
+    print(f"时长: {video['duration']}")
+    print(f"来源: {video['source']}")
+    print(f"日期: {video['date']}")
+    print(f"图片链接: {video['imageUrl']}")
+    print("\n" + "-" * 40 + "\n")
+
+print("#"*50)
+for res in result2:
+    print(f"位置: {res['position']}\n标题: {res['title']}\n链接: {res['link']}\n简介: {res['introduce']}\n")

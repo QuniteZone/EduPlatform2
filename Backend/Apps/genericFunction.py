@@ -150,14 +150,20 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def extract_text_from_pdf(path):
-    text = ''
-    try:
-        pdf = fitz.open(stream=path.read(), filetype="pdf")
-        for page in pdf:
-            text += page.get_text()
-    except Exception as e:
-        text = f"[PDF解析失败]: {str(e)}"
-    return text
+    import PyPDF2
+    # text = ''
+    # try:
+    #     pdf = fitz.open(stream=path.read(), filetype="pdf")
+    #     for page in pdf:
+    #         text += page.get_text()
+    # except Exception as e:
+    #     text = f"[PDF解析失败]: {str(e)}"
+    # return text
+    reader = PyPDF2.PdfReader(path)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() or ""  # 确保即便为空值也能处理
+    return text.strip()
 
 def extract_text_from_docx(path):
     text = ''

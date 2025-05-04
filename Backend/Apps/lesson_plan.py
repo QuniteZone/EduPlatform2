@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
@@ -88,17 +89,26 @@ def handle_lesson_script():
                 content["status"] = -2  # 不支持该文件类型
                 return jsonify(content)
                 break
+        TextbookRetr_AgentID = f"4962e4b8240511f0bfb80242ac120006"
         ##将从知识库中检索内容，然后作为输入一并给到LLM进行处理。
         # 构建代理Agent会话
         important_para = {
-            "lesson_plan": updata_text,
+            "lesson_plan": "我的名字叫覃国忠",
         }
+        print(f"updata_text:{updata_text}")
+        print(f"TextbookRetr_AgentID:{TextbookRetr_AgentID}")
+
         agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID,important_para=important_para)
 
+
+
         # 进行代理Agent聊天
-        question = f"给我生成一份逐字稿，另外{require}"
+        # question = f"给我生成一份逐字稿，另外{require}"
+        question=f"你好，给我输出内容"
+        print(f"question:{question}")
         response_data = ragflow.send_agent_message(TextbookRetr_AgentID, question, stream=False, session_id=agent_session_id)
 
+        print(f"response_data:{response_data}")
         # 删除该Agent会话
         ragflow.delete_agent_session(TextbookRetr_AgentID,agent_session_id)
 
@@ -108,8 +118,77 @@ def handle_lesson_script():
             content["content"] = None
             return jsonify(content)
 
-        content["content"] = response_data
-        print(f"lesson_script:{content}")
+        ##测试
+        response_data2="""
+#### 一、课程引入（5分钟）
+
+**杨老师**：同学们，大家好！今天我们要学习朱自清的散文《背影》。在这篇作品中，朱自清细腻地描写了父爱的伟大与细腻。首先，我想问问大家，有没有经历过与父亲告别的时刻？那种感觉是什么样的？
+
+**学生**：我上次跟父亲去旅行，临别的时候有点伤感。
+
+**学生**：我记得上次放假回家时，父亲送我到车站，我们在那儿告别。
+
+**杨老师**：非常好！这些经历都和《背影》的主题相呼应。为了帮助大家更好地理解这篇文章，我们先来了解一下朱自清的生平和写作背景。
+
+---
+
+#### 二、自主学习（10分钟）
+
+**杨老师**：接下来，请大家阅读《背影》，并思考以下问题：第一，文章中有哪些细节描写让你感受到父爱的？第二，朱自清是如何通过语言传达情感的？第三，你认为这篇文章对你有什么启发？请大家记录下你们的思考，准备在小组中分享。
+
+（学生阅读文章，思考并记录）
+
+**杨老师**：好，现在请各小组进行讨论，分享你们的观点。
+
+---
+
+#### 三、案例分析（10分钟）
+
+**杨老师**：在你们的小组讨论中，大家对哪一段落印象最深刻？
+
+**学生**：我们讨论了父亲去买橘子那一段，感觉特别感人。
+
+**杨老师**：很好，请你们分享一下这段的情感表达和写作手法。
+
+**学生**：那一段写得很细腻，朱自清用“背影”和“冬天”来暗示父亲为我做的牺牲，而且描述了父亲的动作细节，使我深刻感受到他当时的心情。
+
+**杨老师**：对，这样的细节描写让我们更能感受到父爱的深厚。不仅如此，朱自清用一些比喻和对比的手法，增强了情感的表现。请大家选择一个段落进行详细分析，并准备好汇报。
+
+（各小组进行分析汇报）
+
+---
+
+#### 四、学习评价（5分钟）
+
+**杨老师**：大家通过小组讨论，加深了对《背影》的理解。现在请我们一起回顾一下这篇散文的主要情感与写作特色。大家认为，这篇文章中最重要的情感是什么？
+
+**学生**：是父爱的伟大与牺牲精神。
+
+**杨老师**：非常准确！我们可以通过思维导图的方式，一起总结一下今天的学习内容。请大家现在进行自评，总结一下自己的理解。
+
+（学生进行自评，老师巡视并给予反馈）
+
+---
+
+#### 五、小结（5分钟）
+
+**杨老师**：今天我们探讨了《背影》的情感主题，强调了父爱的伟大。那么，我想请问大家，如何将今天学到的情感理解应用到实际生活中呢？
+
+**学生**：我们可以对爸爸多表达关心，告诉他我们有多爱他。
+
+**杨老师**：对的，生活中要多关心家人，学会表达情感是非常重要的。
+
+---
+
+#### 六、作业布置（5分钟）
+
+**杨老师**：好的，最后请大家注意作业布置。任务一，请写一篇短文，描述你与父亲的一个难忘瞬间，并分析其中的情感。任务二，选择一篇关于亲情的散文进行分析，并准备下节课分享。
+
+**杨老师**：如果对作业有疑问，大家可以随时问我。谢谢大家的参与，期待下次课再见！
+
+"""
+        content["content"] = response_data2
+        print(f"content:{content}")
 
         return jsonify(content)
     except Exception as e:
@@ -256,7 +335,6 @@ def question_judgment():
         content = {
             'content': return_result,
             'status': 1}
-
         return jsonify(content)
     except:
         return jsonify({'content': f'未知错误，', 'status': -1})
@@ -267,70 +345,177 @@ def question_judgment():
 
 @lesson_plan_bp.route('/question_generate', methods=['POST'])
 def question_generate():
-    data = request.get_json()  # 从请求中获取 JSON 数据
+    # data = request.get_json()  # 从请求中获取 JSON 数据
+    #
+    # # 检查必需的参数是否存在
+    # required_fields = [
+    #     'subject', 'grade', 'textbook', 'topic',
+    #     'questionType', 'difficulty', 'questionCount',
+    #     'knowledgePoints', 'otherRequirements'
+    # ]
+    # for field in required_fields:
+    #     if field not in data:
+    #         return jsonify({
+    #             "content": f"缺少参数: {field}",
+    #             "status": 0
+    #         })
+    #
+    # # 提取参数
+    # subject = data['subject']
+    # grade = data['grade']
+    # textbook = data['textbook']
+    # topic = data['topic']
+    # question_type = data['questionType']
+    # difficulty = data['difficulty']
+    # question_count = data['questionCount']
+    # knowledge_points = data['knowledgePoints']
+    # other_requirements = data['otherRequirements']
+    #
+    # # 构建代理 Agent 会话
+    # important_para = {
+    #     "subject": subject,
+    #     "grade": grade,
+    #     "textbook": textbook,
+    #     "topic": topic,
+    #     "questionType": question_type,
+    #     "difficulty": difficulty,
+    #     "questionCount": question_count,
+    #     "knowledgePoints": knowledge_points,
+    #     "otherRequirements": other_requirements
+    # }
+    #
+    # agent_session_id = ragflow.create_agent_session(
+    #     QuesGen_AgentID,
+    #     important_para=important_para
+    # )
+    #
+    # # 构建提问内容
+    # question = (
+    #     f"请生成{question_count}道{grade}{subject}试题，"
+    #     f"关于{topic}，包括{knowledge_points}，难度{difficulty}，"
+    #     f"题型{question_type}，其他要求如下：{other_requirements}"
+    # )
+    #
+    # # 发送消息给 Agent
+    # response_data = ragflow.send_agent_message(
+    #     QuesGen_AgentID,
+    #     question,
+    #     stream=False,
+    #     session_id=agent_session_id
+    # )
+    #
+    # # 删除会话
+    # ragflow.delete_agent_session(QuesGen_AgentID, agent_session_id)
 
-    # 检查必需的参数是否存在
-    required_fields = [
-        'subject', 'grade', 'textbook', 'topic',
-        'questionType', 'difficulty', 'questionCount',
-        'knowledgePoints', 'otherRequirements'
-    ]
-    for field in required_fields:
-        if field not in data:
-            return jsonify({
-                "content": f"缺少参数: {field}",
-                "status": 0
-            })
+    time.sleep(5)
+    #测试2
+    response_data2="""
+**题目1**：一个矩形的长是8厘米，宽是5厘米，求这个矩形的周长。(2分)  
+A. 20厘米  
+B. 26厘米
+C. 40厘米  
+D. 30厘米  
+**答案:** A  
+**解析:** 矩形周长的计算公式为：周长 = 2 × (长 + 宽) = 2 × (8 + 5) = 26厘米。
 
-    # 提取参数
-    subject = data['subject']
-    grade = data['grade']
-    textbook = data['textbook']
-    topic = data['topic']
-    question_type = data['questionType']
-    difficulty = data['difficulty']
-    question_count = data['questionCount']
-    knowledge_points = data['knowledgePoints']
-    other_requirements = data['otherRequirements']
+---
 
-    # 构建代理 Agent 会话
-    important_para = {
-        "subject": subject,
-        "grade": grade,
-        "textbook": textbook,
-        "topic": topic,
-        "questionType": question_type,
-        "difficulty": difficulty,
-        "questionCount": question_count,
-        "knowledgePoints": knowledge_points,
-        "otherRequirements": other_requirements
-    }
+**题目2**：一个正方形的边长为6米，求它的面积。(2分)  
+**答案:** 36平方米  
+**解析:** 正方形面积的计算公式为：面积 = 边长 × 边长 = 6 × 6 = 36平方米。
 
-    agent_session_id = ragflow.create_agent_session(
-        QuesGen_AgentID,
-        important_para=important_para
-    )
+---
 
-    # 构建提问内容
-    question = (
-        f"请生成{question_count}道{grade}{subject}试题，"
-        f"关于{topic}，包括{knowledge_points}，难度{difficulty}，"
-        f"题型{question_type}，其他要求如下：{other_requirements}"
-    )
+**题目3**：一块草地的长度是12米，宽度是4米，草地的面积是多少平方米？(2分)  
+**答案:** 48平方米  
+**解析:** 草地的面积计算公式为：面积 = 长 × 宽 = 12 × 4 = 48平方米。
 
-    # 发送消息给 Agent
-    response_data = ragflow.send_agent_message(
-        QuesGen_AgentID,
-        question,
-        stream=False,
-        session_id=agent_session_id
-    )
+---
 
-    # 删除会话
-    ragflow.delete_agent_session(QuesGen_AgentID, agent_session_id)
+**题目4**：圆形泳池的半径为3米，求它的周长。(2分)  
+A. 6π米  
+B. 9π米  
+C. 12π米  
+D. 15π米  
+**答案:** B  
+**解析:** 圆的周长计算公式为：周长 = 2 × π × 半径 = 2 × π × 3 = 6π米。
 
+---
+
+**题目5**：知道一个矩形的周长为40厘米，长是12厘米，求宽。(3分)  
+**答案:** 8厘米  
+**解析:** 矩形周长公式为：周长 = 2 × (长 + 宽)，所以40 = 2 × (12 + 宽)，解出宽 = 8厘米。
+
+---
+
+**题目6**：如果一个正方形的面积是64平方厘米，那么边长是多少厘米？(2分)  
+**答案:** 8厘米  
+**解析:** 正方形边长的公式为：面积 = 边长 × 边长，因此边长 = √64 = 8厘米。
+
+---
+
+**题目7**：一座长方形操场的长是30米，宽是20米，求它的面积。(3分)  
+**答案:** 600平方米  
+**解析:** 操场的面积 = 长 × 宽 = 30 × 20 = 600平方米。
+
+---
+
+**题目8**：一块边长是5米的正方形草坪，四周要围起栅栏，问要多少米的栅栏？(2分)  
+**答案:** 20米  
+**解析:** 正方形周长 = 4 × 边长 = 4 × 5 = 20米。
+
+---
+
+**题目9**：计算一个直径为10厘米的圆的面积。(3分)  
+A. 50π平方厘米  
+B. 25π平方厘米  
+C. 100π平方厘米  
+D. 75π平方厘米  
+**答案:** A  
+**解析:** 圆的面积计算公式为：面积 = π × (半径)²，直径10厘米则半径为5厘米，面积 = π × 5² = 25π平方厘米。
+
+---
+
+**题目10**：哪种图形的周长会随着每个边长增加1厘米而增加多少？(2分)  
+A. 正方形  
+B. 圆形  
+C. 三角形  
+D. 所有图形  
+**答案:** D  
+**解析:** 所有多边形的周长增加都是线性的，边长增加1厘米，周长就增加1厘米。
+
+---
+
+**题目11**：一块长3米、宽4米的长方形地板，铺上了地毯，问铺地毯的面积是多少？(2分)  
+**答案:** 12平方米  
+**解析:** 面积 = 长 × 宽 = 3 × 4 = 12平方米。
+
+---
+
+**题目12**：一根长12米的木棍，要做成一个正方形的围栏，问每边的长度是多少米？(3分)  
+**答案:** 3米  
+**解析:** 正方形周长 = 4 × 边长，12 = 4 × 边长，所以边长 = 12/4 = 3米。
+
+---
+
+**题目13**：一个块边长为2米的正方形桌子，它的面积和周长分别是多少？(4分)  
+**答案:** 面积：4平方米；周长：8米  
+**解析:** 面积 = 边长 × 边长 = 2 × 2 = 4平方米；周长 = 4 × 边长 = 4 × 2 = 8米。
+
+---
+
+**题目14**：一个长方形的周长是50米，宽是10米，求长。(3分)  
+**答案:** 15米  
+**解析:** 周长 = 2 × (长 + 宽)，50 = 2 × (长 + 10)，因此长 = 15米。
+
+---
+
+**题目15**：一个正方形的周长是24厘米，请问面积是多少平方厘米？(3分)  
+**答案:** 36平方厘米  
+**解析:** 正方形周长 = 4 × 边长，所以边长 = 24/4 = 6厘米，面积 = 边长 × 边长 = 6 × 6 = 36平方厘米。
+"""
     return jsonify({
-        "content": response_data,
+        "content": response_data2,
         "status": 1
     })
 

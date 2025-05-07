@@ -149,16 +149,16 @@ export default {
         // content: '{"ai_score": 85, "ai_comment": "abc"}',
         // status: 1
         // }
-        console.log('后端返回的数据:', response);
         // 解析后端返回的数据
         const { content, status } = response.data;
+
+        console.log('content内的数据:', content);
         if (status === 1 && content) {
           try {
-            const parsedContent = JSON.parse(content) ; // 解析 JSON 字符串
-            this.aiScore = parsedContent.ai_score; // 设置 AI 分数
-            this.aiComment = parsedContent.ai_comment; // 设置 AI 评语
-            //aiScore 的数据
-            console.log('后端返回的aiscore:', this.aiScore);
+
+            this.aiScore =content.ai_score; // 设置 AI 分数
+            this.aiComment =content.ai_comment; // 设置 AI 评语
+
             //
             this.teacherScore=this.aiScore;
             this.teacherComment=this.aiComment;

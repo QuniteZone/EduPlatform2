@@ -41,7 +41,8 @@ os.makedirs(LLMs_IMAGE_UPLOAD_FOLDER, exist_ok=True)# 创建上传目录（如�
 os.makedirs(LLMs_FILE_UPLOAD_FOLDER, exist_ok=True)
 LLMs_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # 允许的图片文件类型
 LLMs_ALLOWED_FILE_EXTENSIONS = {'pdf', 'doc', 'docx'}          # 允许的文件类型
-Public_ip="https://94686t61i9.zicp.fun/"
+Public_ip="https://fz68ok24676.vicp.fun" #后端公网IP地址
+
 
 
 #rag_flow 基本配置信息

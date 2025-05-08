@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
-from .genericFunction import LLM,lesson_plan_prompt,class_meeting_prompt,allowed_file,extract_text_from_pdf,extract_text_from_docx,ragflow,script_gen_prompt,jugement_ques_prompt
+from .genericFunction import LLM,lesson_plan_prompt,class_meeting_prompt,allowed_file,extract_text_from_pdf,extract_text_from_docx,ragflow,script_gen_prompt,jugement_ques_prompt,generate_question_prompt
 from .config import TextbookRetr_AgentID,QuesGen_AgentID
 
 #这是教案生成
@@ -66,7 +66,7 @@ def get_lesson_plan2():
 @lesson_plan_bp.route('/lesson_script', methods=['POST'])
 def handle_lesson_script():
     try:
-        require = request.form.get('require') #
+        require = request.form.get('requires') #
         uploaded_files = request.files.getlist('files')
         parsed_texts = {}
         content = {}  # 返回结构
@@ -90,70 +90,75 @@ def handle_lesson_script():
                 return jsonify(content)
                 break
 
-
-        ##将从知识库中检索内容，然后作为输入一并给到LLM进行处理。
-        # 构建代理Agent会话
-        lesson_plan= """
-        教学设计方案：
-        一、课程标准
-        •	教学主题：素质基础素养
-        •	适用情境：面向大一年级的素质素养课堂，适用于初学阶段，帮助学生理解素质素养的核心概念及其在生活中的应用
-        •	教学内容：包括素质素养的基本概念、重要性以及在学习和生活中的实际应用，引导学生将理论与实践结合  
-        •	教学目标：
-        输入本节课希望学生达到的预期学习成果，包括知识、能力、情感等方面
-        •	课时安排：2课时（约90分钟）
-        二、教学设计
-        1. 新课导入
-        •	教学程序： 教师提问：“大家觉得在大学生活中，哪些素质是最重要的？为什么？” 播放一段关于素质素养的重要性的视频，激发学生的兴趣 引导学生分享他们的看法，形成对素质素养的初步理解
-        •	设计意图： “通过引导学生思考与生活中相关的现象或问题来激发兴趣，使他们感知到素质素养的实际意义，建立对新课的认同感和学习动力。”
-        2. 自主学习
-        •	教学程序： 学生通过课本和网络资源，进行自主学习，深入理解素质素养的相关内容 学生思考并记录重要问题，如： 素质素养的定义是什么？ 它如何在实际中得到应用？ 学生认为掌握这一知识的意义何在？
-        •	设计意图： “培养学生独立获取知识的能力，并通过思考和探讨帮助他们形成对素质素养的深入理解，激励学生的探究精神。”
-        3. 案例分析
-        •	教学程序： 教师提供相关案例（如：“在职场中，如何运用素质素养来提升个人竞争力？”），并引导学生分析 学生小组合作讨论，解决实际问题后进行汇报，并与全班分享思路和结果
-        •	设计意图： “通过具体案例让学生看到素质素养的实际应用，增强学生的分析与解决问题的能力，同时在小组合作中锻炼团队协作与交流能力。”
-        4. 学习评价
-        •	教学程序： 教师通过思维导图或小测验等方式帮助学生回顾学习内容 学生进行自评和互评，总结自己的收获并对学习过程进行反思，教师给予反馈
-        •	设计意图： “帮助学生回顾所学内容，评估他们对素质素养的掌握程度，激励他们进行自我反思，促进更深层次的知识内化。”
-        ________________________________________
-        5. 小结
-        •	教学程序： 教师总结本课的关键知识点，并引导学生讨论如何将这些知识应用到其他学科或实际问题中 提出开放性问题，如：“如何将今天学到的素质素养知识应用到未来的职业生涯中？”
-        •	设计意图： “巩固课堂所学的知识，并帮助学生将知识系统化，培养他们将学到的知识运用于其他领域的能力。”
-        6. 作业布置
-        •	教学程序： 任务一：完成与本课相关的练习或思考题 任务二：选择一个实际案例，分析素质素养在其中的应用，并准备报告或展示材料
-        •	设计意图： “通过课后任务强化学生对素质素养的理解与应用，激发他们的独立思考和分析能力，同时为学生提供实践的机会。”
-        ________________________________________
-        三、素养目标
-        •	学科素养：理解并掌握素质素养的核心概念，能够在实际问题中进行有效应用  
-        •	技术与应用能力：能够将所学知识运用于具体问题的解决中，进行分析与方案设计  
-        •	创新与批判性思维：能够从多角度分析问题，提出独立且创新的解决方案  
-        •	合作与表达：能够在小组合作中有效沟通、清晰表达个人观点并进行反馈交流
-        """ #这是教案
-        agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID)
-
-        # 进行代理Agent聊天
-        response_data = ragflow.send_agent_message(TextbookRetr_AgentID, lesson_plan, stream=False, session_id=agent_session_id)
-
-        # 删除该Agent会话
-        ragflow.delete_agent_session(TextbookRetr_AgentID,agent_session_id)
-
-        question = f"要求给我生成一份大概在40分钟左右的逐字稿，要是需是田老师作为老师回复"
-
-        promtp = script_gen_prompt.format(teachPlan=lesson_plan, textbook=response_data, require=question)
-        messages = [{"role": "system",
-                     "content": "你是一名专业教育工作者，有多年教学经验。"},
-                    {"role": "user", "content": promtp}]
-        return_result = LLM(messages)
-
-        ## 调用LLM实现逐字稿返回
-        if response_data==None and parsed_text == None:
-            content["status"]=-2  #系统报错，出现文件或知识库检索为空
-            content["content"] = None
-            return jsonify(content)
+        print(f"require:{require}")
+        print(f"updata_text:{updata_text}")
 
 
-        content["content"] = return_result
-        return jsonify(content)
+        # ##将从知识库中检索内容，然后作为输入一并给到LLM进行处理。
+        # # 构建代理Agent会话
+        # lesson_plan= """
+        # 教学设计方案：
+        # 一、课程标准
+        # •	教学主题：素质基础素养
+        # •	适用情境：面向大一年级的素质素养课堂，适用于初学阶段，帮助学生理解素质素养的核心概念及其在生活中的应用
+        # •	教学内容：包括素质素养的基本概念、重要性以及在学习和生活中的实际应用，引导学生将理论与实践结合
+        # •	教学目标：
+        # 输入本节课希望学生达到的预期学习成果，包括知识、能力、情感等方面
+        # •	课时安排：2课时（约90分钟）
+        # 二、教学设计
+        # 1. 新课导入
+        # •	教学程序： 教师提问：“大家觉得在大学生活中，哪些素质是最重要的？为什么？” 播放一段关于素质素养的重要性的视频，激发学生的兴趣 引导学生分享他们的看法，形成对素质素养的初步理解
+        # •	设计意图： “通过引导学生思考与生活中相关的现象或问题来激发兴趣，使他们感知到素质素养的实际意义，建立对新课的认同感和学习动力。”
+        # 2. 自主学习
+        # •	教学程序： 学生通过课本和网络资源，进行自主学习，深入理解素质素养的相关内容 学生思考并记录重要问题，如： 素质素养的定义是什么？ 它如何在实际中得到应用？ 学生认为掌握这一知识的意义何在？
+        # •	设计意图： “培养学生独立获取知识的能力，并通过思考和探讨帮助他们形成对素质素养的深入理解，激励学生的探究精神。”
+        # 3. 案例分析
+        # •	教学程序： 教师提供相关案例（如：“在职场中，如何运用素质素养来提升个人竞争力？”），并引导学生分析 学生小组合作讨论，解决实际问题后进行汇报，并与全班分享思路和结果
+        # •	设计意图： “通过具体案例让学生看到素质素养的实际应用，增强学生的分析与解决问题的能力，同时在小组合作中锻炼团队协作与交流能力。”
+        # 4. 学习评价
+        # •	教学程序： 教师通过思维导图或小测验等方式帮助学生回顾学习内容 学生进行自评和互评，总结自己的收获并对学习过程进行反思，教师给予反馈
+        # •	设计意图： “帮助学生回顾所学内容，评估他们对素质素养的掌握程度，激励他们进行自我反思，促进更深层次的知识内化。”
+        # ________________________________________
+        # 5. 小结
+        # •	教学程序： 教师总结本课的关键知识点，并引导学生讨论如何将这些知识应用到其他学科或实际问题中 提出开放性问题，如：“如何将今天学到的素质素养知识应用到未来的职业生涯中？”
+        # •	设计意图： “巩固课堂所学的知识，并帮助学生将知识系统化，培养他们将学到的知识运用于其他领域的能力。”
+        # 6. 作业布置
+        # •	教学程序： 任务一：完成与本课相关的练习或思考题 任务二：选择一个实际案例，分析素质素养在其中的应用，并准备报告或展示材料
+        # •	设计意图： “通过课后任务强化学生对素质素养的理解与应用，激发他们的独立思考和分析能力，同时为学生提供实践的机会。”
+        # ________________________________________
+        # 三、素养目标
+        # •	学科素养：理解并掌握素质素养的核心概念，能够在实际问题中进行有效应用
+        # •	技术与应用能力：能够将所学知识运用于具体问题的解决中，进行分析与方案设计
+        # •	创新与批判性思维：能够从多角度分析问题，提出独立且创新的解决方案
+        # •	合作与表达：能够在小组合作中有效沟通、清晰表达个人观点并进行反馈交流
+        # """ #这是教案
+        # agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID)
+        #
+        # # 进行代理Agent聊天
+        # response_data = ragflow.send_agent_message(TextbookRetr_AgentID, lesson_plan, stream=False, session_id=agent_session_id)
+        #
+        # # 删除该Agent会话
+        # ragflow.delete_agent_session(TextbookRetr_AgentID,agent_session_id)
+        #
+        # question = f"要求给我生成一份大概在40分钟左右的逐字稿，要是需是田老师作为老师回复"
+        #
+        # promtp = script_gen_prompt.format(teachPlan=lesson_plan, textbook=response_data, require=question)
+        # messages = [{"role": "system",
+        #              "content": "你是一名专业教育工作者，有多年教学经验。"},
+        #             {"role": "user", "content": promtp}]
+        # return_result = LLM(messages,False)
+        #
+        # ## 调用LLM实现逐字稿返回
+        # if response_data==None and parsed_text == None:
+        #     content["status"]=-2  #系统报错，出现文件或知识库检索为空
+        #     content["content"] = None
+        #     return jsonify(content)
+        #
+        #
+        # content["content"] = return_result
+        # return jsonify(content)
+
+        return "test 中"
     except Exception as e:
         content["status"] = 0 #报错
         content["content"] = e
@@ -330,163 +335,24 @@ def question_generate():
     other_requirements = data['otherRequirements']
 
 
-    knowledge = f"""这是{subject}学科，{grade}年级，知识点：{knowledge_points}，从教材中检索返回知识点"""  # 这是教案
+    knowledges = f"""这是{subject}学科，{grade}年级，知识点：{knowledge_points}，从教材中检索返回知识点"""  # 这是教案
     agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID)
     # 进行代理Agent聊天
-    response_data = ragflow.send_agent_message(TextbookRetr_AgentID, knowledge, stream=False,
+    response_data = ragflow.send_agent_message(TextbookRetr_AgentID, knowledges, stream=False,
                                                session_id=agent_session_id)
     # 删除该Agent会话
     ragflow.delete_agent_session(TextbookRetr_AgentID, agent_session_id)
 
 
+    promtp = generate_question_prompt.format(subject=subject,grade=grade,  question_type=question_type,difficulty=difficulty,question_count=question_count,knowledges=knowledges,other_requirements=other_requirements,knowledge_points=knowledge_points)
+    messages = [{"role": "system",
+                 "content": "你是一个资深教育工作者，按照用户提供信息来出题。严格按Markdown格式输出结构化教案内容，确保键值命名与层级关系绝对准确"},
+                {"role": "user", "content": promtp}]
 
-    print(f"response_data: {response_data}")
+    return_result = LLM(messages, is_json=False)
 
-    # # 构建代理 Agent 会话
-    # important_para = {
-    #     "subject": subject,
-    #     "grade": grade,
-    #     "textbook": textbook,
-    #     "topic": topic,
-    #     "questionType": question_type,
-    #     "difficulty": difficulty,
-    #     "questionCount": question_count,
-    #     "knowledgePoints": knowledge_points,
-    #     "otherRequirements": other_requirements
-    # }
-    #
-    # agent_session_id = ragflow.create_agent_session(
-    #     QuesGen_AgentID,
-    #     important_para=important_para
-    # )
-    #
-    # # 构建提问内容
-    # question = (
-    #     f"请生成{question_count}道{grade}{subject}试题，"
-    #     f"关于{topic}，包括{knowledge_points}，难度{difficulty}，"
-    #     f"题型{question_type}，其他要求如下：{other_requirements}"
-    # )
-    #
-    # # 发送消息给 Agent
-    # response_data = ragflow.send_agent_message(
-    #     QuesGen_AgentID,
-    #     question,
-    #     stream=False,
-    #     session_id=agent_session_id
-    # )
-    #
-    # # 删除会话
-    # ragflow.delete_agent_session(QuesGen_AgentID, agent_session_id)
-
-
-    #测试2
-    response_data2="""
-**题目1**：一个矩形的长是8厘米，宽是5厘米，求这个矩形的周长。(2分)  
-A. 20厘米  
-B. 26厘米
-C. 40厘米  
-D. 30厘米  
-**答案:** A  
-**解析:** 矩形周长的计算公式为：周长 = 2 × (长 + 宽) = 2 × (8 + 5) = 26厘米。
-
----
-
-**题目2**：一个正方形的边长为6米，求它的面积。(2分)  
-**答案:** 36平方米  
-**解析:** 正方形面积的计算公式为：面积 = 边长 × 边长 = 6 × 6 = 36平方米。
-
----
-
-**题目3**：一块草地的长度是12米，宽度是4米，草地的面积是多少平方米？(2分)  
-**答案:** 48平方米  
-**解析:** 草地的面积计算公式为：面积 = 长 × 宽 = 12 × 4 = 48平方米。
-
----
-
-**题目4**：圆形泳池的半径为3米，求它的周长。(2分)  
-A. 6π米  
-B. 9π米  
-C. 12π米  
-D. 15π米  
-**答案:** B  
-**解析:** 圆的周长计算公式为：周长 = 2 × π × 半径 = 2 × π × 3 = 6π米。
-
----
-
-**题目5**：知道一个矩形的周长为40厘米，长是12厘米，求宽。(3分)  
-**答案:** 8厘米  
-**解析:** 矩形周长公式为：周长 = 2 × (长 + 宽)，所以40 = 2 × (12 + 宽)，解出宽 = 8厘米。
-
----
-
-**题目6**：如果一个正方形的面积是64平方厘米，那么边长是多少厘米？(2分)  
-**答案:** 8厘米  
-**解析:** 正方形边长的公式为：面积 = 边长 × 边长，因此边长 = √64 = 8厘米。
-
----
-
-**题目7**：一座长方形操场的长是30米，宽是20米，求它的面积。(3分)  
-**答案:** 600平方米  
-**解析:** 操场的面积 = 长 × 宽 = 30 × 20 = 600平方米。
-
----
-
-**题目8**：一块边长是5米的正方形草坪，四周要围起栅栏，问要多少米的栅栏？(2分)  
-**答案:** 20米  
-**解析:** 正方形周长 = 4 × 边长 = 4 × 5 = 20米。
-
----
-
-**题目9**：计算一个直径为10厘米的圆的面积。(3分)  
-A. 50π平方厘米  
-B. 25π平方厘米  
-C. 100π平方厘米  
-D. 75π平方厘米  
-**答案:** A  
-**解析:** 圆的面积计算公式为：面积 = π × (半径)²，直径10厘米则半径为5厘米，面积 = π × 5² = 25π平方厘米。
-
----
-
-**题目10**：哪种图形的周长会随着每个边长增加1厘米而增加多少？(2分)  
-A. 正方形  
-B. 圆形  
-C. 三角形  
-D. 所有图形  
-**答案:** D  
-**解析:** 所有多边形的周长增加都是线性的，边长增加1厘米，周长就增加1厘米。
-
----
-
-**题目11**：一块长3米、宽4米的长方形地板，铺上了地毯，问铺地毯的面积是多少？(2分)  
-**答案:** 12平方米  
-**解析:** 面积 = 长 × 宽 = 3 × 4 = 12平方米。
-
----
-
-**题目12**：一根长12米的木棍，要做成一个正方形的围栏，问每边的长度是多少米？(3分)  
-**答案:** 3米  
-**解析:** 正方形周长 = 4 × 边长，12 = 4 × 边长，所以边长 = 12/4 = 3米。
-
----
-
-**题目13**：一个块边长为2米的正方形桌子，它的面积和周长分别是多少？(4分)  
-**答案:** 面积：4平方米；周长：8米  
-**解析:** 面积 = 边长 × 边长 = 2 × 2 = 4平方米；周长 = 4 × 边长 = 4 × 2 = 8米。
-
----
-
-**题目14**：一个长方形的周长是50米，宽是10米，求长。(3分)  
-**答案:** 15米  
-**解析:** 周长 = 2 × (长 + 宽)，50 = 2 × (长 + 10)，因此长 = 15米。
-
----
-
-**题目15**：一个正方形的周长是24厘米，请问面积是多少平方厘米？(3分)  
-**答案:** 36平方厘米  
-**解析:** 正方形周长 = 4 × 边长，所以边长 = 24/4 = 6厘米，面积 = 边长 × 边长 = 6 × 6 = 36平方厘米。
-"""
     return jsonify({
-        "content": response_data2,
+        "content": return_result,
         "status": 1
     })
 

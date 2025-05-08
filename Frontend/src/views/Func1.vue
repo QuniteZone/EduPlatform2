@@ -9,10 +9,10 @@
       <!-- @update-preview="updatePreview"：监听子组件Editor 触发的自定义事件 update-preview。
       当 Editor 组件触发该事件时，调用父组件中的方法 updatePreview。 -->
       <div class="editor-container">
-        <Editor class="editor" @update-preview="updatePreview" />
+        <Editor class="editor" @update-preview="updatePreview"/>
       </div>
       <div class="preview-container">
-        <Preview2 class="preview" :content="previewContent" />
+        <Preview2 class="preview" :content="previewContent"/>
       </div>
     </div>
   </div>
@@ -21,13 +21,12 @@
 
 <script>
 import Editor from "./Func1_page/PageEditor.vue";
-import Preview from "./Func1_page/PagePreview.vue";
 import Preview2 from "./Func1_page/PagePreview2.vue";
+
 export default {
   name: 'FunctionOne',
   components: {
     Editor,
-    Preview, //文本框
     Preview2 //富文本编辑框
   },
   data() {
@@ -149,7 +148,7 @@ body {
   /* 占满父容器宽度 */
 }
 
-.editor-container{
+.editor-container {
   width: calc(50%);
 }
 
@@ -177,6 +176,7 @@ body {
   height: 100%;
   /* 占满容器高度 */
 }
+
 .editor:hover,
 .preview:hover {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -228,6 +228,7 @@ body {
     height: auto;
     /* 自动高度 */
   }
+
   .editor,
   .preview {
     flex: 0 0 100%;

@@ -13,7 +13,6 @@ import student from '../views/student/analysis.vue'
 import KnowledgeOrganization from "../views/Knowledge_Organization.vue";
 
 import PageEditor from '../views/Func1_page/PageEditor.vue'
-import PagePreview from '../views/Func1_page/PagePreview.vue'
 import PagePreview2 from '@/views/Func1_page/PagePreview2.vue'
 import WangEditor from '@/views/tool/WangEditor.vue'
 import Test from '../views/Test/test.vue' 
@@ -77,11 +76,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/editor',
     name: 'PageEditor',
     component: PageEditor,
-  },
-  {
-    path: '/preview',
-    name: 'PagePreview',
-    component: PagePreview,
   },
   {
     path: '/preview2',

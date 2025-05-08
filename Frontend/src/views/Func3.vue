@@ -2,11 +2,11 @@
   <div class="app-container">
     <div class="page_navigate">
       <div
-        v-for="page in pages"
-        :key="page.id"
-        :class="{ selected: currentPage === page.id }"
-        @click="toPage(page.id)"
-        class="nav-item"
+          v-for="page in pages"
+          :key="page.id"
+          :class="{ selected: currentPage === page.id }"
+          @click="toPage(page.id)"
+          class="nav-item"
       >
         {{ page.label }}
       </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { DocmeeUI } from '@docmee/sdk-ui';
+import {DocmeeUI} from '@docmee/sdk-ui';
 
 export default {
   name: 'AiPptDemo',

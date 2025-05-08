@@ -56,7 +56,7 @@ onMounted(() => {
 
 // 编辑器配置
 const editorConfig = {
-    placeholder: '请输入内容...',
+    placeholder: '待生成内容...',
     MENU_CONF: { /* 菜单配置，下文解释 */ }
 }
 

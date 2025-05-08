@@ -137,7 +137,7 @@ body {
   /* 使用flex布局 */
   gap: 25px;
   /* 子元素间距 */
-  height: 50vh;
+  height: 70vh;
   /* 设置固定高度 */
   margin-top: 20px;
   /* 添加上边距 */

@@ -89,28 +89,61 @@ def handle_lesson_script():
                 content["status"] = -2  # 不支持该文件类型
                 return jsonify(content)
                 break
-        TextbookRetr_AgentID = f"4962e4b8240511f0bfb80242ac120006"
+
+
         ##将从知识库中检索内容，然后作为输入一并给到LLM进行处理。
         # 构建代理Agent会话
-        important_para = {
-            "lesson_plan": "我的名字叫覃国忠",
-        }
-        print(f"updata_text:{updata_text}")
-        print(f"TextbookRetr_AgentID:{TextbookRetr_AgentID}")
-
-        agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID,important_para=important_para)
-
-
+        lesson_plan= """
+        教学设计方案：
+        一、课程标准
+        •	教学主题：素质基础素养
+        •	适用情境：面向大一年级的素质素养课堂，适用于初学阶段，帮助学生理解素质素养的核心概念及其在生活中的应用
+        •	教学内容：包括素质素养的基本概念、重要性以及在学习和生活中的实际应用，引导学生将理论与实践结合  
+        •	教学目标：
+        输入本节课希望学生达到的预期学习成果，包括知识、能力、情感等方面
+        •	课时安排：2课时（约90分钟）
+        二、教学设计
+        1. 新课导入
+        •	教学程序： 教师提问：“大家觉得在大学生活中，哪些素质是最重要的？为什么？” 播放一段关于素质素养的重要性的视频，激发学生的兴趣 引导学生分享他们的看法，形成对素质素养的初步理解
+        •	设计意图： “通过引导学生思考与生活中相关的现象或问题来激发兴趣，使他们感知到素质素养的实际意义，建立对新课的认同感和学习动力。”
+        2. 自主学习
+        •	教学程序： 学生通过课本和网络资源，进行自主学习，深入理解素质素养的相关内容 学生思考并记录重要问题，如： 素质素养的定义是什么？ 它如何在实际中得到应用？ 学生认为掌握这一知识的意义何在？
+        •	设计意图： “培养学生独立获取知识的能力，并通过思考和探讨帮助他们形成对素质素养的深入理解，激励学生的探究精神。”
+        3. 案例分析
+        •	教学程序： 教师提供相关案例（如：“在职场中，如何运用素质素养来提升个人竞争力？”），并引导学生分析 学生小组合作讨论，解决实际问题后进行汇报，并与全班分享思路和结果
+        •	设计意图： “通过具体案例让学生看到素质素养的实际应用，增强学生的分析与解决问题的能力，同时在小组合作中锻炼团队协作与交流能力。”
+        4. 学习评价
+        •	教学程序： 教师通过思维导图或小测验等方式帮助学生回顾学习内容 学生进行自评和互评，总结自己的收获并对学习过程进行反思，教师给予反馈
+        •	设计意图： “帮助学生回顾所学内容，评估他们对素质素养的掌握程度，激励他们进行自我反思，促进更深层次的知识内化。”
+        ________________________________________
+        5. 小结
+        •	教学程序： 教师总结本课的关键知识点，并引导学生讨论如何将这些知识应用到其他学科或实际问题中 提出开放性问题，如：“如何将今天学到的素质素养知识应用到未来的职业生涯中？”
+        •	设计意图： “巩固课堂所学的知识，并帮助学生将知识系统化，培养他们将学到的知识运用于其他领域的能力。”
+        6. 作业布置
+        •	教学程序： 任务一：完成与本课相关的练习或思考题 任务二：选择一个实际案例，分析素质素养在其中的应用，并准备报告或展示材料
+        •	设计意图： “通过课后任务强化学生对素质素养的理解与应用，激发他们的独立思考和分析能力，同时为学生提供实践的机会。”
+        ________________________________________
+        三、素养目标
+        •	学科素养：理解并掌握素质素养的核心概念，能够在实际问题中进行有效应用  
+        •	技术与应用能力：能够将所学知识运用于具体问题的解决中，进行分析与方案设计  
+        •	创新与批判性思维：能够从多角度分析问题，提出独立且创新的解决方案  
+        •	合作与表达：能够在小组合作中有效沟通、清晰表达个人观点并进行反馈交流
+        """ #这是教案
+        agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID)
 
         # 进行代理Agent聊天
-        # question = f"给我生成一份逐字稿，另外{require}"
-        question=f"你好，给我输出内容"
-        print(f"question:{question}")
-        response_data = ragflow.send_agent_message(TextbookRetr_AgentID, question, stream=False, session_id=agent_session_id)
+        response_data = ragflow.send_agent_message(TextbookRetr_AgentID, lesson_plan, stream=False, session_id=agent_session_id)
 
-        print(f"response_data:{response_data}")
         # 删除该Agent会话
         ragflow.delete_agent_session(TextbookRetr_AgentID,agent_session_id)
+
+        question = f"要求给我生成一份大概在40分钟左右的逐字稿，要是需是田老师作为老师回复"
+
+        promtp = script_gen_prompt.format(teachPlan=lesson_plan, textbook=response_data, require=question)
+        messages = [{"role": "system",
+                     "content": "你是一名专业教育工作者，有多年教学经验。"},
+                    {"role": "user", "content": promtp}]
+        return_result = LLM(messages)
 
         ## 调用LLM实现逐字稿返回
         if response_data==None and parsed_text == None:
@@ -118,78 +151,8 @@ def handle_lesson_script():
             content["content"] = None
             return jsonify(content)
 
-        ##测试
-        response_data2="""
-#### 一、课程引入（5分钟）
 
-**杨老师**：同学们，大家好！今天我们要学习朱自清的散文《背影》。在这篇作品中，朱自清细腻地描写了父爱的伟大与细腻。首先，我想问问大家，有没有经历过与父亲告别的时刻？那种感觉是什么样的？
-
-**学生**：我上次跟父亲去旅行，临别的时候有点伤感。
-
-**学生**：我记得上次放假回家时，父亲送我到车站，我们在那儿告别。
-
-**杨老师**：非常好！这些经历都和《背影》的主题相呼应。为了帮助大家更好地理解这篇文章，我们先来了解一下朱自清的生平和写作背景。
-
----
-
-#### 二、自主学习（10分钟）
-
-**杨老师**：接下来，请大家阅读《背影》，并思考以下问题：第一，文章中有哪些细节描写让你感受到父爱的？第二，朱自清是如何通过语言传达情感的？第三，你认为这篇文章对你有什么启发？请大家记录下你们的思考，准备在小组中分享。
-
-（学生阅读文章，思考并记录）
-
-**杨老师**：好，现在请各小组进行讨论，分享你们的观点。
-
----
-
-#### 三、案例分析（10分钟）
-
-**杨老师**：在你们的小组讨论中，大家对哪一段落印象最深刻？
-
-**学生**：我们讨论了父亲去买橘子那一段，感觉特别感人。
-
-**杨老师**：很好，请你们分享一下这段的情感表达和写作手法。
-
-**学生**：那一段写得很细腻，朱自清用“背影”和“冬天”来暗示父亲为我做的牺牲，而且描述了父亲的动作细节，使我深刻感受到他当时的心情。
-
-**杨老师**：对，这样的细节描写让我们更能感受到父爱的深厚。不仅如此，朱自清用一些比喻和对比的手法，增强了情感的表现。请大家选择一个段落进行详细分析，并准备好汇报。
-
-（各小组进行分析汇报）
-
----
-
-#### 四、学习评价（5分钟）
-
-**杨老师**：大家通过小组讨论，加深了对《背影》的理解。现在请我们一起回顾一下这篇散文的主要情感与写作特色。大家认为，这篇文章中最重要的情感是什么？
-
-**学生**：是父爱的伟大与牺牲精神。
-
-**杨老师**：非常准确！我们可以通过思维导图的方式，一起总结一下今天的学习内容。请大家现在进行自评，总结一下自己的理解。
-
-（学生进行自评，老师巡视并给予反馈）
-
----
-
-#### 五、小结（5分钟）
-
-**杨老师**：今天我们探讨了《背影》的情感主题，强调了父爱的伟大。那么，我想请问大家，如何将今天学到的情感理解应用到实际生活中呢？
-
-**学生**：我们可以对爸爸多表达关心，告诉他我们有多爱他。
-
-**杨老师**：对的，生活中要多关心家人，学会表达情感是非常重要的。
-
----
-
-#### 六、作业布置（5分钟）
-
-**杨老师**：好的，最后请大家注意作业布置。任务一，请写一篇短文，描述你与父亲的一个难忘瞬间，并分析其中的情感。任务二，选择一篇关于亲情的散文进行分析，并准备下节课分享。
-
-**杨老师**：如果对作业有疑问，大家可以随时问我。谢谢大家的参与，期待下次课再见！
-
-"""
-        content["content"] = response_data2
-        print(f"content:{content}")
-
+        content["content"] = return_result
         return jsonify(content)
     except Exception as e:
         content["status"] = 0 #报错
@@ -324,20 +287,17 @@ def question_judgment():
     crt_ans = """"数字素养是指个人在数字环境中获取、评估、使用和创造信息的能力。它对现代人至关重要，主要体现在以下几个方面：1. 信息获取与筛选能力（3分）：在互联网时代，信息海量且复杂。数字素养能够帮助人们快速获取有价值的信息并筛选出虚假或误导性信息。例如，通过学习如何识别新闻来源的可靠性，避免传播未经证实的消息。2. 数据安全与隐私保护（3分）：数字素养包括了解如何保护个人数据和隐私。例如，使用强密码、定期更新软件以防止恶意软件攻击，以及避免在不安全的网络环境中输入敏感信息。3. 数字工具的应用能力（2分）：掌握基本的数字工具（如办公软件、在线协作平台等）能够提高工作效率。例如，利用云存储和在线办公软件进行远程协作，提升工作和学习的灵活性。4. 数字内容创作与传播（2分）：数字素养还涉及如何创作和传播高质量的数字内容。例如，通过学习基本的视频剪辑或图文编辑技能，能够更好地表达自己的观点并分享给他人。给分点： 每个要点根据阐述的完整性和举例的合理性进行评分，总分10分。""" #'crt_ans' 从数据库获取
     stu_ans = data.get('stu_ans')
 
-    try:
-        promtp = jugement_ques_prompt.format(question=question, crt_ans=crt_ans, stu_ans=stu_ans)
-        messages = [{"role": "system",
-                     "content": "你是一名阅卷老师，负责对学生的答案进行打分和评价"},
-                    {"role": "user", "content": promtp}]
+    promtp = jugement_ques_prompt.format(question=question, crt_ans=crt_ans, stu_ans=stu_ans)
+    messages = [{"role": "system",
+                 "content": "你是一名阅卷老师，负责对学生的答案进行打分和评价"},
+                {"role": "user", "content": promtp}]
 
-        return_result = LLM(messages)
+    return_result = LLM(messages)
 
-        content = {
-            'content': return_result,
-            'status': 1}
-        return jsonify(content)
-    except:
-        return jsonify({'content': f'未知错误，', 'status': -1})
+    content = {
+        'content': return_result,
+        'status': 1}
+    return jsonify(content)
 
 
 
@@ -345,32 +305,43 @@ def question_judgment():
 
 @lesson_plan_bp.route('/question_generate', methods=['POST'])
 def question_generate():
-    # data = request.get_json()  # 从请求中获取 JSON 数据
-    #
-    # # 检查必需的参数是否存在
-    # required_fields = [
-    #     'subject', 'grade', 'textbook', 'topic',
-    #     'questionType', 'difficulty', 'questionCount',
-    #     'knowledgePoints', 'otherRequirements'
-    # ]
-    # for field in required_fields:
-    #     if field not in data:
-    #         return jsonify({
-    #             "content": f"缺少参数: {field}",
-    #             "status": 0
-    #         })
-    #
-    # # 提取参数
-    # subject = data['subject']
-    # grade = data['grade']
-    # textbook = data['textbook']
-    # topic = data['topic']
-    # question_type = data['questionType']
-    # difficulty = data['difficulty']
-    # question_count = data['questionCount']
-    # knowledge_points = data['knowledgePoints']
-    # other_requirements = data['otherRequirements']
-    #
+    data = request.get_json()  # 从请求中获取 JSON 数据
+
+    # 检查必需的参数是否存在
+    required_fields = [
+        'subject', 'grade',
+        'questionType', 'difficulty', 'questionCount',
+        'knowledgePoints', 'otherRequirements'
+    ]
+    for field in required_fields:
+        if field not in data:
+            return jsonify({
+                "content": f"缺少参数: {field}",
+                "status": 0
+            })
+
+    # 提取参数
+    subject = data['subject']
+    grade = data['grade']
+    question_type = data['questionType']
+    difficulty = data['difficulty']
+    question_count = data['questionCount']
+    knowledge_points = data['knowledgePoints']
+    other_requirements = data['otherRequirements']
+
+
+    knowledge = f"""这是{subject}学科，{grade}年级，知识点：{knowledge_points}，从教材中检索返回知识点"""  # 这是教案
+    agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID)
+    # 进行代理Agent聊天
+    response_data = ragflow.send_agent_message(TextbookRetr_AgentID, knowledge, stream=False,
+                                               session_id=agent_session_id)
+    # 删除该Agent会话
+    ragflow.delete_agent_session(TextbookRetr_AgentID, agent_session_id)
+
+
+
+    print(f"response_data: {response_data}")
+
     # # 构建代理 Agent 会话
     # important_para = {
     #     "subject": subject,
@@ -407,7 +378,7 @@ def question_generate():
     # # 删除会话
     # ragflow.delete_agent_session(QuesGen_AgentID, agent_session_id)
 
-    time.sleep(5)
+
     #测试2
     response_data2="""
 **题目1**：一个矩形的长是8厘米，宽是5厘米，求这个矩形的周长。(2分)  

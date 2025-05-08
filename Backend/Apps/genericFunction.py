@@ -55,12 +55,17 @@ def LLM(messages,is_json=True):
 
         # 解析 JSON 或 markdown 内容
         result = format_lesson_plan(content, is_json)
-
+        if result == False:
+            print("JSON 解析失败，重试中...")
+            print(f"content:{content}")
         if result:
             return result
         else:
             # 如果 JSON 解析失败，提供反馈并重试
-            feedback = "请返回严格的 Markdown 格式"
+            if is_json:
+                feedback = "请返回严格的 JSON 格式"
+            else:
+                feedback = "请返回严格的 Markdown 格式"
             messages.append({
                 "role": "assistant",
                 "content": content
@@ -189,18 +194,18 @@ def LLMs_allowed_file(filename, file_type):
 ##定义实时网络访问检索的函数
 def get_globalWeb_source(input_content):
     # 构造请求的payload
-    payload_video = json.dumps({
-        "q": input_content,
-        "gl": "cn",
-        "hl": "zh-cn",
-        "num": 10,
-        "page": 1
-    })
+    # payload_video = json.dumps({
+    #     "q": input_content,
+    #     "gl": "cn",
+    #     "hl": "zh-cn",
+    #     "num": 10,
+    #     "page": 1
+    # })
     payload_message = json.dumps({
-        "q": input_content,
+        "q": f"site:csdn.net OR site:zhihu.com OR site:cnblogs.com OR site:jianshu.com  {input_content}",
         "gl": "cn",
         "hl": "zh-cn",
-        "num": 10
+        "num": 25
     })
 
     headers = {
@@ -208,24 +213,24 @@ def get_globalWeb_source(input_content):
         'Content-Type': 'application/json'
     }
 
-    # # 整理视频信息
-    response_video = requests.request("POST", web_video_url, headers=headers, data=payload_video)
-    json_content = response_video.json()
-    videos = json_content['videos']
-    sorted_videos = []
-    for video in videos:
-        video_info = {
-            'title': video.get('title'),
-            'link': video.get('link'),
-            'introduce': video.get('snippet'),
-            'duration': video.get('duration'),
-            'source': video.get('source'),
-            'date': video.get('date'),
-            'position': video.get('position'),
-            'imageUrl': video.get('imageUrl'),
-            'is_video': 1,
-        }
-        sorted_videos.append(video_info)
+    # # # 整理视频信息
+    # response_video = requests.request("POST", web_video_url, headers=headers, data=payload_video)
+    # json_content = response_video.json()
+    # videos = json_content['videos']
+    # sorted_videos = []
+    # for video in videos:
+    #     video_info = {
+    #         'title': video.get('title'),
+    #         'link': video.get('link'),
+    #         'introduce': video.get('snippet'),
+    #         'duration': video.get('duration'),
+    #         'source': video.get('source'),
+    #         'date': video.get('date'),
+    #         'position': video.get('position'),
+    #         'imageUrl': video.get('imageUrl'),
+    #         'is_video': 1,
+    #     }
+    #     sorted_videos.append(video_info)
 
 
     ## 文本网络实时资源检索
@@ -248,7 +253,7 @@ def get_globalWeb_source(input_content):
             'position': position,
             'is_video':0,
         })
-    return  sorted_videos,sorted_messages
+    return  None,sorted_messages
 
 
 # result,result2=get_globalWeb_source("Python编程")
@@ -517,101 +522,9 @@ script_gen_prompt= """
 ```json
     {{
         "title": "### 高中数学导数课程教学逐字稿",
-        "content": '''
-        #### 一、课程引入（5分钟）
-
-        **老师**：同学们，大家好！今天我们要学习一个非常重要的数学概念——导数。导数在数学和科学中都有着广泛的应用，所以掌握它对你们的学习非常重要。
-
-        **老师**：首先，我们来回顾一下函数的概念。请问，有同学能告诉我什么是函数吗？
-
-        **学生**：函数是一个输入和输出之间的关系，每一个输入对应一个输出。
-
-        **老师**：很好！函数可以用图像、表格或公式来表示。今天我们主要关注的是函数的变化率。我们想知道，当自变量发生微小变化时，函数值是如何变化的。这就是导数的核心思想。
-
-        **老师**：我们先来看一个简单的例子。假设我们有一个函数 \( f(x) = x^2 \)。我们想知道在某一点 \( x = a \) 处，函数的变化率是多少。我们可以通过计算切线的斜率来找到这个变化率。
-
-        **老师**：那么，什么是切线呢？切线是与曲线在某一点相切的直线。它的斜率就代表了该点的瞬时变化率。我们可以用极限的方式来定义导数。
-
-        （同学们思考5分钟）
-
-        ---
-
-        #### 二、导数定义讲解（10分钟）
-
-        **老师**：导数的定义是这样的：  
-        \[f'(a) = \lim_{{h \\to 0}} \frac{{f(a+h) - f(a)}}{{h}}\]  
-        这个公式的意思是，当 \( h \) 趋近于 0 时，\( \frac{{f(a+h) - f(a)}}{{h}} \) 的极限就是函数 \( f \) 在点 \( a \) 处的导数。
-
-        **老师**：现在我们来实际计算一下 \( f(x) = x^2 \) 在 \( x = 2 \) 处的导数。首先，我们需要计算 \( f(2+h) \) 和 \( f(2) \)。
-
-        **老师**：我们知道，\( f(2) = 2^2 = 4 \)。接下来，计算 \( f(2+h) \)：  
-        \[ f(2+h) = (2+h)^2 = 4 + 4h + h^2 \]
-
-        **老师**：现在我们将这些值代入导数的定义中：  
-        \[ f'(2) = \lim_{{h \\to 0}} \frac{{(4 + 4h + h^2) - 4}}{{h}} = \lim_{{h \\to 0}} \frac{{4h + h^2}}{{h}} \]
-
-        **老师**：我们可以将 \( h \) 提出来：  
-        \[ f'(2) = \lim_{{h \\to 0}} (4 + h) \]
-
-        **老师**：当 \( h \) 趋近于 0 时，\( f'(2) = 4 \)。所以，函数 \( f(x) = x^2 \) 在 \( x = 2 \) 处的导数是 4。
-
-        ---
-
-        #### 三、导数的几何意义（5分钟）
-
-        **老师**：那么，导数的几何意义是什么呢？导数实际上表示了函数图像在某一点的切线斜率。我们可以通过图像来理解这一点。
-
-        **老师**：例如，在 \( f(x) = x^2 \) 的图像上，\( x = 2 \) 处的切线斜率为 4，这意味着在这一点上，函数的变化率是 4。也就是说，当 \( x \) 增加 1 时，\( f(x) \) 的值大约增加 4。
-
-        ---
-
-        #### 四、导数的应用（10分钟）
-
-        **老师**：导数在实际生活中有很多应用。比如，在物理学中，导数可以用来描述物体的速度和加速度。
-
-        **老师**：假设我们有一个物体的位移函数 \( s(t) \)，它表示物体在时间 \( t \) 时的位置。物体的速度就是位移函数的导数：  
-        \[ v(t) = s'(t) \]
-
-        **老师**：如果我们知道物体的位移函数是 \( s(t) = 5t^2 \)，那么我们可以计算物体在任意时刻的速度。首先，我们计算导数：  
-        \[ v(t) = s'(t) = \lim_{{h \\to 0}} \frac{{s(t+h) - s(t)}}{{h}} = \lim_{{h \\to 0}} \frac{{5(t+h)^2 - 5t^2}}{{h}} \]
-
-        **老师**：经过计算，我们得到：  
-        \[ v(t) = 10t \]  
-        这意味着物体的速度与时间成正比。
-
-        ---
-
-        #### 五、课堂练习（5分钟）
-
-        **老师**：现在我们来做一个小练习。请大家计算一下函数 \( f(x) = 3x^3 \) 在 \( x = 1 \) 处的导数。
-
-        （学生进行计算，老师巡视）
-
-        **老师**：谁能告诉我你们的答案？
-
-        **学生**：导数是 9。
-
-        **老师**：很好！我们来验证一下。首先计算 \( f(1) \) 和 \( f(1+h) \)：  
-        \[ f(1) = 3(1)^3 = 3 \]  
-        \[ f(1+h) = 3(1+h)^3 = 3(1 + 3h + 3h^2 + h^3) = 3 + 9h + 9h^2 + 3h^3 \]
-
-        **老师**：将这些代入导数的定义中，计算得出：  
-        \[ f'(1) = \lim_{{h \\to 0}} \frac{{(3 + 9h + 9h^2 + 3h^3) - 3}}{{h}} = \lim_{{h \\to 0}} (9 + 9h + 3h^2) = 9 \]
-
-        ---
-
-        #### 六、总结与提问（5分钟）
-
-        **老师**：今天我们学习了导数的定义、计算方法以及它的几何意义和应用。导数是一个非常重要的概念，掌握它将对你们的学习和未来的应用有很大帮助。
-
-        **老师**：在结束之前，有没有同学对今天的内容有疑问或者想要进一步探讨的地方？
-
-        （学生提问，老师解答）
-
-        **老师**：如果没有问题，大家可以回去复习一下导数的定义和计算方法，准备下节课的内容。谢谢大家的参与！
-
-        ''',
+        "content": "#### 一、课程引入（5分钟）\n\n**杨老师**：同学们，大家好！今天我们要学习朱自清的散文《背影》。在这篇作品中，朱自清细腻地描写了父爱的伟大与细腻。首先，我想问问大家，有没有经历过与父亲告别的时刻？那种感觉是什么样的？\n\n**学生**：我上次跟父亲去旅行，临别的时候有点伤感。\n\n**学生**：我记得上次放假回家时，父亲送我到车站，我们在那儿告别。\n\n**杨老师**：非常好！这些经历都和《背影》的主题相呼应。为了帮助大家更好地理解这篇文章，我们先来了解一下朱自清的生平和写作背景。\n\n---\n\n#### 二、自主学习（10分钟）\n\n**杨老师**：接下来，请大家阅读《背影》，并思考以下问题：第一，文章中有哪些细节描写让你感受到父爱的？第二，朱自清是如何通过语言传达情感的？第三，你认为这篇文章对你有什么启发？请大家记录下你们的思考，准备在小组中分享。\n\n（学生阅读文章，思考并记录）\n\n**杨老师**：好，现在请各小组进行讨论，分享你们的观点。\n\n---\n\n#### 三、案例分析（10分钟）\n\n**杨老师**：在你们的小组讨论中，大家对哪一段落印象最深刻？\n\n**学生**：我们讨论了父亲去买橘子那一段，感觉特别感人。\n\n**杨老师**：很好，请你们分享一下这段的情感表达和写作手法。\n\n**学生**：那一段写得很细腻，朱自清用“背影”和“冬天”来暗示父亲为我做的牺牲，而且描述了父亲的动作细节，使我深刻感受到他当时的心情。\n\n**杨老师**：对，这样的细节描写让我们更能感受到父爱的深厚。不仅如此，朱自清用一些比喻和对比的手法，增强了情感的表现。请大家选择一个段落进行详细分析，并准备好汇报。\n\n（各小组进行分析汇报）\n\n---\n\n#### 四、学习评价（5分钟）\n\n**杨老师**：大家通过小组讨论，加深了对《背影》的理解。现在请我们一起回顾一下这篇散文的主要情感与写作特色。大家认为，这篇文章中最重要的情感是什么？\n\n**学生**：是父爱的伟大与牺牲精神。\n\n**杨老师**：非常准确！我们可以通过思维导图的方式，一起总结一下今天的学习内容。请大家现在进行自评，总结一下自己的理解。\n\n（学生进行自评，老师巡视并给予反馈）\n\n",
     }}
+
 ```
 
 三，输出格式
@@ -619,12 +532,13 @@ script_gen_prompt= """
     ```json
         {{
             "title": "逐字稿的标题，数学导数课程教学逐字稿",
-            "content": '''关于逐字稿的主要内容，格式采用标准的markdown格式''',
+            "content": "关于逐字稿的主要内容，格式采用标准的markdown格式",
         }}
     ```
     """
 
 
+## 评价题目提示词
 jugement_ques_prompt = """
     一，任务描述：你是一名阅卷老师，负责对学生的答案进行打分和评价。我将给出题目、学生答案和参考答案，参考答案中除了答案之外还会有该题的给分点以及该题的总分。
 你的任务是识别出学生作答的内容，并针对学生回答的正确性给出适当的评分，并针对学生回答的正确性给出评价，要求以老师语境，评价全面客观，能反映学生的学习情况和知识点掌握情况，每个评价的字数都要不少于20字，不超过50字。 
@@ -650,5 +564,7 @@ jugement_ques_prompt = """
             }}
         ```
         """
+
+#出题提示词
 
 

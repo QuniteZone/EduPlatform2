@@ -320,7 +320,6 @@ class RAGflow:
             payload["user_id"] = user_id
 
         # 发送POST请求
-        print(f"payload:{payload}")
         response = requests.post(url, headers=self.HEADERS, json=payload)
 
         # 检查响应状态码
@@ -346,35 +345,35 @@ class RAGflow:
                 return data_object["data"]["answer"].replace("\n\n", "\n")
             else:
                 response_data = response.json()  # 直接解析为JSON
-                print(f"response_data_json:{response_data}")
                 return response_data["data"]["answer"].replace("\n\n", "\n")
         else:
             raise Exception(f"请求失败，状态码: {response.status_code}, 响应内容: {response.text}")
 
 
 
-#
-# # #使用示例
+
+
+# # # #使用示例
 # ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
 # ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
 # ragflow = RAGflow(ragflow_BASE_URL,ragflow_API_KEY)
-# TextbookRetr_AgentID=f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
+# # TextbookRetr_AgentID=f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
+# # AgentID=f"927352862b3b11f0acfc0242ac120006"
+# AgentID=f"4962e4b8240511f0bfb80242ac120006"
 #
 #
-# important_para = {"lesson_plan": "覃国忠"}
-#
-# agent_session_id = ragflow.create_agent_session(TextbookRetr_AgentID,important_para=important_para)
-# print(f"agent_session_id:{agent_session_id}")
-#
+# agent_session_id = ragflow.create_agent_session(AgentID)
 # # 进行代理Agent聊天
-# question = "输出原内容"
-# response_data = ragflow.send_agent_message(TextbookRetr_AgentID, question, stream=False, session_id=agent_session_id)
+# question =  """
+# 请帮我查找一下《线性代数》教材中关于“矩阵的逆”的知识点。
+# """
+# response_data = ragflow.send_agent_message(AgentID, question, stream=False, session_id=agent_session_id)
 # print(f"response_data:{response_data}")
 #
 #
 # # 删除该Agent会话
-# ragflow.delete_agent_session(TextbookRetr_AgentID, agent_session_id)
-#
+# ragflow.delete_agent_session(AgentID, agent_session_id)
+
 
 
 

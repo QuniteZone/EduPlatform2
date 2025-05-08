@@ -19,12 +19,13 @@ SQLALCHEMY_ECHO = True
 
 
 #LLM 基本配置信息
-os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.tech/v1"
-os.environ["OPENAI_API_KEY"] = "sk-OyEPaIflRbJXIospoq197kPskfatY1UmbfKKOszLJicK7RuJ"
+os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
+
+os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"
 model = "gpt-4o-mini"
-# os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.tech"
-# os.environ["OPENAI_API_KEY"] = "sk-QBFgXmIcXeaR5v40BZN3jabFKtSkoudkpIz4vmGU6V8Uu4N6"
-# model='gpt-3.5-turbo'
+# os.environ["OPENAI_BASE_URL"] = "https://maas-api.cn-huabei-1.xf-yun.com/v1"
+# os.environ["OPENAI_API_KEY"] = "sk-kWw6gDp0ZYWcNTMtD35a4f613921425a9c87312c36C5D3Ca"
+# model='xdeepseekv3'
 temperature=0.5 #LLM 温度
 
 
@@ -46,11 +47,13 @@ Public_ip="https://94686t61i9.zicp.fun/"
 #rag_flow 基本配置信息
 # ragflow_BASE_URL = "http://127.0.0.1"  # rag_flow的后端地址
 # https://9vh4ik686619.vicp.fun
+
 ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
 # ragflow_API_KEY = "ragflow-QwMDMzYWMyMTgzMzExZjBhZGI0MDI0Mm"  # rag_flow的 API Key
 ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
 
-TextbookRetr_AgentID=f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
+
+TextbookRetr_AgentID = f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
 QuesGen_AgentID="cca846541d1d11f09a85ba9f4c68f6ef"
 
 

@@ -1,11 +1,8 @@
 # EduPlatform
 EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为教师和学生提供便捷、高效的教学工具。平台集成了多种功能，包括教案生成、班会稿生成、主观题判题、个性化学习推荐等，以帮助提高教师的教学效率和学生的学习效果。
-【下面给我放三张并列图片】
 
 <div style="display: flex; justify-content: space-between;">
-    <img src="TestCode/git演示-PPT功能-GIF.gif" alt="Image 1" style="width: 30%;"/>
-    <img src="TestCode/git演示-PPT功能-GIF.gif" alt="Image 2" style="width: 30%;"/>
-    <img src="TestCode/git演示-PPT功能-GIF.gif" alt="Image 3" style="width: 30%;"/>
+    <img src="TestCode/git演示-PPT功能-GIF.gif" alt="Image 1" />
 </div>
 
 ---

@@ -154,16 +154,17 @@ def LLM_StreamOutput(messages):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def extract_text_from_pdf(path):
-    import PyPDF2
     text = ''
     try:
-        pdf = fitz.open(stream=path.read(), filetype="pdf")
-        for page in pdf:
-            text += page.get_text()
+        with fitz.open(path) as pdf:
+            for page in pdf:
+                text += page.get_text()
     except Exception as e:
         text = f"[PDF解析失败]: {str(e)}"
     return text
+
 
 def extract_text_from_docx(path):
     text = ''
@@ -511,7 +512,7 @@ script_gen_prompt= """
     以下是对应教材内容
     {textbook}
     以上是对应教材内容
-    逐字稿要求：要求你根据教案的环节、课本教材内容具体来设计一堂课的逐字稿脚本，大约设计好40分钟的脚本。其他教师要求：{require}
+    逐字稿要求：要求你根据教案的环节、课本教材内容具体来设计一堂课的逐字稿脚本，如果没有时间要求，就设计大约40分钟的脚本。其他教师要求：{require}
 
 二、示例
 严格按照如下格式进行输出，不允许输出其他多余内容

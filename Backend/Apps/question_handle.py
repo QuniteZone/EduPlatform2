@@ -533,5 +533,5 @@ def recommend_learningPath():
 
     print("*" * 50)
 
-    return "test"
+    return jsonify({"content": message, 'status': 1})
 #

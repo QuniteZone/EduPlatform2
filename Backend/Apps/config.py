@@ -37,6 +37,7 @@ LLMs_model="qvq-max"
 # 配置上传文件的目录
 LLMs_IMAGE_UPLOAD_FOLDER = 'static/LLM/images'  # 图片上传路径
 LLMs_FILE_UPLOAD_FOLDER = 'static/LLM/files'      # 其他文件上传路径
+UPLOAD_FOLDER = os.path.join('static', "uploads") #普通上传文件路径
 os.makedirs(LLMs_IMAGE_UPLOAD_FOLDER, exist_ok=True)# 创建上传目录（如果不存在）
 os.makedirs(LLMs_FILE_UPLOAD_FOLDER, exist_ok=True)
 LLMs_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # 允许的图片文件类型
@@ -62,6 +63,7 @@ QuesGen_AgentID="cca846541d1d11f09a85ba9f4c68f6ef"
 web_video_url = "https://google.serper.dev/videos"
 web_message_url="https://google.serper.dev/search"
 web_api_key="54933bde17093ecd3db9ef1d25f16be7c3a5a6d2"
+
 
 
 

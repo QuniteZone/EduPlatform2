@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传示例</title>
+    <script>
+        function uploadFile() {
+            const inputElement = document.getElementById('fileInput');
+            const formData = new FormData();
+
+            // 确认用户选择了文件
+            if (inputElement.files.length === 0) {
+                alert('请先选择一个文件！');
+                return;
+            }
+
+            // 将文件添加到 FormData 对象中
+            for (let i = 0; i < inputElement.files.length; i++) {
+                formData.append('files', inputElement.files[i]);
+            }
+
+            // 可选：添加其他需要的表单字段
+            formData.append('requires', '1111');
+
+            // 使用 fetch API 上传文件
+            fetch('http://192.168.31.172:5001/plan/lesson_script', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('成功:', data);
+                alert('文件上传成功！');
+            })
+            .catch(error => {
+                console.error('错误:', error);
+                alert('文件上传失败！');
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>文件上传示例</h1>
+    <input type="file" id="fileInput" multiple />  <!-- multiple 属性允许选择多个文件 -->
+    <br><br>
+    <button onclick="uploadFile()">上传文件</button>
+</body>
+</html>

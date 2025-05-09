@@ -1,3 +1,4 @@
+import io
 import time
 from datetime import datetime
 
@@ -76,23 +77,40 @@ def handle_lesson_script():
         if not uploaded_files:
             content["status"] = -1  # 表示文件未上传
             return jsonify(content)
-        for file in uploaded_files:
-            if file and allowed_file(file.filename):
-                ext = file.filename.rsplit('.', 1)[1].lower()  # 直接读取文件内容
-                if ext == 'pdf':
-                    parsed_text = extract_text_from_pdf(file.stream)  # 使用 file.stream 直接读取
-                else:
-                    parsed_text = extract_text_from_docx(file.stream)  # 使用 file.stream 直接读取
-                parsed_texts[file.filename] = parsed_text
-                updata_text+=f"{file.filename}:{parsed_text}\n"
-            else:
-                content["status"] = -2  # 不支持该文件类型
+        import PyPDF2
+        import docx
+        from docx import Document
+        if not uploaded_files:
+            content["status"] = -1  # 表示文件未上传
+            return jsonify(content)
+
+        for uploaded_file in uploaded_files:
+            print(f"上传的文件名: {uploaded_file.filename}")  # 打印文件名
+            print(f"文件大小: {uploaded_file.content_length} bytes")  # 打印文件大小
+
+            # 检查文件大小
+            if uploaded_file.content_length == 0:
+                content['status'] = -2
+                content['message'] = f"{uploaded_file.filename} 文件为空"
                 return jsonify(content)
-                break
+            # 根据文件类型处理文件
+            if uploaded_file.filename.endswith('.docx'):
+                document = Document(uploaded_file.stream)  # 用流方式读取文件内容
+                full_text = []
+                for para in document.paragraphs:
+                    full_text.append(para.text)
+                document_content = '\n'.join(full_text)
+                print("Word 内容:", document_content)
+                content["content"] = document_content
 
         print(f"require:{require}")
         print(f"updata_text:{updata_text}")
 
+        # if parsed_text=="":
+        #     pass
+            #不执行RAGflow端
+
+        #下面代码是好的。不改变
 
         # ##将从知识库中检索内容，然后作为输入一并给到LLM进行处理。
         # # 构建代理Agent会话
@@ -203,75 +221,16 @@ def create_study_plan():
         'title':title,
     }
     content["status"] = 1
-    content["content"] = """# 学习计划 - 计划A
+    content["content"] = "None  联系qgz"
 
-## 学习目标
-这是我的学习目标：**掌握机器学习的基本概念和应用**。
 
-## 现有背景
-这是我的现有背景：
-- 具备基本的编程能力，熟悉 Python 语言。
-- 了解数据分析的基础知识，使用过 Pandas 和 NumPy。
-- 有一定的数学基础，熟悉线性代数和概率论。
 
-## 学习偏好
-我期望的学习资源方式：
-- **文章/博客**：
-  - [机器学习入门（Google Developers）](https://developers.google.com/machine-learning/crash-course)
-  - [机器学习基础（Towards Data Science）](https://towardsdatascience.com/machine-learning-for-beginners-d47c2e4e6f5f)
-  - [深度学习与机器学习的区别（Medium）](https://medium.com/@mohit.kumar/deep-learning-vs-machine-learning-7b9b8c8f2c7e)
-  
-- **项目**：
-  - [Kaggle 机器学习项目](https://www.kaggle.com/learn/overview) - Kaggle 提供了许多机器学习项目和数据集，适合实践。
-  - [机器学习项目示例（GitHub）](https://github.com/trekhleb/homemade-machine-learning) - 自制机器学习项目的示例代码。
 
-- **视频**：
-  - [Coursera 机器学习课程（Andrew Ng）](https://www.coursera.org/learn/machine-learning) - 由斯坦福大学的 Andrew Ng 教授讲授的经典课程。
-  - [YouTube 机器学习基础视频](https://www.youtube.com/watch?v=Gv9_4yM6D3I) - 机器学习基础知识的快速入门视频。
 
-## 每周学习时间
-计划每周花费的学习时间：**12小时**。
 
-## 截止日期
-学习目标截止日期：**2025年04月18日 18:00**。
 
-## 学习计划安排
-### 第1周
-- **目标**：了解机器学习的基本概念。
-- **内容**：
-  - 阅读机器学习入门文章（3小时）。
-  - 观看机器学习基础视频（3小时）。
-- **项目**：完成一个简单的线性回归项目（6小时）。
 
-### 第2周
-- **目标**：掌握监督学习和非监督学习的基本算法。
-- **内容**：
-  - 阅读关于监督学习和非监督学习的博客（3小时）。
-  - 观看相关的在线课程（3小时）。
-- **项目**：实现一个分类算法（如决策树）并进行实验（6小时）。
 
-### 第3周
-- **目标**：深入学习模型评估和选择。
-- **内容**：
-  - 阅读模型评估的相关文献（3小时）。
-  - 观看模型选择的讲座（3小时）。
-- **项目**：使用交叉验证评估模型性能（6小时）。
-
-### 第4周
-- **目标**：学习深度学习的基础知识。
-- **内容**：
-  - 阅读深度学习入门书籍的相关章节（3小时）。
-  - 观看深度学习的在线课程（3小时）。
-- **项目**：实现一个简单的神经网络（6小时）。
-
-## 其他要求
-- 每周总结学习内容，记录学习心得。
-- 定期与学习小组讨论，分享学习进展和遇到的问题。
-
----
-
-**备注**：请根据个人情况和学习进度调整学习计划，确保能够按时完成学习目标。
-"""
 
     return jsonify(content)
 

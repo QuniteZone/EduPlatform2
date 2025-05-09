@@ -242,6 +242,8 @@ def questionBankTagged():
 #构造一个学习路径推荐的路由 学习路径——示例 /ques/recommend/learningPath
 @ques_handle_bp.route('/recommend/learningPath', methods=['GET'])
 def recommend_learningPath():
+
+
     need_study_knowledge=[
         {"knowledge_ID": 1, "content": "HTML基础语法", "weight": 0.55},
         {"knowledge_ID": 2, "content": "CSS基础语法", "weight": 0.54},

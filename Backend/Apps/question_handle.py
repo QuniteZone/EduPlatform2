@@ -40,6 +40,7 @@ def upload_file():
         file_path=f"{LLMs_FILE_UPLOAD_FOLDER}/{unique_filename}"
         file.save(file_path)
         fileIP=f"{Public_ip}/{file_path}"
+        print(f"image fileIP:{fileIP}")
         return jsonify({"content": "图片上传成功", "fileIP": fileIP, 'status': 1})
     elif file and LLMs_allowed_file(file.filename, 'file'):
         # 生成唯一的文件名
@@ -241,6 +242,8 @@ def questionBankTagged():
 #构造一个学习路径推荐的路由 学习路径——示例 /ques/recommend/learningPath
 @ques_handle_bp.route('/recommend/learningPath', methods=['GET'])
 def recommend_learningPath():
+
+
     need_study_knowledge=[
         {"knowledge_ID": 1, "content": "HTML基础语法", "weight": 0.55},
         {"knowledge_ID": 2, "content": "CSS基础语法", "weight": 0.54},
@@ -530,5 +533,5 @@ def recommend_learningPath():
 
     print("*" * 50)
 
-    return "test"
+    return jsonify({"content": message, 'status': 1})
 #

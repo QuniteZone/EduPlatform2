@@ -1,10 +1,6 @@
 import json
 import os
 import uuid
-
-import numpy as np
-import requests
-from openai import OpenAI
 from flask import Blueprint, jsonify, request, stream_with_context, Response
 from werkzeug.utils import secure_filename
 

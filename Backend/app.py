@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 
 from flask import Flask, jsonify

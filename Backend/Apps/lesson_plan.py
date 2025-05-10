@@ -3,12 +3,6 @@ import time
 import uuid
 from datetime import datetime
 import os
-from PyPDF2 import PdfReader  # 使用 PyPDF2 读取 PDF 文件
-from docx import Document      # 使用 python-docx 读取 Word 文件
-from flask import Flask, request, jsonify
-from werkzeug.utils import secure_filename
-from flask_cors import CORS
-import os
 import json
 import fitz  # PyMuPDF
 import docx  # python-docx

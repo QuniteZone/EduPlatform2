@@ -11,7 +11,6 @@ import Func9 from '../views/Func9.vue'
 import Func10 from '../views/Func10.vue'
 import student from '../views/student/analysis.vue'
 import KnowledgeOrganization from "../views/Knowledge_Organization.vue";
-
 import PageEditor from '../views/Func1_page/PageEditor.vue'
 import PagePreview2 from '@/views/Func1_page/PagePreview2.vue'
 import WangEditor from '@/views/tool/WangEditor.vue'

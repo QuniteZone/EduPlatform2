@@ -231,6 +231,7 @@ function parseLLMContent(llm_return_content) {
       const lastMsgIndex = form.msgList.length - 1; // 获取最后一条消息的索引
       let flag = 0;
       // 使用 while 循环流式读取服务器返回的数据
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         const { done, value } = await reader.read(); // 读取流中的数据
         if (done) break; // 如果读取完成，退出循环

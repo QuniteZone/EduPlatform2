@@ -1,0 +1,235 @@
+{
+    "learningPath": [
+        {
+            "stage": "第一阶段",
+            "duration": "2025.4.26-2025.4.27",
+            "goal": "掌握数字素养基础概念与HTML/CSS/JavaScript基本语法",
+            "suggestion": "通过视频教程和在线博客学习，确保对每个知识点的理解，并尝试动手实践相关的代码示例。",
+            "tasks": [
+                {
+                    "taskName": "学习数字素养基础概念",
+                    "taskDescription": "通过观看视频和阅读博客文章，全面了解数字素养的定义、组成部分及其重要性，包括数字化意识、技术技能、应用能力和社会责任等。",
+                    "learningObjectives": [
+                        "理解数字素养的基本定义",
+                        "掌握数字素养的五个核心方面",
+                        "了解数字素养在现代社会中的重要性"
+                    ],
+                    "resources": [
+                        {
+                            "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
+                            "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2024-01-07 09:28:01",
+                            "duration": "",
+                            "views": "1574",
+                            "likes": "15",
+                            "favorites": "33",
+                            "shares": "26",
+                            "tags": ["科普", "数据", "智慧", "数字化转型", "数字素养"],
+                            "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：\n1. 数字化意识：个体对数字化环境的认识和理解，意识到数字化对个人生活和社会发展的深远影响。\n2. 数字技术知识与技能：个体需要具备利用数字技术进行信息的获取、处理、分析和创新的知识和技能。\n3. 数字化应用：个体能够有效地利用数字技术和工具进行生活、学习和工作中的任务和活动。\n4. 数字社会责任：个体具备合理、负责任地使用数字技术和资源的意识和行为。\n5. 专业发展：对于特定领域的专业人士来说，数字素养还包括在专业领域中运用数字技术、数据分析和创新的能力。"
+                        },
+                        {
+                            "link": "https://www.bilibili.com/video/BV1P411C7MW/",
+                            "preview_image_url": "https://i1.hdslb.com/bfs/archive/7f68c623d9dbd8c5175ee54f32d9a6dc94db942a.png@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2023-07-22 14:26:12",
+                            "duration": "46:26",
+                            "views": "5907",
+                            "likes": "61",
+                            "favorites": "271",
+                            "shares": "180",
+                            "tags": ["教育", "数字", "教师", "素养", "教育技术"],
+                            "video_summary": "教育技术| 教师数字素养|暑期研修"
+                        }
+                    ],
+                    "online_source": [
+                        {
+                            "title": "美国数字承诺发布“人工智能素养框架”《AI Literacy - CSDN博客",
+                            "link": "https://blog.csdn.net/qq_29868553/article/details/144214511",
+                            "introduce": "为了使所有参与教育环境的人都能利用AI 工具进行强大的学习，本文描述了一个框架和策略，供教育领导者为其特定受众（例如学习者、教师或其他人）设计和 ..."
+                        },
+                        {
+                            "title": "生成式人工智能对未来经济活动的影响：战略趋势报告",
+                            "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
+                            "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ..."
+                        },
+                        {
+                            "title": "科学智算(AI4S)：交叉与赋能| CCCF精选 - 知乎专栏",
+                            "link": "https://zhuanlan.zhihu.com/p/680555845",
+                            "introduce": "本次秀湖会议的主题是“科学智算：交叉与赋能”，一方面探讨人工智能这一通用目的使能技术所具有的学科交叉内禀促进基础科学研究，另一方面剖析人工智能在工程 ..."
+                        }
+                    ]
+                },
+                {
+                    "taskName": "学习HTML基础语法",
+                    "taskDescription": "通过在线课程和资料，系统学习HTML标签、文档结构及语法规则，并完成简单的网页制作练习。",
+                    "learningObjectives": [
+                        "掌握HTML的基本语法规则",
+                        "熟悉常用HTML标签的使用方法",
+                        "能够独立编写简单的HTML文档"
+                    ],
+                    "resources": [
+                        {
+                            "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
+                            "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2024-01-07 09:28:01",
+                            "duration": "",
+                            "views": "1574",
+                            "likes": "15",
+                            "favorites": "33",
+                            "shares": "26",
+                            "tags": ["科普", "数据", "智慧", "数字化转型", "数字素养"],
+                            "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：\n1. 数字化意识：个体对数字化环境的认识和理解，意识到数字化对个人生活和社会发展的深远影响。\n2. 数字技术知识与技能：个体需要具备利用数字技术进行信息的获取、处理、分析和创新的知识和技能。\n3. 数字化应用：个体能够有效地利用数字技术和工具进行生活、学习和工作中的任务和活动。\n4. 数字社会责任：个体具备合理、负责任地使用数字技术和资源的意识和行为。\n5. 专业发展：对于特定领域的专业人士来说，数字素养还包括在专业领域中运用数字技术、数据分析和创新的能力。"
+                        },
+                        {
+                            "link": "https://www.bilibili.com/video/BV1ES4y1E7PH/",
+                            "preview_image_url": "https://i2.hdslb.com/bfs/archive/b8da118b55ee503076a090a0895f61dbf537aaad.jpg@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2022-07-21 16:10:48",
+                            "duration": "",
+                            "views": "1786",
+                            "likes": "11",
+                            "favorites": "87",
+                            "shares": "26",
+                            "tags": ["学习"],
+                            "video_summary": "培训内容： \n9:00—10:00 人工智能产业发展、人才需求与教学 \n创新团队建设 \n10:00—10:50 人工智能建设美好世界 \n11:00—12:00 元宇宙产业链生态概述及发展趋势\n培训时间：2022 年 7 月 21 日\n我的评价：听一乐"
+                        }
+                    ],
+                    "online_source": [
+                        {
+                            "title": "北京八维集团Web开发人员的基本工具和网站",
+                            "link": "https://zhuanlan.zhihu.com/p/616635023",
+                            "introduce": "北京八维集团建校二十余年，拥有丰富的物联网培训经验。北京八维信息集团创立于1996年，是集产业、教育、研究及人力资源服务于一体的综合性企业集团， ..."
+                        },
+                        {
+                            "title": "成为编程大牛很简单，把这些书看个八成就OK 转载 - CSDN博客",
+                            "link": "https://blog.csdn.net/u011240877/article/details/46129601",
+                            "introduce": "本文把程序员所需掌握的关键知识总结为三大类19个关键概念，然后给出了掌握每个关键概念所需的入门书籍，必读书籍，以及延伸阅读。旨在成为最好最全面的程序 ..."
+                        },
+                        {
+                            "title": "少儿编程概述- 梁君牧- 博客园",
+                            "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
+                            "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。例如学生在 ..."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stage": "第二阶段",
+            "duration": "2025.4.28-2025.4.30",
+            "goal": "掌握CSS基础语法与响应式设计原理",
+            "suggestion": "重点练习CSS样式规则的应用场景，结合实际案例强化响应式设计的理解，同时注意视觉效果的优化。",
+            "tasks": [
+                {
+                    "taskName": "学习CSS基础语法",
+                    "taskDescription": "学习CSS选择器、盒模型、布局方式等基础知识，并完成简单的页面样式设计任务。",
+                    "learningObjectives": [
+                        "掌握CSS的基本语法规则",
+                        "熟悉常用CSS选择器的使用方法",
+                        "能够独立设计简单的网页样式"
+                    ],
+                    "resources": [
+                        {
+                            "link": "https://www.bilibili.com/video/BV1MefbYJEA7/",
+                            "preview_image_url": "https://i1.hdslb.com/bfs/archive/69ae7ebdfd7dc79e198bb9ac54a8c50f8b85eb5f.jpg@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2025-01-22 16:56:30",
+                            "duration": "",
+                            "views": "1971",
+                            "likes": "15",
+                            "favorites": "62",
+                            "shares": "7",
+                            "tags": ["人工智能", "林子雨", "大数据；", "大学计算机公共课", "计算机通识课", "厦门大学", "Python", "大模型", "AIGC"],
+                            "video_summary": "视频信息\n·\n名称：1.1_1 信息概述 || 数字素养通识教程-厦大林子雨"
+                        },
+                        {
+                            "link": "https://www.bilibili.com/video/BV1VP411C7MW/",
+                            "preview_image_url": "https://i1.hdslb.com/bfs/archive/7f68c623d9dbd8c5175ee54f32d9a6dc94db942a.png@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2023-07-22 14:26:12",
+                            "duration": "46:26",
+                            "views": "5907",
+                            "likes": "61",
+                            "favorites": "271",
+                            "shares": "180",
+                            "tags": ["教育", "数字", "教师", "素养", "教育技术"],
+                            "video_summary": "教育技术| 教师数字素养|暑期研修"
+                        }
+                    ],
+                    "online_source": [
+                        {
+                            "title": "IT行业都有哪些职位，初学者（0基础，新人）该如何选择",
+                            "link": "https://www.zhihu.com/question/36991788",
+                            "introduce": "每一个职位下面会分成：工作内容，职业技能，发展前景，薪水范围，成长阶段，入门门槛，天花板，职业素养，学习方法，学习路线，适合人群. 一产品经理. 1 工作内容."
+                        },
+                        {
+                            "title": "科研伦理与学术规范期末参考答案！ - super尚- 博客园",
+                            "link": "https://www.cnblogs.com/smsm/p/14672999.html",
+                            "introduce": "6、在提供和著录引文时，应该遵循以下哪些原则？①原则上使用原始文献，避免采用转引的方式；②引用以必要、适当为限；③引用不得改变或歪曲被引内容的原貌原义；④ ..."
+                        },
+                        {
+                            "title": "【调查报告】关于面向对象（OO）课程目前存在的一些问题和个人思考",
+                            "link": "https://www.cnblogs.com/HansBug/p/9045174.html",
+                            "introduce": "据了解，这门课程从2012年才刚开始开设，从最初的原始机制到现在已经有很很大的改善，这一点也是十分值得肯定的，老师和前辈们的努力功不可没。"
+                        }
+                    ]
+                },
+                {
+                    "taskName": "学习响应式设计原理",
+                    "taskDescription": "通过案例分析掌握响应式设计的核心思想，如媒体查询、弹性布局等，并应用于实际项目。",
+                    "learningObjectives": [
+                        "理解响应式设计的基本原理",
+                        "掌握媒体查询的使用方法",
+                        "学会实现弹性布局"
+                    ],
+                    "resources": [
+                        {
+                            "link": "https://www.bilibili.com/video/BV1FG5SzbEdo/",
+                            "preview_image_url": "https://i2.hdslb.com/bfs/archive/67b3e60082bea527dfdf7c4a53b5f419fa759ed1.jpg@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "",
+                            "duration": "",
+                            "views": "",
+                            "likes": "1",
+                            "favorites": "",
+                            "shares": "",
+                            "tags": ["发现《A calm day》", "是老师，也是UP主！", "大赛", "全国师生信息素养提升实践活动", "获奖作品分享", "全国师生数字素养提升实践活动", "融合 创新应用教学案例", "数字", "管理系统", "素养", "信息素养大赛", "学习UP在B站 · 第2期"],
+                            "video_summary": null
+                        },
+                        {
+                            "link": "https://www.bilibili.com/video/BV1ES4y1E7PH/",
+                            "preview_image_url": "https://i2.hdslb.com/bfs/archive/b8da118b55ee503076a090a0895f61dbf537aaad.jpg@672w_378h_1c_!web-search-common-cover",
+                            "upload_time": "2022-07-21 16:10:48",
+                            "duration": "",
+                            "views": "1786",
+                            "likes": "11",
+                            "favorites": "87",
+                            "shares": "26",
+                            "tags": ["学习"],
+                            "video_summary": "培训内容： \n9:00—10:00 人工智能产业发展、人才需求与教学 \n创新团队建设 \n10:00—10:50 人工智能建设美好世界 \n11:00—12:00 元宇宙产业链生态概述及发展趋势\n培训时间：2022 年 7 月 21 日\n我的评价：听一乐"
+                        }
+                    ],
+                    "online_source": [
+                        {
+                            "title": "如何实现「有效进步」？ - 郑瀚- 博客园",
+                            "link": "https://www.cnblogs.com/LittleHann/p/15870947.html",
+                            "introduce": "1、实现”有效的进步“，第一步要做什么？ 《奥德赛》里面讲了这样一个故事：船长奥德修斯航行经过水妖（Siren）出没的西西里海域。那些水妖能歌善舞， ..."
+                        },
+                        {
+                            "title": "CPA教材战略2024 - BIT祝威- 博客园",
+                            "link": "https://www.cnblogs.com/bitzhuwei/p/18195241",
+                            "introduce": "基础性研究。基础性研究是对科学概念、原理和理论进行的研究。其目的是加深、拓展对某一领域基础知识的认识和理解，为后续的应用研究奠定基础。基础性 ..."
+                        },
+                        {
+                            "title": "干货分享！！网络安全必备技能清单（非常详细）零基础入门到精通",
+                            "link": "https://blog.csdn.net/Spontaneous_0/article/details/145278126",
+                            "introduce": "在实际工作中，编程能力的应用非常广泛：. 漏洞挖掘：编写Fuzzer测试目标系统. 应急响应：快速开发脚本分析海量日志. 渗透测试：开发 ..."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "suggestion": [
+        "每天安排固定的学习时间，建议至少2小时，专注学习一个知识点并及时复习。",
+        "优先选择视频教程和图文相结合的资源，充分利用视觉型学习的特点。",
+        "每学完一个知识点后，尽量通过实际编码练习巩固所学内容。",
+        "定期回顾已学知识点，确保掌握程度达到目标水平。",
+        "利用网络资源扩展学习广度，关注最新的数字素养相关动态和技术发展。"
+    ]
+}

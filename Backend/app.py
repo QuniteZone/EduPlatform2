@@ -6,8 +6,6 @@ from Apps.DatabaseTables import db
 import config.config
 from config.config import Config
 
-
-
 app = Flask(__name__)
 # 注册蓝图
 app.register_blueprint(lesson_plan_bp, url_prefix='/plan')  # 可以设置 URL 前缀
@@ -18,7 +16,6 @@ config_obj = Config()
 app.config.from_object(config.config)
 app.config.from_object(config_obj)
 db.init_app(app) # 初始化数据库
-
 
 
 # 获取服务配置
@@ -37,8 +34,7 @@ def home():
 if __name__ == '__main__':
     with app.app_context():  # 进入应用上下文
         db.create_all()  # 创建表格
-    # app.run(host='0.0.0.0', port=5001)
-    # app.run(host='0.0.0.0', port=service_config.current_service_port, debug=True)
+    # app.run(host='0.0.0.0', port=service_config.current_service_port)
     app.run(host='0.0.0.0', port=service_config.current_service_port, debug=True)
-    # app.run(host='127.0.0.1',port=5001, debug=True)
-    # app.run(port=5001, debug=True)
+    # app.run(host='127.0.0.1',port=service_config.current_service_port, debug=True)
+    # app.run(port=service_config.current_service_port, debug=True)

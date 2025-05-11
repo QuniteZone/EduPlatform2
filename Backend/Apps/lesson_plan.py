@@ -4,7 +4,6 @@ import os
 import json
 import fitz  # PyMuPDF
 import docx  # python-docx
-
 from flask import Blueprint, jsonify, request
 from .genericFunction import LLM, lesson_plan_prompt, class_meeting_prompt, allowed_file, extract_text_from_pdf, \
     extract_text_from_docx, ragflow, script_gen_prompt, jugement_ques_prompt, generate_question_prompt, \
@@ -357,10 +356,6 @@ def create_study_plan():
     print("*" * 50)
 
     return jsonify({"content": message, 'status': 1})
-
-
-
-
 
 
 

@@ -23,7 +23,7 @@ SQLALCHEMY_ECHO = True
 
 #LLM 基本配置信息
 os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
-os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"
+os.environ["OPENAI_API_KEY"] = "sk-OyEPaIflRbJXIospoq197kPskfatY1UmbfKKOszLJicK7RuJ"
 model = "gpt-4o-mini"
 # os.environ["OPENAI_BASE_URL"] = "https://maas-api.cn-huabei-1.xf-yun.com/v1"
 # os.environ["OPENAI_API_KEY"] = "sk-kWw6gDp0ZYWcNTMtD35a4f613921425a9c87312c36C5D3Ca"

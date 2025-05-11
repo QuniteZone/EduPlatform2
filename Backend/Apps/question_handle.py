@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request, stream_with_context, Response
 from werkzeug.utils import secure_filename
 
 from .genericFunction import LLMs_allowed_file, LLMs_StreamOutput, LLM, ragflow, get_globalWeb_source
-from .config import LLMs_IMAGE_UPLOAD_FOLDER,LLMs_FILE_UPLOAD_FOLDER,Public_ip,LLMs_model
+from config.config import LLMs_IMAGE_UPLOAD_FOLDER,LLMs_FILE_UPLOAD_FOLDER,Public_ip,LLMs_model
 
 ques_handle_bp = Blueprint('ques_handle', __name__)
 

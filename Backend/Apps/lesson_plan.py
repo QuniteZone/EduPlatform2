@@ -9,7 +9,7 @@ from flask import Blueprint, jsonify, request
 from .genericFunction import LLM, lesson_plan_prompt, class_meeting_prompt, allowed_file, extract_text_from_pdf, \
     extract_text_from_docx, ragflow, script_gen_prompt, jugement_ques_prompt, generate_question_prompt, \
     get_globalWeb_source,divide_learning_style,recommendation_prompt
-from .config import TextbookRetr_AgentID, QuesGen_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS
+from config.config import TextbookRetr_AgentID, QuesGen_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS
 
 #这是教案生成
 lesson_plan_bp = Blueprint('lesson_plan', __name__)

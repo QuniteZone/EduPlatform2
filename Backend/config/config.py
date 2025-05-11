@@ -1,3 +1,4 @@
+# from nacos_service.nacos_utils import ServiceConfig
 ## 该文件用于存储后端所需基本配置信息
 import json
 import os
@@ -67,8 +68,26 @@ LLMs_ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # 允许的图片
 LLMs_ALLOWED_FILE_EXTENSIONS = {'pdf', 'doc', 'docx'}          # 允许的文件类型
 
 
-
-
-
-
-
+#后端注册为微服务——配置文件
+# class Config(object):
+#     __SVC_CONFIG_FP__ = None
+#
+#     @property
+#     def SVC_CONFIG_FP(self):
+#         if self.__SVC_CONFIG_FP__ is None:
+#             self.__SVC_CONFIG_FP__ = os.path.join(os.path.dirname(__file__), "service.config")
+#         return self.__SVC_CONFIG_FP__
+#
+#     @SVC_CONFIG_FP.setter
+#     def SVC_CONFIG_FP(self, fp):
+#         self.__SVC_CONFIG_FP__ = fp
+#         self.__SERVICE_CONFIG__ = ServiceConfig(config_fp=fp)
+#
+#     # ** 只读属性 **
+#     __SERVICE_CONFIG__ = None
+#
+#     @property
+#     def SERVICE_CONFIG(self):
+#         if self.__SERVICE_CONFIG__ is None:
+#             self.__SERVICE_CONFIG__ = ServiceConfig(config_fp=self.SVC_CONFIG_FP)
+#         return self.__SERVICE_CONFIG__

@@ -11,7 +11,7 @@ import requests
 from Apps.ragflow_operations import RAGflow
 from Apps.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY, LLMs_ALLOWED_IMAGE_EXTENSIONS, \
     LLMs_ALLOWED_FILE_EXTENSIONS, LLMs_model, web_video_url, web_message_url, web_api_key
-import Apps.config
+import config.config
 
 ALLOWED_EXTENSIONS = {'pdf', 'docx'}  # 在生成逐字稿时，所允许上传的文件类型
 ragflow = RAGflow(ragflow_BASE_URL, ragflow_API_KEY)

@@ -1,4 +1,4 @@
-# EduPlatform（编写中）
+# EduPlatform
 EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为教师和学生提供便捷、高效的教学工具。平台集成了多种功能，包括教案生成、班会稿生成、主观题判题、个性化学习推荐等，以帮助提高教师的教学效率和学生的学习效果。
 
 <div style="display: flex; justify-content: space-between;">
@@ -69,11 +69,11 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
 # 数据库配置
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
-USERNAME = ''           # 数据库用户名
-PASSWORD = ''         # 数据库密码
-HOST = ''          # 数据库地址
-PORT = ''               # 数据库端口
-DATABASE = ''    # 数据库名称
+USERNAME = ''              # 数据库用户名
+PASSWORD = ''              # 数据库密码
+HOST = ''                  # 数据库地址
+PORT = ''                  # 数据库端口
+DATABASE = ''              # 数据库名称
 SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
 ```
 ```python
@@ -116,15 +116,16 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
 
 5. **设置前端并启动：**
 
-   - 进入前端目录并安装依赖：
+   进入前端目录并安装依赖：
 
    ```bash
    cd EduPlatform/frontend
+   ```
+   
+   ```bash
    npm install
    ```
-
-6. **启动前端服务器：**
-
+   
    ```bash
    npm run serve
    ```
@@ -132,20 +133,22 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
 ---
 
 ## 三、使用方法
-如何使用 EduPlatform：
+如何使用 EduPlatform：目前无需注册，成功运行后，直接访问对应Web页面即可使用。
+   
+**功能模块**
 
-1. **注册与登录**
-
-   - 用户首次使用需进行注册，填写您的信息，注册完成后可登录使用平台。
-
-2. **功能模块**
-
-   - 在平台首页，用户可以看到所有功能模块的入口，依次点击相应模块以开始使用。
-
-   - **教案生成**：填写教学计划要求后生成教案。
-   - **班会策划**：设定班会主题后可以自动生成班会方案。
-   - **判题功能**：上传学生的主观题答卷后进行自动评分。
-   - **个性化推荐**：系统会依据学生数据推荐学习资源。
+- **智能教案生成**：教师选择年级、科目和章节，系统自动生成标准化教学设计文档，支持一键导出为Word文档。
+- **课堂逐字稿生成**：教师上传讲课提纲后，系统生成详细逐字稿，格式为可编辑的Word文档。
+- **课件PPT生成**：输入相关信息后，系统自动生成与教案匹配的PPT课件，支持直接下载为PPT格式。
+- **智能班会策划**：教师设定班会主题和目标，系统生成班会方案并支持Word导出。
+- **自动出题**：教师设定题目参数，系统生成新题目，并提供参考答案和解析。
+- **知识点梳理**：上传教材或笔记后，系统提取核心概念并构建可视化思维导图。
+- **主观题智能辅助批改**：教师上传参考答案，系统提供评分和批改建议，支持一键确认。
+- **作业智能辅导**：学生上传题目，系统识别并提供逐步解析，帮助学生理解解题方法。
+- **薄弱知识点分析**：系统分析学生错题，识别高频错误知识点并评估掌握情况。
+- **学生画像构建**：持续采集学生学习数据，构建多维学生画像，用于个性化推荐与评估。
+- **个性化学习计划生成**：根据学生状况和目标自动制定学习计划，适用于考前冲刺与课后巩固。
+- **报告生成**：按机构、教师、班级和学生生成统计分析报告，支持下载和分享。
 ---
 
 ## 四、项目结构
@@ -154,39 +157,54 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
 ```
 EduPlatform/
 ├── backend/
-│   ├── app.py                 # 后端主应用
-│   ├── config.py              # 后端配置文件
-│   ├── models/                # 后端数据模型
-│   ├── routes/                # 后端路由处理
-│   └── templates/             # 后端相关模板文件
-└── frontend/
-    ├── src/
-    │   ├── components/        # Vue.js 组件
-    │   ├── views/             # Vue.js 视图
-    │   ├── App.vue            # 入口组件
-    │   └── main.js            # 入口文件
-    └── public/                # 公共资源
+│   ├── Apps/
+│   │   ├── config.py             # 配置文件
+│   │   ├── DatabaseTables.py     # 数据库表相关定义
+│   │   ├── genericFunction.py    # 通用函数
+│   │   ├── lesson_plan.py        # 课程计划相关
+│   │   ├── question_handle.py    # 问题处理逻辑
+│   │   └── ragflow_operations.py # RAGflow操作
+│   ├── RAGflow/
+│   │   ├── agent.json            # RAGflow资源推荐代理
+│   │   └── parentAgent.json      # 其他代理配置
+│   ├────── app.py                # 主应用模板
+│   └── requirements.txt          # 后端依赖文件
+├── frontend/
+│   ├── public/                   # 公共资源
+│   ├── src/                      # 前端源代码
+│   │   ├── assets/               # 静态资源（图片、字体等）
+│   │   ├── components/           # Vue.js组件
+│   │   ├── image/                # 图片文件夹
+│   │   ├── router/               # 路由管理
+│   │   ├── store/                # Vuex状态管理
+│   │   └── views/                # Vue.js视图
+│   │       ├── App.vue           # 入口组件
+│   │       └── main.ts           # 入口文件
+│   ├── .browserslistrc           # 浏览器支持配置
+│   ├── .env                      # 环境变量
+│   ├── package.json              # 项目元数据和依赖
+│   ├── package-lock.json         # 锁定依赖版本
+│   ├── README.md                 # 项目说明文件
+│   └── test/                     # 测试代码
+│       ├── tsconfig.json         # TypeScript配置
+│       └── vue.config.js         # Vue CLI配置
+└── TestCode/                     # 测试代码目录
+    └── README.md                 # 测试说明文件
 ```
 ---
 
 ## 五、技术选型
-- **后端**：
-  - **框架**：使用 Python Flask 框架，提供灵活的后端解决方案。
+- **后端框架**：使用 Python Flask 框架，提供灵活的后端解决方案。
   
-- **数据库**：
-  - **选择**：MySQL 数据库，支持数据的稳定存储与检索。
+- **数据库**：MySQL 数据库，支持数据的稳定存储与检索。
   
-- **前端**：
-  - **框架**：Vue.js 框架，具备良好的组件化能力与响应式特性。
+- **前端**：Vue.js 框架，具备良好的组件化能力与响应式特性。
   
-- **UI 组件库**：
-  - **选择**：Element Plus，提供高质量的 UI 组件支持，增强用户体验。
+- **UI 组件库**：Element Plus，提供高质量的 UI 组件支持，增强用户体验。
 
-- **Markdown 解析**：
-  - **工具**：使用 `marked.js` 进行 Markdown 解析，方便内容的编辑与展示。
+- **Markdown 解析**：使用 `marked.js` 进行 Markdown 解析，方便内容的编辑与展示。
   
-- **富文本编辑器**：
-  - **工具**：WangEditor，为用户提供简单易用的文本编辑解决方案。
+- **富文本编辑器**：：WangEditor，为用户提供简单易用的文本编辑解决方案。
 ---
 
 ## 六、配置说明

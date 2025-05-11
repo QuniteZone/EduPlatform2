@@ -64,7 +64,7 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
 
 
 3. **环境参数配置：**
-- 进入EduPlatform2\Backend\Apps\config.py文件中。配置好**链接MySQL数据库的参数**、**base-LLM 和多模态LLM的api-key相关参数**、**搭建的RAGflow服务IP及相关密钥等**，参照如下格式。
+- 进入EduPlatform2\Backend\config\config.py文件中。配置好**链接MySQL数据库的参数**、**base-LLM 和多模态LLM的api-key相关参数**、**搭建的RAGflow服务IP及相关密钥等**，参照如下格式。
 ```python
 # 数据库配置
 DIALECT = 'mysql'

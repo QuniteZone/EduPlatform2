@@ -24,7 +24,7 @@ export default {
   name: 'AiPptDemo',
   data() {
     return {
-      apiKey: process.env.PPT_API_KEY || 'ak_64Dx9tETsrFppvB1jq', // 从环境变量获取
+      apiKey: process.env.PPT_API_KEY || 'ak_FKoBqj356rFp6J58Rf', // 从环境变量获取
       uid: '200109',
       limit: null,
       token: null,

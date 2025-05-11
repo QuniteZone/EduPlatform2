@@ -400,7 +400,8 @@ def recommend_learningPath():
 11.输出tasks的resources部分和online_source部分不允许为空，其中online_source至少需要有三个。另外online_source至少需要选择两个视频。
 12.video_summary只需要包含视频中简介内容，并且不允许缺失，需要提取关于视频简介的全部内容。其余内容无需提取。
 13.提取的tags需要包含"tags"建的所有值，不允许遗漏，修改等操作。
-
+14.检索的资源不能够出现重复以及混乱组合。
+15.resources不能为空。
 四、输出格式
 输出格式需遵循以下格式，确保信息清晰有序；同时请确保你的输出能被Python的json.loads函数解析，此外不要输出其他任何内容！
 ```json

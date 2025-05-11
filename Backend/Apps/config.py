@@ -9,11 +9,11 @@ DIALECT = 'mysql'
 DRIVER = 'pymysql'
 USERNAME = 'root'
 PASSWORD = '123456'
-HOST = '127.0.0.1'
-PORT = '3306'
-#远程连接qgz的MySQL数据库 94686t61i9.zicp.fun:53604
-# HOST = '94686t61i9.zicp.fun'
-# PORT = '53604'
+# HOST = '127.0.0.1'
+# PORT = '3306'
+#远程连接qgz的MySQL数据库 fz68ok24676.vicp.fun:40694
+HOST = 'fz68ok24676.vicp.fun'
+PORT = '40694'
 DATABASE = 'eduplatform'
 SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
 SQLALCHEMY_TRACK_MODIFICATIONS = False

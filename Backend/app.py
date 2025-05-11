@@ -9,7 +9,6 @@ from Apps.question_handle import ques_handle_bp
 from Apps.DatabaseTables import db, User, Question, KnowledgePoint, Offline_Resource
 import Apps.config
 
-
 app = Flask(__name__)
 # 注册蓝图
 app.register_blueprint(lesson_plan_bp, url_prefix='/plan')  # 可以设置 URL 前缀

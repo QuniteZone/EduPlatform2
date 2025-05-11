@@ -26,6 +26,7 @@ def get_lesson_plan():
         subject = request.args.get('subject')
         knowledge = request.args.get('knowledge')
     promtp=lesson_plan_prompt.format(grade=grade, subject=subject, knowledge=knowledge)
+    print("教案提示词",promtp)
     messages = [{"role": "system",
                  "content": "你是一个教案生成专家，严格按Markdown格式输出结构化教案内容，确保键值命名与层级关系绝对准确"},
                 {"role": "user", "content": promtp}]
@@ -52,8 +53,9 @@ def class_meeting():
         grade = request.args.get('grade')
         knowledge = request.args.get('knowledge')
     promtp=class_meeting_prompt.format(grade=grade, knowledge=knowledge)
+    print("教案提示词",promtp)
     messages = [{"role": "system",
-                 "content": "你是一个班会稿生成专家，严格按Markdown格式输出结构化班会稿内容，确保键值命名与层级关系绝对准确"},
+                 "content": "你是一个班会稿生成专家，严格按Markdown格式((```markdown (生成的内容)```))输出结构化班会稿内容，确保键值命名与层级关系绝对准确"},
                 {"role": "user", "content": promtp}]
 
     return_result=LLM(messages,is_json=False)
@@ -349,7 +351,7 @@ def create_study_plan():
     以上是网络相关资讯库。
 
     三、要求
-    1. 学习路径应包括多个阶段，每个阶段有明确的学习目标和时间安排，需要分析任务的难易，综合划分合理的不同阶段。总阶段数保持在2-10个左右。
+    1. 学习路径应包括多个阶段，每个阶段有明确的学习目标和时间安排，需要分析任务的难易，综合划分合理的不同阶段。总阶段数保持在至少两个及以上。
     2. 每个阶段应包含至少两个学习任务，每个任务应包括任务名称、任务描述、所需资源、在线资源等。
     3. 学习路径应考虑到不同学习风格的需求，如视觉型学习者应优先考虑视频教程和图片资料等。
     4. 学习路径应尽可能涵盖用户需要掌握的所有知识点，并确保每个知识点都有相应的学习任务。
@@ -357,9 +359,10 @@ def create_study_plan():
     8. 学习路径应考虑到用户的实际需求，例如，如果用户要求规定在一周内完成任务，则整体任务必须规定在一周内。
     9. 学习路径应尽可能提供多样化的学习资源，如在线课程、书籍、视频等。
     10.从选用的任何online_source内容，都需要原内容输出。不允许修改、不允许遗漏。
-    11.输出tasks的resources部分和online_source部分不允许为空，其中online_source至少需要有三个。另外online_source至少需要选择两个视频。
+    11.输出tasks的resources部分和online_source部分不允许为空，其中online_source至少需要有三个。另外online_source必须选择两个及以上的视频资源个数。
     12.video_summary只需要包含视频中简介内容，并且不允许缺失，需要提取关于视频简介的全部内容。其余内容无需提取。
     13.提取的tags需要包含"tags"建的所有值，不允许遗漏，修改等操作。
+    14.检索的资源不能够出现重复以及混乱组合。
 
     四、输出格式
     输出格式需遵循以下格式，确保信息清晰有序；同时请确保你的输出能被Python的json.loads函数解析，此外不要输出其他任何内容！
@@ -473,7 +476,10 @@ def create_study_plan():
     new_prompt = prompt.format(study_aim=study_aim, student_type=student_type, knowledge_point=need_study_knowledge,
                                source_response_data=source_response_data, onlineSearch=onlineSearch)
 
-    messages = [{"role": "user", "content": new_prompt}]
+    messages = [
+        {"role": "system",
+         "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
+        {"role": "user", "content": new_prompt}]
 
     print("*" * 50)
     # json缩进形式打印message
@@ -567,7 +573,7 @@ def question_generate():
 
     promtp = generate_question_prompt.format(subject=subject,grade=grade,  question_type=question_type,difficulty=difficulty,question_count=question_count,knowledges=knowledges,other_requirements=other_requirements,knowledge_points=knowledge_points)
     messages = [{"role": "system",
-                 "content": "你是一个资深教育工作者，按照用户提供信息来出题。严格按Markdown格式输出结构化教案内容，确保键值命名与层级关系绝对准确"},
+                 "content": "你是一个资深教育工作者，按照用户提供信息来出题。严格按Markdown格式(```markdown (生成的内容)```)输出结构化教案内容，确保键值命名与层级关系绝对准确"},
                 {"role": "user", "content": promtp}]
 
     return_result = LLM(messages, is_json=False)

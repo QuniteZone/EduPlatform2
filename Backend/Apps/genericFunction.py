@@ -9,7 +9,7 @@ import fitz
 import openai
 import requests
 from Apps.ragflow_operations import RAGflow
-from Apps.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY, LLMs_ALLOWED_IMAGE_EXTENSIONS, \
+from config.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY, LLMs_ALLOWED_IMAGE_EXTENSIONS, \
     LLMs_ALLOWED_FILE_EXTENSIONS, LLMs_model, web_video_url, web_message_url, web_api_key
 import config.config
 

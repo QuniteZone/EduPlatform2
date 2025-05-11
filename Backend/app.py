@@ -6,7 +6,7 @@ from flask_cors import CORS
 # 导入蓝图
 from Apps.lesson_plan import lesson_plan_bp
 from Apps.question_handle import ques_handle_bp
-from Apps.DatabaseTables import db, User, Question, KnowledgePoint, Offline_Resource
+from Apps.DatabaseTables import db
 import config.config
 
 app = Flask(__name__)

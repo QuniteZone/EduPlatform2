@@ -13,3 +13,6 @@ joblib==1.5.0
 scikit-learn==1.6.1
 nacos-sdk-python==2.0.6
 pyyaml==6.0.2
+gunicorn==23.0.0
+waitress==3.0.2
+nacos-service==0.1

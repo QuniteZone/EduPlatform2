@@ -12,7 +12,7 @@ USERNAME = 'root'
 PASSWORD = '123456'
 # HOST = '127.0.0.1'
 # PORT = '3306'
-#远程连接qgz的MySQL数据库 fz68ok24676.vicp.fun:40694
+# 远程连接qgz的MySQL数据库 fz68ok24676.vicp.fun:40694
 HOST = 'fz68ok24676.vicp.fun'
 PORT = '40694'
 DATABASE = 'eduplatform'
@@ -25,6 +25,9 @@ SQLALCHEMY_ECHO = True
 os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
 os.environ["OPENAI_API_KEY"] = "sk-OyEPaIflRbJXIospoq197kPskfatY1UmbfKKOszLJicK7RuJ"
 model = "gpt-4o-mini"
+# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
+# os.environ["OPENAI_API_KEY"] = "sk-faced6168c2748d2a31aba88773a042a"
+# model='deepseek-chat'
 # os.environ["OPENAI_BASE_URL"] = "https://maas-api.cn-huabei-1.xf-yun.com/v1"
 # os.environ["OPENAI_API_KEY"] = "sk-kWw6gDp0ZYWcNTMtD35a4f613921425a9c87312c36C5D3Ca"
 # model='xdeepseekv3'

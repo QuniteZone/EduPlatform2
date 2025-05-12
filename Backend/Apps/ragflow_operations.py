@@ -353,7 +353,7 @@ class RAGflow:
 
 
 
-# # # #使用示例
+# # # # #使用示例
 # ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
 # ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
 # ragflow = RAGflow(ragflow_BASE_URL,ragflow_API_KEY)

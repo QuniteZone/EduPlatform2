@@ -8,7 +8,8 @@ from flask import Blueprint, jsonify, request
 from .genericFunction import LLM, lesson_plan_prompt, class_meeting_prompt, allowed_file, extract_text_from_pdf, \
     extract_text_from_docx, ragflow, script_gen_prompt, jugement_ques_prompt, generate_question_prompt, \
     get_globalWeb_source,divide_learning_style,recommendation_prompt
-from config.config import TextbookRetr_AgentID, QuesGen_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS
+from config.config import TextbookRetr_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS,resourceFinder_AgentID
+
 
 #这是教案生成
 lesson_plan_bp = Blueprint('lesson_plan', __name__)
@@ -316,8 +317,6 @@ def create_study_plan():
     if result1 != None:
         onlineSearch = result1 + result2
 
-    # query = request.args.get('user')
-    resourceFinder_AgentID = "6c3e724a226611f08d100242ac120006"
 
     ###### RAGflow中检索资源库内容
     # 构建代理Agent会话

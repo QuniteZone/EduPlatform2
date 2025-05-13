@@ -22,8 +22,7 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
 ---
 
 ## 二、安装说明
-在安装 **EduPlatform** 之前，请确保系统中有如下环境配置，请尽量保持一致。
-
+在安装 **EduPlatform** 之前，请确保系统中有如下环境配置，请尽量保持一致。 **EduPlatform** 支持Windows、Linux操作系统。
 - **Python** 3.11.9
 - **RAGflow** v0.17.0-57-g4f950430 ful
 - **MySQL** v8.0.30
@@ -43,9 +42,14 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    ```
 2. **安装并配置RAGflow：**
    
-- 按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（数字素养教材知识库、离线资源知识库），简单测试达到基本能使用程度。
-    
+- 按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（教材知识库、离线资源知识库），简单测试达到基本能使用程度。
+
+    用于构建两个知识库的文件在“EduPlatform2/Backend/RAGflow/RAGflow资源库”目录下面。教材知识库构建知识库时各参数保持默认即可。离线资源知识库时仅需修改知识库“分段标识符”，其内容具体如下。
+   ```bash
+   \n!?;。；！？}
+   ```
 - 在RAGflow中，导入EduPlatform2/Backend/RAGflow中两个agent-json文件，并进入RAGflow Web页面中为agent设置好对应检索知识库。
+
 <div style="text-align: center;">
     <img src="TestCode/git演示-RAGflow导入Agent-json.png" alt="Image 1" style="max-width: 100%; height: auto; width: 300px;" />
      <br>
@@ -54,49 +58,49 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
 
 
 - 最后在RAGflow web页面中，将RAGflow服务器IP地址、服务器api-key、两个agent对应的Agent ID记录下来，后将用于设置环境参数配置，参照如下格式。
-```python
-ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
-ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
-TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    #Agent ID
-QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
-```
+   ```python
+   ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
+   ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
+   TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    #Agent ID
+   QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
+   ```
 
 
 
 3. **环境参数配置：**
 - 进入EduPlatform2\Backend\config\config.py文件中。配置好**链接MySQL数据库的参数**、**base-LLM 和多模态LLM的api-key相关参数**、**搭建的RAGflow服务IP及相关密钥等**，参照如下格式。
-```python
-# 数据库配置
-DIALECT = 'mysql'
-DRIVER = 'pymysql'
-USERNAME = ''              # 数据库用户名
-PASSWORD = ''              # 数据库密码
-HOST = ''                  # 数据库地址
-PORT = ''                  # 数据库端口
-DATABASE = ''              # 数据库名称
-SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
-```
-```python
-# base-LLM 和多模态LLM的api-key相关参数
-#LLM 基本配置信息
-os.environ["OPENAI_BASE_URL"] = "https://api.chata******rg/v1"
-os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV********UaJO5i"
-model = "gpt-4o-mini" #LLM模型名称，如gpt-4o-mini
-temperature=0.5 #LLM 温度
-
-#多模态LLM的基本配置信息
-os.environ["DASHSCOPE_API_KEY"] = "sk-b8ee8eb*********be405c9"
-LLMs_model="qvq-max" #多模态LLM模型名称，如qvq-max
-```
-```python
-#rag_flow的相关参数
-ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
-ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
-TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    # Agent ID
-QuesGen_AgentID="cca846541d1d11f*************f6ef"            # Agent ID
-Public_ip="https://******cp.fun"                              #后端的公网IP地址或域名，非必须
-```
-注：其中Public_ip="https://******cp.fun"参数配置非必须，该处为为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导功能无法正常使用。
+   ```python
+   # 数据库配置
+   DIALECT = 'mysql'
+   DRIVER = 'pymysql'
+   USERNAME = ''              # 数据库用户名
+   PASSWORD = ''              # 数据库密码
+   HOST = ''                  # 数据库地址
+   PORT = ''                  # 数据库端口
+   DATABASE = ''              # 数据库名称
+   SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
+   ```
+   ```python
+   # base-LLM 和多模态LLM的api-key相关参数
+   #LLM 基本配置信息
+   os.environ["OPENAI_BASE_URL"] = "https://api.chata******rg/v1"
+   os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV********UaJO5i"
+   model = "gpt-4o-mini" #LLM模型名称，如gpt-4o-mini
+   temperature=0.5 #LLM 温度
+   
+   #多模态LLM的基本配置信息
+   os.environ["DASHSCOPE_API_KEY"] = "sk-b8ee8eb*********be405c9"
+   LLMs_model="qvq-max" #多模态LLM模型名称，如qvq-max
+   ```
+   ```python
+   #rag_flow的相关参数
+   ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
+   ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
+   TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    # Agent ID
+   QuesGen_AgentID="cca846541d1d11f*************f6ef"            # Agent ID
+   Public_ip="https://******cp.fun"                              #后端的公网IP地址或域名，非必须
+   ```
+注：其中Public_ip="https://******cp.fun"参数配置非必须，该为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导——上传文件功能无法正常使用。
 
 
 4. **设置后端：**
@@ -141,105 +145,6 @@ Public_ip="https://******cp.fun"                              #后端的公网IP
    ```
 
 
-
-### Linux 部署流程
-1. **克隆项目仓库：**
-
-   ```bash
-   git clone https://github.com/QuniteZone/EduPlatform2.git
-   ```
-2. **安装并配置RAGflow：**
-   
-- 按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（数字素养教材知识库、离线资源知识库），简单测试达到基本能使用程度。
-    
-- 在RAGflow中，导入EduPlatform2/Backend/RAGflow中两个agent-json文件，并进入RAGflow Web页面中为agent设置好对应检索知识库。
-<div style="text-align: center;">
-    <img src="TestCode/git演示-RAGflow导入Agent-json.png" alt="Image 1" style="max-width: 100%; height: auto; width: 300px;" />
-     <br>
-     (RAGflow中导入agent-json文件，位于agent页面左下角)
-</div>
-
-
-- 最后在RAGflow web页面中，将RAGflow服务器IP地址、服务器api-key、两个agent对应的Agent ID记录下来，后将用于设置环境参数配置，参照如下格式。
-```python
-ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
-ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
-TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    #Agent ID
-QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
-```
-
-
-
-3. **环境参数配置：**
-- 进入EduPlatform2\Backend\config\config.py文件中。配置好**链接MySQL数据库的参数**、**base-LLM 和多模态LLM的api-key相关参数**、**搭建的RAGflow服务IP及相关密钥等**，参照如下格式。
-```python
-# 数据库配置
-DIALECT = 'mysql'
-DRIVER = 'pymysql'
-USERNAME = ''              # 数据库用户名
-PASSWORD = ''              # 数据库密码
-HOST = ''                  # 数据库地址
-PORT = ''                  # 数据库端口
-DATABASE = ''              # 数据库名称
-SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
-```
-```python
-# base-LLM 和多模态LLM的api-key相关参数
-#LLM 基本配置信息
-os.environ["OPENAI_BASE_URL"] = "https://api.chata******rg/v1"
-os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV********UaJO5i"
-model = "gpt-4o-mini" #LLM模型名称，如gpt-4o-mini
-temperature=0.5 #LLM 温度
-
-#多模态LLM的基本配置信息
-os.environ["DASHSCOPE_API_KEY"] = "sk-b8ee8eb*********be405c9"
-LLMs_model="qvq-max" #多模态LLM模型名称，如qvq-max
-```
-```python
-#rag_flow的相关参数
-ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
-ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
-TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    #Agent ID
-QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
-```
-注：其中Public_ip="https://******cp.fun"参数配置非必须，该处为为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导功能无法正常使用。
-
-
-4. **设置后端：**
-
-   进入后端目录并安装依赖：
-
-   ```bash
-   cd EduPlatform2/backend
-   ```
-   ```bash
-   pip install -r requirements.txt
-   ```
-   安装好依赖后，即可成功后端。并启动对应服务。
-   ```bash
-   python app.py
-   ```
-
-
-5. **设置前端并启动：**
-
-   进入前端目录并安装依赖：
-
-   ```bash
-   cd EduPlatform/frontend
-   ```
-   
-   ```bash
-   npm install
-   ```
-   
-   ```bash
-   npm run serve
-   ```
-
-
----
-
 ## 三、使用方法
 如何使用 EduPlatform：目前无需注册，成功运行后，直接访问对应Web页面即可使用。
    
@@ -253,10 +158,15 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
 - **知识点梳理**：上传教材或笔记后，系统提取核心概念并构建可视化思维导图。
 - **主观题智能辅助批改**：教师上传参考答案，系统提供评分和批改建议，支持一键确认。
 - **作业智能辅导**：学生上传题目，系统识别并提供逐步解析，帮助学生理解解题方法。
+- **个性化学习计划生成**：根据学生状况和目标自动制定学习计划，适用于考前冲刺与课后巩固。
+
+**后续开发更多功能**
 - **薄弱知识点分析**：系统分析学生错题，识别高频错误知识点并评估掌握情况。
 - **学生画像构建**：持续采集学生学习数据，构建多维学生画像，用于个性化推荐与评估。
-- **个性化学习计划生成**：根据学生状况和目标自动制定学习计划，适用于考前冲刺与课后巩固。
+- **学习进度监控**：实时监控学生学习进度，提供个性化学习建议与调整。
 - **报告生成**：按机构、教师、班级和学生生成统计分析报告，支持下载和分享。
+......
+
 ---
 
 ## 四、项目结构
@@ -269,12 +179,12 @@ EduPlatform/
 │   │   ├── config.py             # 配置文件
 │   │   ├── DatabaseTables.py     # 数据库表相关定义
 │   │   ├── genericFunction.py    # 通用函数
-│   │   ├── lesson_plan.py        # 课程计划相关
-│   │   ├── question_handle.py    # 问题处理逻辑
+│   │   ├── lesson_plan.py        # 课程教案等功能路由
+│   │   ├── question_handle.py    # 课程问题等功能路由
 │   │   └── ragflow_operations.py # RAGflow操作
 │   ├── RAGflow/
-│   │   ├── agent.json            # RAGflow资源推荐代理
-│   │   └── parentAgent.json      # 其他代理配置
+│   │   ├── 资源推荐agent.json     # RAGflow资源推荐代理
+│   │   └── 逐字稿Agent.json       # 其他代理配置
 │   ├────── app.py                # 主应用模板
 │   └── requirements.txt          # 后端依赖文件
 ├── frontend/
@@ -299,6 +209,7 @@ EduPlatform/
 └── TestCode/                     # 测试代码目录
     └── README.md                 # 测试说明文件
 ```
+
 ---
 
 ## 五、技术选型

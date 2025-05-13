@@ -1,164 +1,112 @@
 <template>
   <div class="main_container">
-    <div class="about">
+    <!-- 顶部区域 -->
+    <div class="header">
       <h2>作业辅导</h2>
-      <h4>助学场景：AI作业辅导</h4>
+      <p>助学场景：AI作业辅导</p>
     </div>
-    <div class="common-layout">
-      <el-container>
-        <el-container class="split-container">
-          <el-aside width="70%" class="chat-container">
-            <div id="chat" :class="form.msgList.length === 0 ? 'nodata' : ''">
-              <div class="chat-message" v-for="(item, index) in form.msgList" :key="index">
-                <div class="chat-item user">
-                  <div class="avatar-container">
-                    <img src="@/image/user-icon.png" alt="用户图标" class="chat-icon" />
-                  </div>
-                  <div class="chat-bubble user">
-                    <div class="message-content">{{ item.question }}</div>
-                  </div>
-                </div>
-                <div class="chat-item bot">
-                  <div class="avatar-container">
-                    <img src="@/image/bot-icon.png" alt="机器人图标" class="chat-icon" />
-                  </div>
-                  <div class="chat-bubble bot">
-                    <div class="message-content" v-html="item.answer"></div>
-                  </div>
-                </div>
+    <!-- 主体内容 -->
+    <div class="content-container">
+      <!-- 消息区域 -->
+      <div class="message-area">
+        <div id="chat" :class="form.msgList.length === 0 ? 'nodata' : ''">
+          <!-- 欢迎提示 -->
+          <div v-if="form.msgList.length === 0" class="welcome-message">
+            <span>欢迎提问！</span>
+          </div>
+          <!-- 消息列表 -->
+          <div v-for="(item, index) in form.msgList" :key="index" class="message-group">
+            <!-- 用户提问 -->
+            <div class="user-message">
+              <div class="avatar-container-user">
+                <img src="@/image/user-icon.png" alt="用户图标" class="chat-icon"/>
               </div>
+              <div class="bubble user-bubble">{{ item.question }}</div>
             </div>
-          </el-aside>
-          <el-main class="input-container">
-            <div class="input-wrapper">
-              <el-input
-                class="input-box"
-                @keyup.enter="sendMsg"
-                v-model="form.input"
-                placeholder="请输入问题..."
-              ></el-input>
-              <el-button class="send-button" @click="sendMsg">发送</el-button>
-              <el-tooltip content="上传作业文件（仅识别文字）,支持word，PDF和各类图片" placement="top">
-                <el-upload
-                  action=""
-                  :http-request="customUpload"
-                  :show-file-list="false"
-                  accept=".jpg,.jpeg,.png,.doc,.docx,.pdf"
-                  multiple
-                >
-                  <img src="@/image/upload-icon.png" alt="上传图标" class="upload-icon" />
-                </el-upload>
-              </el-tooltip>
+            <!-- 思考内容（用特殊样式展示） -->
+            <div v-if="item.thinking" class="thinking-content">
+              <div class="label">🧠 思考过程：</div>
+              <div class="content" v-html="item.thinking"></div>
             </div>
-            <div class="uploaded-files">
-              <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item">
-                <span class="file-name">{{ file.name }}</span>
-                <img
-                  v-if="file.previewUrl"
-                  :src="file.previewUrl"
-                  alt="文件预览"
-                  class="file-preview"
-                />
-                <button class="delete-button" @click="removeFile(index)">删除</button>
+            <!-- AI 回复 -->
+            <div v-if="item.answer" class="bot-message">
+              <div class="avatar-container-bot">
+                <img src="@/image/bot-icon.png" alt="机器人图标" class="chat-icon"/>
               </div>
+              <div class="bubble bot-bubble" v-html="parseMarkdown(item.answer)"></div>
             </div>
-            <p class="disclaimer">
-              服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不代表我们的态度或观点。
-            </p>
-          </el-main>
-        </el-container>
-      </el-container>
+          </div>
+        </div>
+      </div>
+      <!-- 输入框区域 -->
+      <div class="input-wrapper">
+        <el-input
+            class="input-box"
+            @keyup.enter="sendMsg"
+            v-model="form.input"
+            placeholder="请输入问题..."
+        ></el-input>
+        <el-button class="send-button" @click="sendMsg">发送</el-button>
+        <el-tooltip content="上传作业文件（仅识别文字）,支持word，PDF和各类图片" placement="top">
+          <el-upload
+              action=""
+              :http-request="customUpload"
+              :show-file-list="false"
+              accept=".jpg,.jpeg,.png,.doc,.docx,.pdf"
+              multiple
+          >
+            <img src="@/image/upload-icon.png" alt="上传图标" class="upload-icon"/>
+          </el-upload>
+        </el-tooltip>
+      </div>
+      <!-- 已上传文件列表 -->
+      <div class="uploaded-files">
+        <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item">
+          <span class="file-name">{{ file.name }}</span>
+          <img
+              v-if="file.previewUrl"
+              :src="file.previewUrl"
+              alt="文件预览"
+              class="file-preview"
+          />
+          <button class="delete-button" @click="removeFile(index)">删除</button>
+        </div>
+      </div>
+      <!-- 提示信息 -->
+      <p class="disclaimer">
+        服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不代表我们的态度或观点。
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, nextTick, ref } from 'vue';
+import {reactive, nextTick, ref} from 'vue';
 import axios from "axios";
+import MarkdownIt from 'markdown-it'; // 引入 markdown-it
 
-const form = reactive({
-  input: '',
-  msgList: [],
-  fileIPs: []
+// 初始化 markdown-it 实例
+const md = new MarkdownIt({
+  html: true, // 允许渲染 HTML
+  linkify: true, // 自动识别链接
+  typographer: true // 启用排版优化
 });
-let LLMs_messages = [];
 
-function typeWriter(text, element, speed = 30) {
-  let i = 0;
-  const currentAnswer = element.answer || "";
-  if (currentAnswer === "AI生成中...") {
-    element.answer = "";
+// 定义解析 Markdown 的方法
+function parseMarkdown(content) {
+  try {
+    return md.render(content); // 渲染 Markdown 为 HTML
+  } catch (error) {
+    console.error("Markdown 解析失败:", error);
+    return content; // 如果解析失败，返回原始内容
   }
-  return new Promise((resolve) => {
-    function typing() {
-      if (i < text.length) {
-        if (text.charAt(i) === '\n') {
-          element.answer += '<br>';
-        } else if (text.charAt(i) === ' ') {
-          element.answer += '&nbsp;';
-        } else {
-          element.answer += text.charAt(i);
-        }
-        i++;
-        setScrollToBottom();
-        setTimeout(typing, speed);
-      } else {
-        resolve();
-      }
-    }
-    typing();
-  });
 }
 
-async function sendMsg() {
-  if (form.input.length > 0) {
-    const user_question = form.input;
-    const msg = {
-      question: user_question,
-      answer: "AI生成中..."
-    };
-    form.msgList.push(msg);
-    form.input = "";
-    setScrollToBottom();
-    const llm_cont = {
-      'role': 'user',
-      'content': user_question,
-    };
-    let llm_return_content = "";
-    LLMs_messages.push(llm_cont);
-    try {
-      const response = await fetch("/api/ques/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: LLMs_messages,
-          image_urls: form.fileIPs || []
-        })
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      const lastMsgIndex = form.msgList.length - 1;
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        await typeWriter(chunk, form.msgList[lastMsgIndex], 10);
-        llm_return_content += chunk;
-      }
-      form.msgList[lastMsgIndex].answer = llm_return_content;
-      LLMs_messages.push({
-        'role': 'assistant',
-        'content': llm_return_content,
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      form.msgList[form.msgList.length - 1].answer = "生成失败，请稍后重试";
-    }
-  }
+function setScrollToBottom() {
+  nextTick(() => {
+    const chat = document.querySelector('#chat');
+    if (chat) chat.scrollTop = chat.scrollHeight;
+  });
 }
 
 const uploadedFiles = ref([]);
@@ -168,7 +116,7 @@ async function customUpload(fileData) {
   formData.append("file", fileData.file);
   try {
     const response = await axios.post("/api/ques/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+      headers: {"Content-Type": "multipart/form-data"}
     });
     if (response.data && response.data.fileIP) {
       const fileIP = response.data.fileIP;
@@ -200,83 +148,303 @@ function removeFile(index) {
   form.fileIPs.splice(index, 1);
 }
 
-async function setScrollToBottom() {
-  await nextTick();
-  let chat = document.querySelector("#chat");
-  chat.scrollTop = chat.scrollHeight;
+const form = reactive({
+  input: '',
+  msgList: [],
+  fileIPs: []
+});
+
+let LLMs_messages = [];
+
+async function sendMsg() {
+  if (form.input.length > 0) {
+    const user_question = form.input;
+    const msg = {
+      question: user_question,
+      thinking: "AI生成中...",
+      answer: ""
+    };
+    form.msgList.push(msg);
+    form.input = "";
+    setScrollToBottom();
+
+    const llm_cont = {
+      'role': 'user',
+      'content': user_question,
+    };
+    LLMs_messages.push(llm_cont);
+
+    try {
+      const response = await fetch("/api/ques/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: LLMs_messages,
+          image_urls: form.fileIPs || []
+        })
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      const lastMsgIndex = form.msgList.length - 1;
+
+      let fullResponse = '';
+      let isThinking = false;
+      let thinkingContent = '';
+      let answerContent = '';
+      let isInThinkTag = false;
+
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, {stream: true});
+        fullResponse += chunk;
+
+        // 处理 <think> 标签
+        if (!isInThinkTag) {
+          let startIndex = fullResponse.indexOf('<think>');
+          if (startIndex !== -1) {
+            isThinking = true;
+            isInThinkTag = true;
+            thinkingContent += fullResponse.slice(0, startIndex);
+            fullResponse = fullResponse.slice(startIndex + '<think>'.length);
+          }
+        }
+
+        if (isInThinkTag) {
+          let endIndex = fullResponse.indexOf('</think>');
+          if (endIndex !== -1) {
+            thinkingContent += fullResponse.slice(0, endIndex);
+            form.msgList[lastMsgIndex].thinking = thinkingContent;
+            fullResponse = fullResponse.slice(endIndex + '</think>'.length);
+            isInThinkTag = false;
+          } else {
+            thinkingContent += fullResponse;
+            fullResponse = '';
+          }
+        }
+
+        // 解析完成后，处理剩余的回复内容
+        if (!isInThinkTag) {
+          answerContent += fullResponse;
+
+          // 模拟打字机效果
+          const displayText = answerContent.trim();
+          typeWriterEffect(lastMsgIndex, displayText);
+
+          fullResponse = '';
+        }
+
+        setScrollToBottom();
+      }
+
+      LLMs_messages.push({
+        'role': 'assistant',
+        'content': form.msgList[lastMsgIndex].answer
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      form.msgList[form.msgList.length - 1].answer = "生成失败，请稍后重试";
+    }
+  }
+}
+
+// 打字机效果函数
+function typeWriterEffect(index, text) {
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < text.length) {
+      form.msgList[index].answer = text.substring(0, i + 1);
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+    setScrollToBottom();
+  }, 50); // 控制打字速度（50ms）
 }
 </script>
 
 <style scoped>
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background-color: #f7f9fc;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-#app {
-  height: 100%;
-}
+/* 整体容器 */
 .main_container {
-  margin-right: 80px;
-  margin-left: 80px;
-  margin-top: 40px;
-}
-.about {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin: 2rem auto;
-  background: linear-gradient(135deg, #a7e6e5 0%, #e9ecef 100%);
-  border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  max-width: 10000px;
-  height: 200px;
+  width: 100%;
+  height: 100vh; /* 全屏高度 */
+  margin: 0 auto;
+  padding: 20px;
 }
-.about h2 {
-  color: #458fd8;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.5px;
-  position: relative;
+
+/* 顶部区域 */
+.header {
+  background-color: #e6fffa;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex; /* 使用 Flexbox */
+  flex-direction: column; /* 垂直排列 */
+  justify-content: center; /* 垂直居中 */
+  align-items: center; /* 水平居中 */
+  width: 100%;
 }
-.about h4 {
-  color: #518fc5;
-  font-size: 1.3rem;
-  font-weight: 400;
+
+.header h2 {
+  color: #0079bf;
+  font-size: 24px;
   margin: 0;
-  padding: 0.8rem 1.5rem;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 1rem;
-  display: inline-block;
-  border: 1px solid rgba(0, 0, 0, 0.05);
 }
-.common-layout {
-  height: calc(100vh - 260px);
+
+.header p {
+  background-color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  margin-top: 10px; /* 调整间距 */
+}
+
+/* 主体内容 */
+.content-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* 垂直布局 */
+  justify-content: space-between; /* 确保输入框在底部 */
+  align-items: stretch;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 20px;
+  height: calc(100vh - 160px); /* 减去顶部区域和底部间距 */
 }
-.split-container {
-  display: flex;
-  height: 100%;
-}
-.chat-container {
+
+/* 消息区域 */
+.message-area {
+  flex: 1; /* 占据剩余空间 */
   overflow-y: auto;
+  //border: 1px solid #ccc; /* 边框区分 */
+  border-radius: 8px;
   padding: 20px;
-  border-right: 1px solid #e0e0e0;
+  background-color: #f9f9f9; /* 背景颜色 */
 }
-.input-container {
+
+#chat {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.welcome-message {
   display: flex;
-  flex-direction: column;
-  padding: 20px;
-  background-color: #ffffff;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #888;
 }
+
+.message-group {
+  margin-bottom: 20px;
+}
+
+.user-message, .bot-message {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.user-message {
+  justify-content: flex-end;
+}
+
+.user-message {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 消息靠右对齐 */
+  gap: 10px;
+  margin-bottom: 8px;
+}
+/* 用户头像容器 */
+.avatar-container-user {
+  order: 2; /* 将头像放在右侧 */
+}
+/* 用户消息气泡 */
+.user-bubble {
+  background-color: rgba(122, 138, 117, 0.25); /* 用户消息气泡背景色 */
+  border-radius: 16px 16px 16px 4px; /* 右侧圆角 */
+  padding: 12px 16px;
+  max-width: 70%;
+  word-break: break-word;
+  white-space: pre-wrap;
+  align-self: flex-end; /* 气泡靠右对齐 */
+}
+
+/* AI 回复消息 */
+.bot-message {
+  display: flex;
+  align-items: start;
+  justify-content: flex-start; /* AI 消息靠左对齐 */
+}
+
+/* AI 头像容器 */
+.avatar-container-bot {
+  align-items: flex-start;
+}
+
+/* AI 消息气泡 */
+.bot-bubble {
+  background-color: rgba(122, 138, 117, 0.25);
+  border-radius: 16px 16px 4px 16px; /* 左侧圆角 */
+  padding: 3px 4px;
+  max-width: 100%;
+  word-break: break-word;
+  white-space: pre-wrap;
+  align-self: flex-start; /* 气泡靠左对齐 */
+}
+
+
+.thinking-content {
+  margin-top: 10px;
+  margin-left: 40px;
+  padding: 10px 15px;
+  background-color: rgba(122, 138, 117, 0.08);
+  border-left: 4px solid #757e8a;
+  color: rgb(4, 4, 4);
+  border-radius: 6px;
+}
+
+.label {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+/* 输入框区域 */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-box {
+  flex: 1;
+}
+
+.send-button {
+  padding: 10px 20px;
+  background-color: #0079bf;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.upload-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* 已上传文件列表 */
 .uploaded-files {
   margin: 10px 0;
   display: flex;
@@ -285,6 +453,7 @@ html, body {
   background-color: #f7f9fc;
   min-height: 40px;
 }
+
 .file-item {
   display: flex;
   align-items: center;
@@ -295,18 +464,21 @@ html, body {
   font-size: 12px;
   color: #333;
 }
+
 .file-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 150px;
 }
+
 .file-preview {
   width: 24px;
   height: 24px;
   object-fit: cover;
   border-radius: 4px;
 }
+
 .delete-button {
   background-color: #ff4d4f;
   color: white;
@@ -316,110 +488,15 @@ html, body {
   cursor: pointer;
   font-size: 10px;
 }
+
 .delete-button:hover {
   background-color: #ff7875;
 }
-.chat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-.chat-item.user {
-  align-items: flex-end;
-}
-.avatar-container {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 4px;
-}
-.chat-item.user .avatar-container {
-  justify-content: flex-end;
-}
-.chat-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-}
-#chat {
-  flex: 1;
-  scroll-behavior: smooth;
-}
-.chat-message {
-  max-width: 800px;
-  margin: 12px auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.chat-bubble {
-  padding: 12px 16px;
-  border-radius: 16px;
-  max-width: 100%;
-  word-break: break-word;
-  font-size: 16px;
-  line-height: 1.5;
-  display: flex;
-  align-items: flex-start;
-}
-.chat-bubble.user {
-  background-color: #e0f7fa;
-  align-self: flex-end;
-  border-bottom-right-radius: 4px;
-}
-.chat-bubble.bot {
-  background-color: #f1f1f1;
-  align-self: flex-start;
-  border-bottom-left-radius: 4px;
-}
-.message-content {
-  text-align: left;
-  flex: 1;
-}
-.input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.input-box {
-  flex: 1;
-  height: 45px;
-  border-radius: 12px;
-}
-.send-button {
-  height: 45px;
-  border-radius: 12px;
-}
-.upload-icon {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-.upload-icon:hover {
-  transform: scale(1.1);
-}
+
+/* 提示信息 */
 .disclaimer {
-  margin-top: 16px;
   font-size: 12px;
-  color: #888;
+  color: #666;
   text-align: center;
-}
-.nodata {
-  background-repeat: no-repeat;
-  background-size: 35%;
-  background-position: center 40%;
-  position: relative;
-}
-.nodata::before {
-  content: "开始你的提问吧~";
-  position: absolute;
-  top: 70%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 25px;
-  color: #888;
-  font-weight: 500;
 }
 </style>

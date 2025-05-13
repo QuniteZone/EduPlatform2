@@ -6,9 +6,16 @@
         <p class="label-text">输入年级</p>
         <input v-model="grade" placeholder="请输入..."/>
       </div>
-      <el-button type="primary" @click="generateContent" class="button">
-        生成内容
-      </el-button>
+<!--      提交按钮-->
+      <el-button
+      type="primary"
+      @click="generateContent"
+      :loading="loading"
+      :icon="loading ? 'Loading' : ''"
+      class="button"
+    >
+      {{ loading ? '生成中...' : '生成内容' }}
+    </el-button>
     </div>
   </section>
 </template>
@@ -22,8 +29,10 @@ const emit = defineEmits(['update-preview'])
 const content = ref('')
 const grade = ref('')
 const subject = ref('')
+const loading = ref(false) // 控制加载状态
 
 const generateContent = async () => {
+    loading.value = true // 开始加载
   try {
     const response = await axios.post('/api/plan/class_meeting', {
       grade: grade.value,
@@ -35,6 +44,8 @@ const generateContent = async () => {
   } catch (error) {
     alert('生成失败');
     console.error('请求失败:', error);
+  }finally {
+    loading.value = false // 结束加载
   }
 };
 </script>

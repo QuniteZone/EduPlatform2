@@ -4,103 +4,112 @@
     <div class="select_box">
       <div class="course grade_select">
         <p class="label-text">输入年级</p>
-        <input v-model="grade" placeholder="请输入..."/>
+        <input v-model="grade" placeholder="请输入..." />
       </div>
       <div class="course course_select">
         <p class="label-text">输入学科</p>
-        <input v-model="subject" placeholder="请输入..."/>
+        <input v-model="subject" placeholder="请输入..." />
       </div>
-      <el-button type="primary" @click="generateContent" class="button">
-        生成内容
+      <!-- 按钮添加 loading 状态 -->
+      <el-button
+        type="primary"
+        @click="generateContent"
+        class="button"
+        :loading="loading"
+        :icon="loading ? 'Loading' : ''"
+      >
+        {{ loading ? '生成中...' : '生成内容' }}
       </el-button>
     </div>
   </section>
 </template>
 
-<script lang="ts" setup>
-import {ref, defineEmits} from 'vue'
+<script setup>
+import { ref, defineEmits } from 'vue'
 import axios from 'axios'
 
 const emit = defineEmits(['update-preview'])
 
-
 const content = ref('')
 const grade = ref('')
 const subject = ref('')
-
+const loading = ref(false) // 控制加载状态
 
 const generateContent = async () => {
+  loading.value = true // 开始加载
   try {
     const response = await axios.post('/api/plan/lesson_plan', {
       grade: grade.value,
       subject: subject.value,
       knowledge: content.value
-    });
-    console.log('Editor_content:', response);
+    })
+    console.log('Editor_content:', response)
     emit('update-preview', response.data)
   } catch (error) {
-    alert('生成失败');
-    console.error('请求失败:', error);
+    alert('生成失败')
+    console.error('请求失败:', error)
+  } finally {
+    loading.value = false // 结束加载
   }
-};
+}
 </script>
 
 <style scoped>
 /* 编辑器容器样式 */
 .editor {
-  width: 100%; /* 容器宽度自适应 */
-  max-width: 800px; /* 最大宽度 */
-  margin: 0 auto; /* 水平居中 */
-  border: 2px solid #3498db; /* 边框样式 */
-  border-radius: 10px; /* 圆角大小 */
-  padding: 20px; /* 内边距 */
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border: 2px solid #3498db;
+  border-radius: 10px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  background-color: #fff; /* 背景色 */
+  background-color: #fff;
   box-sizing: border-box;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-  transition: all 0.3s ease; /* 添加过渡效果 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .editor:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 悬停时阴影加深 */
-  border-color: #2980b9; /* 悬停时边框颜色变化 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  border-color: #2980b9;
 }
 
 /* 文本区域样式 */
 textarea {
-  width: 100%; /* 占满容器宽度 */
-  height: 30vh; /* 文本区域高度 */
-  resize: none; /* 是否允许调整大小 */
-  margin-bottom: 20px; /* 底部外边距 */
-  padding: 15px; /* 内边距 */
-  border: 1px solid #ddd; /* 边框样式 */
-  border-radius: 6px; /* 圆角大小 */
-  font-size: 16px; /* 字体大小 */
-  box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
-  transition: all 0.3s ease; /* 添加过渡效果 */
-  background-color: #f8f9fa; /* 背景色 */
-  color: #333; /* 文字颜色 */
+  width: 100%;
+  height: 30vh;
+  resize: none;
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+  color: #333;
 }
 
 textarea:focus {
-  border-color: #3498db; /* 获得焦点时边框颜色变化 */
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); /* 获得焦点时添加阴影 */
-  outline: none; /* 移除默认焦点轮廓 */
-  background-color: #fff; /* 获得焦点时背景色变化 */
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  outline: none;
+  background-color: #fff;
 }
 
 /* 选择框容器样式 */
 .select_box {
-  display: flex; /* 启用 Flexbox 布局 */
-  flex-wrap: nowrap; /* 禁止子元素换行 */
-  justify-content: space-between; /* 子组件之间的间距均匀分布 */
-  align-items: center; /* 垂直居中对齐 */
-  gap: 10px; /* 子组件间距 */
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   margin-top: 0px;
   padding: 15px;
   background-color: #ffffff;
-  border-radius: 8px; /* 允许换行 */
+  border-radius: 8px;
 }
 
 .course {
@@ -126,14 +135,14 @@ textarea:focus {
   transition: all 0.3s ease;
   background-color: #f8f9fa;
   color: #333;
-  flex-grow: 0; /* 不允许增长以侵占其他组件的空间 */
-  flex-shrink: 1; /* 允许在空间不足时缩小 */
+  flex-grow: 0;
+  flex-shrink: 1;
 }
 
 /* Element Plus 选择器样式覆盖 */
 :deep(.select) {
-  width: 100%; /* 宽度自适应 */
-  max-width: 180px; /* 最大宽度 */
+  width: 100%;
+  max-width: 180px;
 }
 
 :deep(.select .el-input__wrapper) {
@@ -155,10 +164,10 @@ textarea:focus {
 
 /* 按钮样式 */
 .button {
-  margin-left: 0; /* 移除默认左侧外边距 */
+  margin-left: 0;
   align-self: flex-end;
-  width: 100%; /* 宽度自适应 */
-  max-width: 180px; /* 最大宽度 */
+  width: 100%;
+  max-width: 180px;
   height: 40px;
   font-size: 16px;
   border-radius: 6px;
@@ -173,35 +182,35 @@ textarea:focus {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .editor {
-    width: 80vw; /* 移动端使用视口宽度 */
-    height: 60vh; /* 移动端容器高度 */
-    padding: 15px; /* 移动端内边距 */
+    width: 80vw;
+    height: 60vh;
+    padding: 15px;
   }
 
   textarea {
-    height: 35vh; /* 移动端文本区域高度 */
-    font-size: 14px; /* 移动端字体大小 */
-    padding: 10px; /* 移动端内边距 */
+    height: 35vh;
+    font-size: 14px;
+    padding: 10px;
   }
 
   .select_box {
-    flex-direction: column; /* 移动端垂直排列 */
-    gap: 15px; /* 移动端间距 */
+    flex-direction: column;
+    gap: 15px;
   }
 
   :deep(.select) {
-    width: 100%; /* 移动端选择框宽度 */
+    width: 100%;
   }
 
   .button {
-    width: 50%; /* 移动端按钮宽度 */
-    margin-left: 0; /* 移动端左侧外边距 */
+    width: 50%;
+    margin-left: 0;
   }
 }
 
 @media (min-width: 769px) and (max-width: 1200px) {
   .select_box {
-    gap: 2%; /* 中等屏幕间距 */
+    gap: 2%;
   }
 }
 </style>

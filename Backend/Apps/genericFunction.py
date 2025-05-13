@@ -2,28 +2,28 @@
 import json
 import os
 import re
+import numpy as np
 from joblib import load
-
 import docx
 import fitz
-import numpy as np
 import openai
 import requests
 from Apps.ragflow_operations import RAGflow
-from Apps.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY, LLMs_ALLOWED_IMAGE_EXTENSIONS, \
+from config.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY, LLMs_ALLOWED_IMAGE_EXTENSIONS, \
     LLMs_ALLOWED_FILE_EXTENSIONS, LLMs_model, web_video_url, web_message_url, web_api_key
-import Apps.config
+import config.config
 
 ALLOWED_EXTENSIONS = {'pdf', 'docx'}  # 在生成逐字稿时，所允许上传的文件类型
 ragflow = RAGflow(ragflow_BASE_URL, ragflow_API_KEY)
 
 
 def divide_learning_style():
-    pkl_path=os.path.join('Apps','student_learning_style_model.pkl')
+    pkl_path=os.path.join('static','student_learning_style_model.pkl')
+
     print(f"pkl:{pkl_path}")
 
     # 加载模型
-    model = load("student_learning_style_model.pkl")
+    model = load(pkl_path)
 
     # 构造一个学生的特征数据
     # 输入示例 ['task_0_ratio'（任务类型0在全部中的占比）, 'task_1_ratio'（任务类型2在全部中的占比）, 'task_2_ratio', 'task_3_ratio', 'task_4_ratio',
@@ -36,13 +36,16 @@ def divide_learning_style():
 
     # 预测
     prediction = model.predict(new_data)
-
     # 输出
     print("预测结果：", prediction)
+
+    return prediction
     # 输出示例 预测结果： [[0 0 0]]
     # 按照学习时间段分布：深夜学习型【0】，日间学习型【1】，全时段学习型【2】
     # 按照任务类型分布：视觉导向型【0】，听觉导向型【1】，读写导向型【2】，多元导向型【3】
     # 按照学习时长和完成率分布：高效学习型【0】，低效学习型【1】
+
+
 
 def format_lesson_plan(text, is_json):
     if is_json:
@@ -554,7 +557,7 @@ class_meeting_prompt = """
 
 """
 
-## 逐字稿提示词 已经弃用，已经放到RAGflow中使用
+## 逐字稿提示词
 script_gen_prompt = """
 一，任务描述：你需要基于用户提供的教案信息和课程教材相关内容，撰写一份教师上课的逐字稿。
     教案内容:{teachPlan}        
@@ -675,6 +678,147 @@ D. 30厘米
 """
 
 
+##个性化推荐 提示词
+recommendation_prompt = """
+    一、任务描述：你需要根据用户输入的学习目标、学习风格和知识点要求，结合已有的推荐资源，制定一个清晰的学习路径。学习路径包括阶段规划和时间安排，同时清晰说明每个阶段的学习任务和目标。
 
+    二、用户输入
+    用户输入包括学习目标、学习风格、需要掌握的知识点和推荐资源，请根据这些要素制定学习路径。
+    学习目标：{study_aim}
+    学习风格：{student_type}
+    --------------------------
+    以下是知识点掌握情况，知识点的权值是指知识点掌握情况。取值为0-1，值越大掌握情况越好：
+    {knowledge_point}
+    以上是知识点掌握情况。
+    --------------------------
+    以下是从资源库中检索的资源情况（后面输出tasks的resources部分从该库中选择）：
+    {source_response_data}
+    以上是从资源库中检索的资源情况。
+    --------------------------
+    以下是网络相关资讯库，实时检索的博客视频等相关资讯（后面输出tasks的online_source部分从该库中选择）：
+    {onlineSearch}
+    以上是网络相关资讯库。
 
+    三、要求
+    1. 学习路径应包括多个阶段，每个阶段有明确的学习目标和时间安排，需要分析任务的难易，综合划分合理的不同阶段。总阶段数保持在至少两个及以上。
+    2. 每个阶段应包含至少两个学习任务，每个任务应包括任务名称、任务描述、所需资源、在线资源等。
+    3. 学习路径应考虑到不同学习风格的需求，如视觉型学习者应优先考虑视频教程和图片资料等。
+    4. 学习路径应尽可能涵盖用户需要掌握的所有知识点，并确保每个知识点都有相应的学习任务。
+    5. 学习路径应提供实际可行的建议，帮助用户在实际操作中提升学习效果。
+    8. 学习路径应考虑到用户的实际需求，例如，如果用户要求规定在一周内完成任务，则整体任务必须规定在一周内。
+    9. 学习路径应尽可能提供多样化的学习资源，如在线课程、书籍、视频等。
+    10.从选用的任何online_source内容，都需要原内容输出。不允许修改、不允许遗漏。
+    11.输出tasks的resources部分和online_source部分不允许为空，其中online_source至少需要有三个。另外online_source必须选择两个及以上的视频资源个数。
+    12.video_summary只需要包含视频中简介内容，并且不允许缺失，需要提取关于视频简介的全部内容。其余内容无需提取。
+    13.提取的tags需要包含"tags"建的所有值，不允许遗漏，修改等操作。
+    14.检索的资源不能够出现重复以及混乱组合。
+
+    四、输出格式
+    输出格式需遵循以下格式，确保信息清晰有序；同时请确保你的输出能被Python的json.loads函数解析，此外不要输出其他任何内容！
+    ```json
+    {{
+    "learningPath": [
+    {{
+    "stage": "第一阶段",
+    "duration": "2025.4.26-2025.4.30",
+    "goal": "达到基础口语交流能力",
+
+    "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "tasks": [
+        {{
+            "taskName": "学习日常对话",
+            "taskDescription": "学习日常对话，包括问候、介绍、询问天气等基本对话内容。",#尽量详细点，按照总分，通过xx达到xx目标等形式。
+            "learningObjectives":["基本问候语（如你好、早上好）","自我介绍的常用句型","询问对方姓名的方式","询问天气的常用句子","日常生活中的常见对话场景（如购物、点餐）","基本感谢与道歉的表达方式","询问时间和日期的句型","描述天气状况的常用形容词（如晴天、雨天）","进行闲聊的常用话题（如兴趣爱好）","结束对话的礼貌用语"],#该任务涉及需要学习、强化的知识点。list对象呈现
+            "resources": [
+                {{   
+                    "title": "4月18日 如何准备2025年教师数字素养大赛？2",
+                    "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
+                    "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
+                    "upload_time": "2024-01-07 09:28:01",
+                    "duration": "",
+                    "views": "1574",
+                    "likes": "15",
+                    "favorites": "33",
+                    "shares": "26",
+                    "tags": ["科普","数据","智慧","数字化转型","数字素养"], #不允许缺失项。需要包含所有原标签
+                    "video_summary": "什么是数字素养？\n\n数字素养是指个体对数字化环........."
+                }},
+                {{
+                    "title": "4月18日 如何准备2025年教师数字素养大赛？2",
+                    "link": "https://www.bilibili.com/video/BV1cA5Cz3ETc/",
+                    "preview_image_url": "https://i1.hdslb.com/bfs/archive/f2008926f0edd2759d655e1265f2e09a4998300a.jpg@672w_378h_1c_!web-search-common-cover",
+                    "upload_time": "2025-04-18 11:57:37",
+                    "duration": "",
+                    "views": "322",
+                    "likes": "2",
+                    "favorites": "17",
+                    "shares": "3",
+                    "tags": [ "教育","原创","大赛","学习","广东省教师数字素养提升实践大赛","老师"
+                    ],
+                    "video_summary": "视频信息\n·\n名称：4月18日 如何准......"
+                }}],  # 请从资源库中检索资源，包括各种链接等。忠于“资源库中检索的资源情况”内容。
+            "online_source": [
+                {{
+                    "title": "B站最强学习资源汇总（数据科学，机器学习，Python） - 豫南- 博客园",
+                    "link": "https://www.cnblogs.com/lqshang/p/17281644.html",
+                    "introcude": "这门课程将学会理解业界构建深度神经网络应用最有效的做法； 能够高效地使用神经网络通用的技巧，包括初始化、L2和dropout正则化、Batch归一化、梯度检验",
+                    "is_video":0,
+                }},
+                {{
+                    "title": "机器学习技术与实现——MATLAB大数据处理- MATLAB",
+                    "link": "https://it.mathworks.com/videos/matlab-machine-learning-techniques-for-big-data-processing-100945.html",
+                    "introcude": "相关资源. 相关产品. MATLAB · 使用MATLAB 衔接无线通信设计与测试 · 阅读 ... 基础教学：符号. 58:23 视频长度为58:23 · MATLAB大学基础教学: 符号数学 ...",
+                    “times":"27:36",
+                    "update_time":"2022年7月31日",
+                    "image_url":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcUtGr9vKE1cCl4s5m7p4dYjqChUyl7o6LlDtsO9GeOCTa&s",
+                    "is_video":1,
+                }},
+                {{
+                    "title": "机器学习技术与实现——MATLAB大数据处理- MATLAB",
+                    "link": "https://it.mathworks.com/videos/matlab-machine-learning-techniques-for-big-data-processing-100945.html",
+                    "introcude": "相关资源. 相关产品. MATLAB · 使用MATLAB 衔接无线通信设计与测试 · 阅读 ... 基础教学：符号. 58:23 视频长度为58:23 · MATLAB大学基础教学: 符号数学 ...",
+                    “times":"27:36",
+                    "update_time":"2022年7月31日",
+                    "image_url":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcUtGr9vKE1cCl4s5m7p4dYjqChUyl7o6LlDtsO9GeOCTa&s",
+                    "is_video":1,
+                }},
+            ] #请从网络检索工具中检索资源，包括各种链接等。忠于“网络相关资讯库”内容。
+        }},
+        {{
+            "taskName": "练习发音技巧",
+            "taskDescription": "练习发音技巧，包括音标、连读、重音等。",
+            "resources": ......,
+            "online_source": ......
+        }}
+    ]
+    }},
+    {{
+    "stage": "第二阶段",
+    "duration": "2025.5.1-2025.5.7",
+    "goal": "达到流利口语交流能力",
+    "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "tasks": [
+        {{
+            "taskName": "参与讨论活动",
+            "taskDescription": "通过讨论活动提高口语流利度。",
+            "resources": ......,
+            "online_source": ......
+        }},
+        {{
+            "taskName": "加强听力练习",
+            "taskDescription": "通过听新闻、播客等素材来提升听力理解能力。",
+            "resources": ......,
+            "online_source": ......
+        }}
+    ]
+    }}
+    ],
+    "suggestion": [
+    "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "建议每日练习与模拟对话，设定每日的口语练习时间，比如30分钟，进行英语口语的自我练习。这可以包括朗读课文、跟读英语视频或音频，或与语言交换伙伴进行对话练习",
+    "观看和模仿英语影视作品,选择一些您喜欢的英语电影、电视剧或YouTube频道，观看时注意人物的对话和语音语调。暂停并模仿他们的发音和表达方式。"
+    ] #请根据学生的学习进度和表现，给出个性化的3-5条学习建议。
+    }}
+    ```
+    """
 

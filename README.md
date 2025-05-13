@@ -42,22 +42,22 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    ```
 2. **安装并配置RAGflow：**
    
-- 按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（教材知识库、离线资源知识库），简单测试达到基本能使用程度。
+    按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（教材知识库、离线资源知识库），简单测试达到基本能使用程度。
 
     用于构建两个知识库的文件在“EduPlatform2/Backend/RAGflow/RAGflow资源库”目录下面。教材知识库构建知识库时各参数保持默认即可。离线资源知识库时仅需修改知识库“分段标识符”，其内容具体如下。另外RAGflow所用embedding-LLM：ZHIPU-AI embedding-3，对话LLM使用gpt-4o-mini。
    ```bash
    \n!?;。；！？}
    ```
-- 在RAGflow中，导入EduPlatform2/Backend/RAGflow中两个agent-json文件，并进入RAGflow Web页面中为agent设置好对应检索知识库。教材知识点agent.json对应Agent的知识库对应是教材知识库、离线资源推荐agent.json对应Agent的知识库对应是离线资源知识库。
+   在RAGflow中，导入EduPlatform2/Backend/RAGflow中两个agent-json文件，并进入RAGflow Web页面中为agent设置好对应检索知识库。教材知识点agent.json对应Agent的知识库对应是教材知识库、离线资源推荐agent.json对应Agent的知识库对应是离线资源知识库。
 
-<div style="text-align: center;">
-    <img src="TestCode/git演示-RAGflow导入Agent-json.png" alt="Image 1" style="max-width: 100%; height: auto; width: 300px;" />
-     <br>
-     (RAGflow中导入agent-json文件，位于agent页面左下角)
-</div>
+   <div style="text-align: center;">
+       <img src="TestCode/git演示-RAGflow导入Agent-json.png" alt="Image 1" style="max-width: 100%; height: auto; width: 300px;" />
+        <br>
+        (RAGflow中导入agent-json文件，位于agent页面左下角)
+   </div>
 
+   最后在RAGflow web页面中，将RAGflow服务器IP地址、服务器api-key、两个agent对应的Agent ID记录下来，后将用于设置环境参数配置，参照如下格式。
 
-- 最后在RAGflow web页面中，将RAGflow服务器IP地址、服务器api-key、两个agent对应的Agent ID记录下来，后将用于设置环境参数配置，参照如下格式。
    ```python
    ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
    ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
@@ -68,7 +68,8 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
 
 
 3. **环境参数配置：**
-- 进入EduPlatform2\Backend\config\config.py文件中。配置好**链接MySQL数据库的参数**、**base-LLM 和多模态LLM的api-key相关参数**、**搭建的RAGflow服务IP及相关密钥等**，参照如下格式。
+
+   进入EduPlatform2\Backend\config\config.py文件中。配置好**链接MySQL数据库的参数**、**base-LLM 和多模态LLM的api-key相关参数**、**搭建的RAGflow服务IP及相关密钥等**，参照如下格式。
    ```python
    # 数据库配置
    DIALECT = 'mysql'
@@ -100,7 +101,7 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    QuesGen_AgentID="cca846541d1d11f*************f6ef"            # Agent ID
    Public_ip="https://******cp.fun"                              #后端的公网IP地址或域名，非必须
    ```
-注：其中Public_ip="https://******cp.fun"参数配置非必须，该为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导——上传文件功能无法正常使用。
+   注：其中Public_ip="https://******cp.fun"参数配置非必须，该为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导——上传文件功能无法正常使用。
 
 
 4. **设置后端：**
@@ -143,11 +144,12 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    ```bash
    npm run serve
    ```
-
+   启动前端后，即可在浏览器中访问[http://localhost:8080/](http://localhost:8080/)，即可使用EduPlatform。
 
 ## 三、使用方法
-如何使用 EduPlatform：目前无需注册，成功运行后，直接访问对应Web页面即可使用。
+   如何使用 EduPlatform：目前无需注册，成功运行后，直接访问对应Web页面即可使用。
    
+
 **功能模块**
 
 - **智能教案生成**：教师选择年级、科目和章节，系统自动生成标准化教学设计文档，支持一键导出为Word文档。
@@ -173,41 +175,37 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
 下面是项目的基本结构：
 
 ```
-EduPlatform/
-├── backend/
-│   ├── Apps/
-│   │   ├── config.py             # 配置文件
-│   │   ├── DatabaseTables.py     # 数据库表相关定义
-│   │   ├── genericFunction.py    # 通用函数
-│   │   ├── lesson_plan.py        # 课程教案等功能路由
-│   │   ├── question_handle.py    # 课程问题等功能路由
-│   │   └── ragflow_operations.py # RAGflow操作
-│   ├── RAGflow/
-│   │   ├── 资源推荐agent.json     # RAGflow资源推荐代理
+EduPlatform2/
+├── Backend/                       # 后端目录
+│   ├── Apps/                      # 应用逻辑相关
+│   │   ├── DatabaseTables.py      # 数据库表相关定义  
+│   │   ├── genericFunction.py     # 通用函数
+│   │   ├── lesson_plan.py         # 课程教案等功能路由
+│   │   ├── question_handle.py     # 课程问题等功能路由
+│   │   └── ragflow_operations.py  # RAGflow所封装的操作
+│   ├── config/                    # 配置文件夹
+│   │   ├── config.py              # 主要配置文件
+│   │   ├── service.config         # 服务配置
+│   │   └── nacos_service-0.1-py3-none-any.whl      # Nacos服务依赖
+│   ├── RAGflow/                  # RAGflow资源相关
+│   │   ├── RAGflow资源库          # 存放用于构造RAGflow资源库的文件
+│   │   ├── 资源推荐agent.json     # 资源推荐代理配置
 │   │   └── 逐字稿Agent.json       # 其他代理配置
-│   ├────── app.py                # 主应用模板
-│   └── requirements.txt          # 后端依赖文件
-├── frontend/
+│   ├────── app.py                # flask后端启动文件
+│   └────── requirements.txt      # 后端依赖文件
+├── Frontend/                     # 前端目录
 │   ├── public/                   # 公共资源
 │   ├── src/                      # 前端源代码
-│   │   ├── assets/               # 静态资源（图片、字体等）
-│   │   ├── components/           # Vue.js组件
-│   │   ├── image/                # 图片文件夹
-│   │   ├── router/               # 路由管理
-│   │   ├── store/                # Vuex状态管理
-│   │   └── views/                # Vue.js视图
-│   │       ├── App.vue           # 入口组件
-│   │       └── main.ts           # 入口文件
-│   ├── .browserslistrc           # 浏览器支持配置
 │   ├── .env                      # 环境变量
+│   ├── babel.config.js           # Babel配置
+│   ├── jsconfig.json             # JavaScript配置
 │   ├── package.json              # 项目元数据和依赖
-│   ├── package-lock.json         # 锁定依赖版本
-│   ├── README.md                 # 项目说明文件
-│   └── test/                     # 测试代码
-│       ├── tsconfig.json         # TypeScript配置
-│       └── vue.config.js         # Vue CLI配置
-└── TestCode/                     # 测试代码目录
-    └── README.md                 # 测试说明文件
+│   ├── package-lock.json         # 锁定的依赖版本
+│   ├── tsconfig.json             # TypeScript配置
+│   └── vue.config.js             # Vue CLI配置，包括后端IP地址、前端启动端口等
+├── TestCode/                     # 测试代码目录
+└────── README.md                 # 测试说明文件
+
 ```
 
 ---

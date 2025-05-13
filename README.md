@@ -92,8 +92,9 @@ LLMs_model="qvq-max" #多模态LLM模型名称，如qvq-max
 #rag_flow的相关参数
 ragflow_BASE_URL = "https://9vh4i*****19.vicp.fun"            # rag_flow的后端地址
 ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMj**********MDI0Mm"  # rag_flow的密钥
-TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    #Agent ID
-QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
+TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    # Agent ID
+QuesGen_AgentID="cca846541d1d11f*************f6ef"            # Agent ID
+Public_ip="https://******cp.fun"                              #后端的公网IP地址或域名，非必须
 ```
 注：其中Public_ip="https://******cp.fun"参数配置非必须，该处为为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导功能无法正常使用。
 
@@ -113,13 +114,12 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
    cd EduPlatform2/Backend/config
    pip install nacos_service-0.1-py3-none-any.whl
    ```
-   安装好依赖后，即可成功后端。并启动对应服务。windows系统下，使用如下命令行启动服务：
+   安装好依赖后，即可成功启动后端。需要先回退到EduPlatform2/Backend目录中。若是windows系统下，使用如下命令行启动服务：
    ```bash
    waitress-serve --port=5001 app:app
    ```
    若是linux系统下，使用如下命令行启动服务：
    ```bash
-   gunicorn -c gunicorn_config.py app:app
    gunicorn -w 4 -b 0.0.0.0:5001 app:app
    ```
 
@@ -129,7 +129,7 @@ QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
    进入前端目录并安装依赖：
 
    ```bash
-   cd EduPlatform/frontend
+   cd EduPlatform2/Frontend
    ```
    
    ```bash

@@ -10,7 +10,7 @@ module.exports = defineConfig({
       '/api': {
         // target：目标服务器的 URL。在这个例子中，所有以 /api 开头的请求都会被代理到 http://localhost:3000
         //target: 'https://fz68ok24676.vicp.fun',
-        target:'http://192.168.31.103:5001',
+        target:'http://192.168.31.105:5001',
         changeOrigin: true,
         // pathRewrite：路径重写规则。在这个例子中，'^/api': '' 表示将请求路径中的 /api 前缀去掉。例如，/api/generate 会被重写为 /generate。
         pathRewrite: { '^/api': '' },

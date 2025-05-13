@@ -21,12 +21,12 @@ SQLALCHEMY_ECHO = True
 
 
 #LLM 基本配置信息
-os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
-os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"
-model = "gpt-4o-mini"
-# os.environ["OPENAI_BASE_URL"] = "https://maas-api.cn-huabei-1.xf-yun.com/v1"
-# os.environ["OPENAI_API_KEY"] = "sk-kWw6gDp0ZYWcNTMtD35a4f613921425a9c87312c36C5D3Ca"
-# model='xdeepseekv3'
+# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
+# os.environ["OPENAI_API_KEY"] = "sk-00a82bdbdbb447d388a370c63e8ec93d"
+# model = "deepseek-chat"
+os.environ["OPENAI_BASE_URL"] = "https://maas-api.cn-huabei-1.xf-yun.com/v1"
+os.environ["OPENAI_API_KEY"] = "sk-kWw6gDp0ZYWcNTMtD35a4f613921425a9c87312c36C5D3Ca"
+model='xdeepseekv3'
 temperature=0.5 #LLM 温度
 
 

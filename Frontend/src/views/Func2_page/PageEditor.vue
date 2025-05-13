@@ -13,20 +13,27 @@
     </div>
 
     <!-- 提交按钮 -->
-    <el-button type="primary" @click="generateContent" class="button">
-      生成内容
+    <el-button
+      type="primary"
+      @click="generateContent"
+      :loading="loading"
+      :icon="loading ? 'Loading' : ''"
+      class="button"
+    >
+      {{ loading ? '生成中...' : '生成内容' }}
     </el-button>
   </section>
 </template>
 
 <script lang="ts" setup>
-import {ref, defineEmits} from 'vue'
+import { ref, defineEmits } from 'vue'
 import axios from 'axios'
 
 const emit = defineEmits(['update-preview'])
 
 const fileData = ref<File[]>([])
 const requires = ref('')
+const loading = ref(false) // 控制加载状态
 
 const handleFileUpload = (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -65,24 +72,26 @@ const generateContent = async () => {
     return
   }
 
+  loading.value = true // 开始加载
+
   const formData = new FormData()
   fileData.value.forEach(file => formData.append('files', file))
   formData.append('requires', requires.value)
 
   try {
-    const response = await axios.post('api/plan/lesson_script',
-        formData,
-        {headers: {'Content-Type': 'multipart/form-data'}}
-    )
+    const response = await axios.post('api/plan/lesson_script', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     console.log('请求返回结果:', response.data)
     emit('update-preview', response.data)
   } catch (error) {
     alert('生成失败')
     console.error('请求失败:', error)
+  } finally {
+    loading.value = false // 结束加载
   }
 }
 </script>
-
 
 <style scoped>
 /* 编辑器容器样式 */
@@ -154,10 +163,19 @@ textarea:focus {
   font-size: 16px;
   border-radius: 6px;
   transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 </style>

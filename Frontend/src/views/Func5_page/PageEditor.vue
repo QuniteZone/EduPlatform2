@@ -7,20 +7,20 @@
         <!-- 学科 -->
         <div class="input_box">
           <label>学科 <span style="color: red;">(必填)</span></label>
-          <input v-model="subject" placeholder="请输入..." />
+          <input v-model="subject" placeholder="请输入..."/>
         </div>
         <!--体量-->
-         <div class="input_box">
-        <label>题量<span style="color: red;">(必填)</span></label>
-        <input v-model="questionCount" type="number" placeholder="请输入..." />
+        <div class="input_box">
+          <label>题量<span style="color: red;">(必填)</span></label>
+          <input v-model="questionCount" type="number" placeholder="请输入..."/>
         </div>
         <!-- 题型 -->
 
         <div class="select_box">
-            <label>题型 <span style="color: red;">(必填)</span></label>
-            <el-select v-model="questionType" placeholder="请选择" class="select">
-              <el-option v-for="item in questionTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+          <label>题型 <span style="color: red;">(必填)</span></label>
+          <el-select v-model="questionType" placeholder="请选择" class="select">
+            <el-option v-for="item in questionTypeOptions" :key="item.value" :label="item.label" :value="item.value"/>
+          </el-select>
         </div>
 
 
@@ -29,19 +29,19 @@
       <div class="column">
         <div class="input_box">
           <label>年级 <span style="color: red;">(必填)</span></label>
-          <input v-model="grade" placeholder="请输入..." />
+          <input v-model="grade" placeholder="请输入..."/>
         </div>
 
         <!-- 知识点 -->
         <div class="input_box">
-        <label>知识点 <span style="color: red;">(必填)</span></label>
-        <input v-model="knowledgePoints" placeholder="请输入..." />
-      </div>
+          <label>知识点 <span style="color: red;">(必填)</span></label>
+          <input v-model="knowledgePoints" placeholder="请输入..."/>
+        </div>
         <!-- 难度 -->
         <div class="select_box">
           <label>难度 <span style="color: red;">(必填)</span></label>
           <el-select v-model="difficulty" placeholder="请选择" class="select">
-            <el-option v-for="item in difficultyOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-option v-for="item in difficultyOptions" :key="item.value" :label="item.label" :value="item.value"/>
           </el-select>
         </div>
       </div>
@@ -54,20 +54,26 @@
       <!-- 其他要求 -->
       <div class="input_box">
         <label>其他要求</label>
-        <textarea v-model="otherRequirements" placeholder="请输入..." />
+        <textarea v-model="otherRequirements" placeholder="请输入..."/>
       </div>
     </div>
 
     <!-- 生成按钮 -->
-    <el-button type="primary" @click="generateContent" class="button">
-      生成
+    <el-button
+        type="primary"
+        @click="generateContent"
+        :loading="loading"
+        :icon="loading ? 'Loading' : ''"
+        class="button"
+    >
+      {{ loading ? '生成中...' : '生成内容' }}
     </el-button>
   </section>
 
 </template>
 
 <script lang="ts" setup>
-import { ref, defineEmits } from 'vue'
+import {ref, defineEmits} from 'vue'
 import axios from 'axios'
 
 const emit = defineEmits(['update-preview'])
@@ -80,24 +86,26 @@ const difficulty = ref('不限') // 难度
 const questionCount = ref(0) // 题量
 const knowledgePoints = ref('') // 知识点
 const otherRequirements = ref('') // 其他要求
+const loading = ref(false) // 控制加载状态
 
 // 下拉选项
 const questionTypeOptions = [
-  { value: '不限', label: '不限' },
-  { value: '选择题', label: '选择题' },
-  { value: '填空题', label: '填空题' },
-  { value: '解答题', label: '解答题' },
+  {value: '不限', label: '不限'},
+  {value: '选择题', label: '选择题'},
+  {value: '填空题', label: '填空题'},
+  {value: '解答题', label: '解答题'},
 ]
 
 const difficultyOptions = [
-  { value: '不限', label: '不限' },
-  { value: '简单', label: '简单' },
-  { value: '中等', label: '中等' },
-  { value: '困难', label: '困难' },
+  {value: '不限', label: '不限'},
+  {value: '简单', label: '简单'},
+  {value: '中等', label: '中等'},
+  {value: '困难', label: '困难'},
 ]
 
 // 生成内容方法
 const generateContent = async () => {
+  loading.value = true // 开始加载
   try {
     const response = await axios.post('/api/plan/question_generate', {
       subject: subject.value,
@@ -113,6 +121,8 @@ const generateContent = async () => {
   } catch (error) {
     alert('生成失败');
     console.error('请求失败:', error);
+  }finally {
+    loading.value = false // 结束加载
   }
 };
 </script>

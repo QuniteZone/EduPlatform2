@@ -3,7 +3,9 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
 
 <div style="display: flex; justify-content: space-between;">
     <img src="TestCode/git演示-PPT功能-GIF.gif" alt="Image 1" />
+    <img src="TestCode/learning_path.gif" alt="Image 1" />
 </div>
+
 
 ---
 

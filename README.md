@@ -86,7 +86,7 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    #LLM 基本配置信息
    os.environ["OPENAI_BASE_URL"] = "https://api.chata******rg/v1"
    os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV********UaJO5i"
-   model = "gpt-4o-mini" #LLM模型名称，如gpt-4o-mini
+   model = "gpt-4o-mini" #LLM模型名称，如gpt-4o-mini。大模型上下文至少需支持16k上下文长度
    temperature=0.5 #LLM 温度
    
    #多模态LLM的基本配置信息
@@ -102,7 +102,13 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    Public_ip="https://******cp.fun"                              #后端的公网IP地址或域名，非必须
    ```
    注：其中Public_ip="https://******cp.fun"参数配置非必须，该为将后端部署于云服务器上的公网IP地址或域名。若该参数不配置，则功能中作业辅导——上传文件功能无法正常使用。
-
+   
+   另外，还需要进入EduPlatform2/Frontend/.env文件中，配置好前端所需参数，分别包括base-LLM和AI-PPT密钥。申请AI-PPT密钥请参考官网：https://www.aippt.cn/
+   ```bash
+   VUE_APP_API_BASE_URL=https***********ch
+   VUE_APP_API_KEY=sk-FUFiwSHF******************aJO5i
+   PPT_API_KEY=ak*****************58Rf
+   ```
 
 4. **设置后端：**
 

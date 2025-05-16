@@ -83,37 +83,32 @@ export default {
       saveAs(dataUrl, 'pastking.png')
     }
 
+
     const generateMindMap = async () => {
       try {
+        // 清空编辑内容和思维导图
         editorContent.value = ''
         mm.value?.setData(null)
         mm.value?.fit()
-        const response = await fetch(
-          `${process.env.VUE_APP_API_BASE_URL}/v1/chat/completions`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.VUE_APP_API_KEY}`
-            },
-            body: JSON.stringify({
-              messages: [
-                {
-                  role: 'system',
-                  content: `我是一名设计思维导图设计师，我将会详细分析用户的提出的知识点与要求，设计较为详细的思维导图，并严格按照markdown格式输出`
-                },
-                {
-                  role: 'user',
-                  content: `${title.value}`
-                }
-              ],
-              stream: true,
-              model: `gpt-3.5-turbo`,
-              temperature: 0.5,
-              presence_penalty: 2
-            })
-          }
-        )
+
+        const response = await fetch("/api/ques/kn_chat", {  // 使用你的请求接口
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: [
+              {
+                role: 'system',
+                content: `我是一名设计思维导图设计师，我将会详细分析用户的提出的知识点与要求，设计较为详细的思维导图，并严格按照markdown格式输出`
+              },
+              {
+                role: 'user',
+                content: `${title.value}`
+              }
+            ]
+          })
+        });
 
         if (!response.ok) throw new Error('请求失败')
 
@@ -121,6 +116,7 @@ export default {
         const decoder = new TextDecoder('utf-8')
         let result = ''
 
+        // 逐块读取流式响应数据
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const { done, value } = await reader.read()
@@ -129,30 +125,30 @@ export default {
           const chunk = decoder.decode(value, { stream: true })
           const lines = chunk.split('\n').filter(line => line.trim())
           for (const line of lines) {
+            // 新增：确认数据流结束的信号并处理
             if (line === 'data: [DONE]') {
               // 流式处理结束，跳出循环
               break
             }
+            // 新增：处理有效的数据行
             if (line.startsWith('data: ')) {
-              const data = JSON.parse(line.slice(6))
-              if (data.choices[0].delta && data.choices[0].delta.content) {
-                const deltaContent = data.choices[0].delta.content
-                result += deltaContent
-                editorContent.value += deltaContent // 实时更新编辑器内容
+              const message = line.slice(6);  // 去掉前面的 'data: '
+              result += message + '\n';  // 将收到的消息添加到 result 中
+              editorContent.value += message + '\n'; // 实时更新编辑器内容
 
-                // 实时更新思维导图
-                nextTick(() => updateMindMap())
-              }
+              // 实时更新思维导图
+              nextTick(() => updateMindMap());
             }
           }
         }
 
         // 流式处理结束后触发一次完整的更新
-        nextTick(() => updateMindMap())
+        nextTick(() => updateMindMap());
       } catch (error) {
         console.error('生成失败:', error)
       }
     }
+
 
     onMounted(() => {
       mm.value = Markmap.create(svgRef.value)

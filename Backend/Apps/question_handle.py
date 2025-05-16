@@ -1,7 +1,7 @@
 import os
 import uuid
 from flask import Blueprint, jsonify, request, stream_with_context, Response
-from .genericFunction import LLMs_allowed_file, LLMs_StreamOutput, LLM, ragflow, get_globalWeb_source
+from .genericFunction import LLMs_allowed_file, LLMs_StreamOutput, LLM, ragflow, get_globalWeb_source,LLM_StreamOutput
 from config.config import LLMs_IMAGE_UPLOAD_FOLDER,LLMs_FILE_UPLOAD_FOLDER,Public_ip,LLMs_model
 
 ques_handle_bp = Blueprint('ques_handle', __name__)
@@ -45,6 +45,86 @@ def upload_file():
         return jsonify({"content": "文件上传成功", "fileIP": fileIP, 'status': 1})
     else:
         return jsonify({"content": "不支持的文件类型", 'status': -2})
+
+
+#知识点梳理——思维导图
+@ques_handle_bp.route('/kn_chat', methods=['POST'])
+def kn_chat():
+    import time
+    data = request.json
+    user_message = data.get('message')  # 从请求中获取用户消息及历史记录
+    title = data.get('title')  # 从请求中获取用户消息及历史记录
+
+    user_mesg = user_message[-1]['content']  # 获取最新一条的用户消息提问
+
+    print(f"最新一条的用户消息提问:{user_mesg}")
+    print(f"最新一条的用户消息提问:{title}")
+
+    messages = [
+        {
+            "role": "system",
+            "content":"""你是一个思维导图专家，请根据用户输入的标题和内容生成思维导图，也就是返回markown格式内容，此外不要输出任何多余无关内容话语，例如如果用户提问，输出机器学习基础内容知识点，你需要回复下面内容：
+            
+# 机器学习基础知识点梳理
+## 1. 机器学习概述
+- 1.1 机器学习定义
+- 1.2 机器学习与人工智能的关系
+- 1.3 机器学习的分类
+  - 1.3.1 监督学习
+  - 1.3.2 无监督学习
+  - 1.3.3 强化学习
+            """
+        },
+        {
+            "role": "user",
+            "content": "机器学习基础内容知识点"
+        }
+    ]
+
+    # return Response(stream_with_context(LLM_StreamOutput(messages)), content_type='text/plain')
+
+    def generate_stream():
+        # 模拟延迟的生成器
+        messages = [
+    "# 数字素养基础内容知识点梳理",
+    "## 1. 数字素养的定义",
+    "- 1.1 数字素养的概念",
+    "- 1.2 数字素养的重要性",
+    "- 1.3 数字素养的核心要素",
+    "## 2. 数字工具与技术",
+    "- 2.1 常用数字工具",
+    "- 2.1.1 文档编辑工具",
+    "- 2.1.2 表格处理工具",
+    "- 2.1.3 演示文稿制作工具",
+    "- 2.2 社交媒体的使用",
+    "- 2.3 信息检索与评价",
+    "## 3. 数据素养",
+    "- 3.1 数据的收集与存储",
+    "- 3.2 数据分析基础",
+    "- 3.3 数据可视化技巧",
+    "- 3.4 数据安全与隐私保护",
+    "## 4. 数字沟通",
+    "- 4.1 数字沟通的渠道",
+    "- 4.2 高效的在线协作",
+    "- 4.3 整合多种沟通工具",
+    "- 4.4 电子邮件礼仪",
+    "## 5. 数字公民身份",
+    "- 5.1 网络礼仪与行为规范",
+    "- 5.2 数字权益与责任",
+    "- 5.3 网络安全意识",
+    "- 5.4 防止虚假信息与网络欺诈",
+    "## 6. 数字素养的应用",
+    "- 6.1 教育中的数字素养",
+    "- 6.2 工作场所中的数字素养",
+    "- 6.3 生活中的数字素养",
+    "- 6.4 持续学习与技能提升",
+]
+        # 逐条发送消息，模拟延迟
+        for message in messages:
+            yield f"data: {message}\n"
+            # time.sleep(0.1)  # 模拟处理时间
+
+    return Response(generate_stream(), content_type='text/event-stream')
 
 
 @ques_handle_bp.route('/chat', methods=['POST'])

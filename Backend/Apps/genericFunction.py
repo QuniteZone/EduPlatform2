@@ -168,20 +168,21 @@ def LLM_StreamOutput(messages):
         model=model,
         temperature=temperature,
         messages=messages,
-        max_tokens=4095,
+        max_tokens=16000,
         stream=True  # 启用流式输出
     )
 
     # 提取模型返回的内容
-    content = response.choices[0].message.content
+    # content = response.choices[0].message.content
 
     # 逐步提取模型返回的内容
     for chunk in response:
         if chunk.choices and chunk.choices[0].delta.content:
             content = chunk.choices[0].delta.content
-            print(content, end='', flush=True)  # 实时输出内容
+            print(f"data: {content}\n")  # 实时输出内容
+            yield f"data: {content}\n"
 
-    return content
+
 
 
 def allowed_file(filename):

@@ -47,7 +47,7 @@ EduPlatform 是一个基于 Python 和 Vue.js 的在线教育平台，旨在为�
    
     按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（教材知识库、离线资源知识库），简单测试达到基本能使用程度。
 
-    用于构建两个知识库的文件在“EduPlatform2/Backend/RAGflow/RAGflow资源库”目录下面。教材知识库构建知识库时各参数保持默认即可。离线资源知识库时仅需修改知识库**“分段标识符”**，其内容具体如下。另外RAGflow所用embedding-LLM：ZHIPU-AI embedding-3，对话LLM使用gpt-4o-mini。
+    用于构建两个知识库的文件在“EduPlatform2/Backend/RAGflow/RAGflow资源库”目录下面。教材知识库构建知识库时各参数保持默认即可。离线资源知识库时仅需修改知识库“**分段标识符**”，其内容具体如下。另外RAGflow所用embedding-LLM：ZHIPU-AI embedding-3，对话LLM使用gpt-4o-mini。
    ```bash
    \n!?;。；！？}
    ```

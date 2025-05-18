@@ -56,7 +56,4 @@ def home():
 if __name__ == '__main__':
     with app.app_context():  # 进入应用上下文
         db.create_all()  # 创建表格
-    # app.run(host='0.0.0.0', port=service_config.current_service_port)
     app.run(host='0.0.0.0', port=service_config.current_service_port, debug=True)
-    # app.run(host='127.0.0.1',port=service_config.current_service_port, debug=True)
-    # app.run(port=service_config.current_service_port, debug=True)

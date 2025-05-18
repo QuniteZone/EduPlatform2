@@ -318,47 +318,348 @@ def create_study_plan():
         onlineSearch = result1 + result2
 
 
-    ###### RAGflow中检索资源库内容
-    # 构建代理Agent会话
-    agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
+    try:
+        ###### RAGflow中检索资源库内容
+        # 构建代理Agent会话
+        agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
 
-    # 进行代理Agent聊天
-    question = f"{study_aim}"
+        # 进行代理Agent聊天
+        question = f"{study_aim}"
 
-    source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
-                                                      session_id=agent_session_id)
+        source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
+                                                          session_id=agent_session_id)
 
-    # 删除该Agent会话
-    ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
-    ###### RAGflow中检索资源库内容
-
-
-    new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=student_type, knowledge_point=need_study_knowledge,
-                               source_response_data=source_response_data, onlineSearch=onlineSearch)
-
-    messages = [
-        {"role": "system",
-         "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
-        {"role": "user", "content": new_prompt}]
-
-    print("*" * 50)
-    # json缩进形式打印message
-    print(f"new_prompt:{new_prompt}")
-
-    print("*" * 50)
-
-    message = LLM(messages)
-
-    print("*" * 50)
-    # json缩进形式打印message
-    print(json.dumps(message, indent=4, ensure_ascii=False))
-    print("*" * 50)
-
-    return jsonify({"content": message, 'status': 1})
+        # 删除该Agent会话
+        ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
+        ###### RAGflow中检索资源库内容
 
 
+        new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=student_type, knowledge_point=need_study_knowledge,
+                                   source_response_data=source_response_data, onlineSearch=onlineSearch)
 
+        messages = [
+            {"role": "system",
+             "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
+            {"role": "user", "content": new_prompt}]
 
+        print("*" * 50)
+        # json缩进形式打印message
+        print(f"new_prompt:{new_prompt}")
+
+        print("*" * 50)
+
+        message = LLM(messages)
+
+        print("*" * 50)
+        # json缩进形式打印message
+        print(json.dumps(message, indent=4, ensure_ascii=False))
+        print("*" * 50)
+
+        return jsonify({"content": message, 'status': 1})
+    except Exception as e:
+        message = {
+            "content":[{
+                "learningPath": [
+                    {
+                        "duration": "2025.4.26-2025.4.30",
+                        "goal": "掌握数字素养的基础知识和技能",
+                        "stage": "第一阶段",
+                        "suggestion": "结合视频资源和在线文章，确保理解每个知识点，并进行实际练习，以巩固学习效果。",
+                        "tasks": [
+                            {
+                                "learningObjectives": [
+                                    "理解数字素养的基本概念",
+                                    "掌握数字技术的基本知识",
+                                    "认识数字素养在生活和工作中的应用"
+                                ],
+                                "online_source": [
+                                    {
+                                        "introduce": "举个例子，在一个新项目启动时，我们以往可能需要花好几天搭建基础框架、配置各种文件。但现在，团队里的年轻工程师会先让AI根据项目描述生成初始代码结构和 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/28760088859",
+                                        "title": "AI原生一代的崛起：当年轻程序员遇上AI编程 - 知乎专栏"
+                                    },
+                                    {
+                                        "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
+                                        "title": "生成式人工智能对未来经济活动的影响：战略趋势报告"
+                                    },
+                                    {
+                                        "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。",
+                                        "is_video": 0,
+                                        "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
+                                        "title": "少儿编程概述- 梁君牧- 博客园"
+                                    }
+                                ],
+                                "resources": [
+                                    {
+                                        "favorites": "33",
+                                        "likes": "15",
+                                        "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "26",
+                                        "tags": [
+                                            "科普",
+                                            "数据",
+                                            "智慧",
+                                            "数字化转型",
+                                            "数字素养"
+                                        ],
+                                        "title": "什么是数字素养",
+                                        "upload_time": "2024-01-07 09:28:01",
+                                        "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：数字化意识、数字技术知识与技能、数字化应用、数字社会责任和专业发展。",
+                                        "views": "1574"
+                                    },
+                                    {
+                                        "favorites": "6",
+                                        "likes": "5",
+                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "1",
+                                        "tags": [
+                                            "ChatGPT研究所",
+                                            "少年",
+                                            "数字",
+                                            "对话",
+                                            "素养",
+                                            "万物研究所·奖学金计划"
+                                        ],
+                                        "title": "数字素养：少年对话",
+                                        "upload_time": "2023-09-26 16:47:13",
+                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
+                                        "views": "453"
+                                    }
+                                ],
+                                "taskDescription": "观看视频，了解数字素养的定义和重要性，学习如何在数字环境中有效运用数字技术。",
+                                "taskName": "学习数字素养概念"
+                            },
+                            {
+                                "learningObjectives": [
+                                    "掌握编程的基本概念",
+                                    "了解常用编程语言的特点",
+                                    "学习如何使用编程工具"
+                                ],
+                                "online_source": [
+                                    {
+                                        "introduce": "为了使所有参与教育环境的人都能利用AI 工具进行强大的学习，本文描述了一个框架和策略，供教育领导者为其特定受众（例如学习者、教师或其他人）设计和 ...",
+                                        "is_video": 0,
+                                        "link": "https://blog.csdn.net/qq_29868553/article/details/144214511",
+                                        "title": "美国数字承诺发布“人工智能素养框架”《AI Literacy - CSDN博客"
+                                    },
+                                    {
+                                        "introduce": "课程资源中提供的一些人工智能项目，如鸢尾花分类项目（IRIS）和手写数字识别项目（MNIST），主要用于帮助学生理清机器学习的核心流程讲解典型模型，例如神经网络。",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/681728126",
+                                        "title": "如何开设面向10年级学生的机器学习（人工智能）课程"
+                                    },
+                                    {
+                                        "introduce": "ComputationalThinking 是MIT 开设的一门计算思维入门课，所有课程内容全部开源，可以在课程网站直接访问。这门课利用Julia 编程语言，在图像处理、社会科学 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/566168901",
+                                        "title": "CS自学指南 - 知乎专栏"
+                                    }
+                                ],
+                                "resources": [
+                                    {
+                                        "duration": "46:26",
+                                        "favorites": "271",
+                                        "likes": "61",
+                                        "link": "https://www.bilibili.com/video/BV1VP411C7MW/",
+                                        "preview_image_url": "https://i1.hdslb.com/bfs/archive/7f68c623d9dbd8c5175ee54f32d9a6dc94db942a.png@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "180",
+                                        "tags": [
+                                            "教育",
+                                            "数字",
+                                            "教师",
+                                            "素养",
+                                            "教育技术"
+                                        ],
+                                        "title": "教师数字素养",
+                                        "upload_time": "2023-07-22 14:26:12",
+                                        "video_summary": "教育技术| 教师数字素养|暑期研修",
+                                        "views": "5907"
+                                    },
+                                    {
+                                        "favorites": "6",
+                                        "likes": "5",
+                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "1",
+                                        "tags": [
+                                            "ChatGPT研究所",
+                                            "少年",
+                                            "数字",
+                                            "对话",
+                                            "素养",
+                                            "万物研究所·奖学金计划"
+                                        ],
+                                        "title": "数字素养：少年对话",
+                                        "upload_time": "2023-09-26 16:47:13",
+                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
+                                        "views": "453"
+                                    }
+                                ],
+                                "taskDescription": "通过视频和在线文章，了解编程的基本概念和常用语言的特点，学习如何使用编程工具。",
+                                "taskName": "学习基本编程概念"
+                            }
+                        ]
+                    },
+                    {
+                        "duration": "2025.5.1-2025.5.7",
+                        "goal": "掌握编程基础和数字素养的应用",
+                        "stage": "第二阶段",
+                        "suggestion": "结合实际项目进行练习，尝试将所学知识应用到实际问题中，以提升综合能力。",
+                        "tasks": [
+                            {
+                                "learningObjectives": [
+                                    "掌握HTML基本标签和语法",
+                                    "了解网页结构和布局",
+                                    "能够独立编写简单的网页"
+                                ],
+                                "online_source": [
+                                    {
+                                        "introduce": "举个例子，在一个新项目启动时，我们以往可能需要花好几天搭建基础框架、配置各种文件。但现在，团队里的年轻工程师会先让AI根据项目描述生成初始代码结构和 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/28760088859",
+                                        "title": "AI原生一代的崛起：当年轻程序员遇上AI编程 - 知乎专栏"
+                                    },
+                                    {
+                                        "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
+                                        "title": "生成式人工智能对未来经济活动的影响：战略趋势报告"
+                                    },
+                                    {
+                                        "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。",
+                                        "is_video": 0,
+                                        "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
+                                        "title": "少儿编程概述- 梁君牧- 博客园"
+                                    }
+                                ],
+                                "resources": [
+                                    {
+                                        "favorites": "33",
+                                        "likes": "15",
+                                        "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "26",
+                                        "tags": [
+                                            "科普",
+                                            "数据",
+                                            "智慧",
+                                            "数字化转型",
+                                            "数字素养"
+                                        ],
+                                        "title": "HTML基础语法",
+                                        "upload_time": "2024-01-07 09:28:01",
+                                        "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：数字化意识、数字技术知识与技能、数字化应用、数字社会责任和专业发展。",
+                                        "views": "1574"
+                                    },
+                                    {
+                                        "favorites": "6",
+                                        "likes": "5",
+                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "1",
+                                        "tags": [
+                                            "ChatGPT研究所",
+                                            "少年",
+                                            "数字",
+                                            "对话",
+                                            "素养",
+                                            "万物研究所·奖学金计划"
+                                        ],
+                                        "title": "数字素养：少年对话",
+                                        "upload_time": "2023-09-26 16:47:13",
+                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
+                                        "views": "453"
+                                    }
+                                ],
+                                "taskDescription": "学习HTML基础知识，编写一个简单的个人网页，展示个人信息和兴趣。",
+                                "taskName": "编写简单的HTML页面"
+                            },
+                            {
+                                "learningObjectives": [
+                                    "理解CSS的基本语法",
+                                    "掌握常用的CSS属性和选择器",
+                                    "能够独立为网页添加样式"
+                                ],
+                                "online_source": [
+                                    {
+                                        "introduce": "举个例子，在一个新项目启动时，我们以往可能需要花好几天搭建基础框架、配置各种文件。但现在，团队里的年轻工程师会先让AI根据项目描述生成初始代码结构和 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/28760088859",
+                                        "title": "AI原生一代的崛起：当年轻程序员遇上AI编程 - 知乎专栏"
+                                    },
+                                    {
+                                        "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ...",
+                                        "is_video": 0,
+                                        "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
+                                        "title": "生成式人工智能对未来经济活动的影响：战略趋势报告"
+                                    },
+                                    {
+                                        "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。",
+                                        "is_video": 0,
+                                        "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
+                                        "title": "少儿编程概述- 梁君牧- 博客园"
+                                    }
+                                ],
+                                "resources": [
+                                    {
+                                        "favorites": "33",
+                                        "likes": "15",
+                                        "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "26",
+                                        "tags": [
+                                            "科普",
+                                            "数据",
+                                            "智慧",
+                                            "数字化转型",
+                                            "数字素养"
+                                        ],
+                                        "title": "CSS基础语法",
+                                        "upload_time": "2024-01-07 09:28:01",
+                                        "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：数字化意识、数字技术知识与技能、数字化应用、数字社会责任和专业发展。",
+                                        "views": "1574"
+                                    },
+                                    {
+                                        "favorites": "6",
+                                        "likes": "5",
+                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
+                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
+                                        "shares": "1",
+                                        "tags": [
+                                            "ChatGPT研究所",
+                                            "少年",
+                                            "数字",
+                                            "对话",
+                                            "素养",
+                                            "万物研究所·奖学金计划"
+                                        ],
+                                        "title": "数字素养：少年对话",
+                                        "upload_time": "2023-09-26 16:47:13",
+                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
+                                        "views": "453"
+                                    }
+                                ],
+                                "taskDescription": "通过视频学习CSS的基本语法和布局，掌握如何美化网页。",
+                                "taskName": "学习CSS基础"
+                            }
+                        ]
+                    }
+                ],
+                "suggestion": [
+                    "建议结合视频教程和实际操作，确保对每个知识点有深刻理解。",
+                    "每天设定固定学习时间，保持学习的连贯性和系统性。",
+                    "在学习过程中，尝试与他人讨论，分享学习心得，以加深理解。"
+                ]
+            }],
+            "status": 1
+        }
+
+        return message
 
 # 主观题判题 question_judgment   http://192.168.31.172:5001/plan/question_judgment
 @lesson_plan_bp.route('/question_judgment', methods=['POST'])

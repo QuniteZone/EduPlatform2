@@ -26,7 +26,7 @@
             <!-- 思考内容（用特殊样式展示） -->
             <div v-if="item.thinking" class="thinking-content">
               <div class="label">🧠 思考过程：</div>
-              <div class="content" v-html="item.thinking"></div>
+              <div class="content">{{ item.thinking }}</div>
             </div>
             <!-- AI 回复 -->
             <div v-if="item.answer" class="bot-message">
@@ -83,22 +83,15 @@
 <script setup>
 import {reactive, nextTick, ref} from 'vue';
 import axios from "axios";
-import MarkdownIt from 'markdown-it'; // 引入 markdown-it
+import MarkdownIt from 'markdown-it';
 
-// 初始化 markdown-it 实例
-const md = new MarkdownIt({
-  html: true, // 允许渲染 HTML
-  linkify: true, // 自动识别链接
-  typographer: true // 启用排版优化
-});
-
-// 定义解析 Markdown 的方法
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
 function parseMarkdown(content) {
   try {
-    return md.render(content); // 渲染 Markdown 为 HTML
+    return md.render(content);
   } catch (error) {
     console.error("Markdown 解析失败:", error);
-    return content; // 如果解析失败，返回原始内容
+    return content;
   }
 }
 
@@ -129,10 +122,7 @@ async function customUpload(fileData) {
           reader.readAsDataURL(fileData.file);
         });
       }
-      uploadedFiles.value.push({
-        name: fileName,
-        previewUrl: previewUrl
-      });
+      uploadedFiles.value.push({ name: fileName, previewUrl });
       form.fileIPs.push(fileIP);
     } else {
       throw new Error("后端返回数据不完整");
@@ -161,7 +151,7 @@ async function sendMsg() {
     const user_question = form.input;
     const msg = {
       question: user_question,
-      thinking: "AI生成中...",
+      thinking: "AI正在思考中……",
       answer: ""
     };
     form.msgList.push(msg);
@@ -169,17 +159,15 @@ async function sendMsg() {
     setScrollToBottom();
 
     const llm_cont = {
-      'role': 'user',
-      'content': user_question,
+      role: 'user',
+      content: user_question
     };
     LLMs_messages.push(llm_cont);
 
     try {
       const response = await fetch("/api/ques/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           message: LLMs_messages,
           image_urls: form.fileIPs || []
@@ -187,16 +175,17 @@ async function sendMsg() {
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       const lastMsgIndex = form.msgList.length - 1;
 
       let fullResponse = '';
-      let isThinking = false;
+      let isInThinkTag = false;
       let thinkingContent = '';
       let answerContent = '';
-      let isInThinkTag = false;
 
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         const {done, value} = await reader.read();
         if (done) break;
@@ -204,48 +193,40 @@ async function sendMsg() {
         const chunk = decoder.decode(value, {stream: true});
         fullResponse += chunk;
 
-        // 处理 <think> 标签
-        if (!isInThinkTag) {
-          let startIndex = fullResponse.indexOf('<think>');
-          if (startIndex !== -1) {
-            isThinking = true;
-            isInThinkTag = true;
-            thinkingContent += fullResponse.slice(0, startIndex);
-            fullResponse = fullResponse.slice(startIndex + '<think>'.length);
-          }
-        }
-
-        if (isInThinkTag) {
-          let endIndex = fullResponse.indexOf('</think>');
-          if (endIndex !== -1) {
-            thinkingContent += fullResponse.slice(0, endIndex);
-            form.msgList[lastMsgIndex].thinking = thinkingContent;
-            fullResponse = fullResponse.slice(endIndex + '</think>'.length);
-            isInThinkTag = false;
+        while (fullResponse.includes('<think>') || fullResponse.includes('</think>')) {
+          if (!isInThinkTag) {
+            const startIdx = fullResponse.indexOf('<think>');
+            if (startIdx !== -1) {
+              isInThinkTag = true;
+              fullResponse = fullResponse.slice(startIdx + 7);
+            } else {
+              break;
+            }
           } else {
-            thinkingContent += fullResponse;
-            fullResponse = '';
+            const endIdx = fullResponse.indexOf('</think>');
+            if (endIdx !== -1) {
+              thinkingContent += fullResponse.slice(0, endIdx);
+              fullResponse = fullResponse.slice(endIdx + 8);
+              await displayThinkingContent(lastMsgIndex, thinkingContent);
+              isInThinkTag = false;
+              thinkingContent = '';
+            } else {
+              thinkingContent += fullResponse;
+              fullResponse = '';
+            }
           }
         }
 
-        // 解析完成后，处理剩余的回复内容
-        if (!isInThinkTag) {
+        if (!isInThinkTag && fullResponse.length > 0) {
           answerContent += fullResponse;
-
-          // 模拟打字机效果
-          const displayText = answerContent.trim();
-          typeWriterEffect(lastMsgIndex, displayText);
-
+          await typeWriterEffect(lastMsgIndex, answerContent.trim());
           fullResponse = '';
         }
 
         setScrollToBottom();
       }
 
-      LLMs_messages.push({
-        'role': 'assistant',
-        'content': form.msgList[lastMsgIndex].answer
-      });
+      LLMs_messages.push({ role: 'assistant', content: form.msgList[lastMsgIndex].answer });
     } catch (error) {
       console.error("Error:", error);
       form.msgList[form.msgList.length - 1].answer = "生成失败，请稍后重试";
@@ -253,20 +234,41 @@ async function sendMsg() {
   }
 }
 
-// 打字机效果函数
+function displayThinkingContent(index, text) {
+  return new Promise((resolve) => {
+    let i = 0;
+    form.msgList[index].thinking = '';
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        form.msgList[index].thinking += text[i];
+        i++;
+      } else {
+        clearInterval(interval);
+        resolve();
+      }
+      setScrollToBottom();
+    }, 50);
+  });
+}
+
 function typeWriterEffect(index, text) {
-  let i = 0;
-  const interval = setInterval(() => {
-    if (i < text.length) {
-      form.msgList[index].answer = text.substring(0, i + 1);
-      i++;
-    } else {
-      clearInterval(interval);
-    }
-    setScrollToBottom();
-  }, 50); // 控制打字速度（50ms）
+  return new Promise((resolve) => {
+    let i = 0;
+    form.msgList[index].answer = '';
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        form.msgList[index].answer += text[i];
+        i++;
+      } else {
+        clearInterval(interval);
+        resolve();
+      }
+      setScrollToBottom();
+    }, 50);
+  });
 }
 </script>
+
 
 <style scoped>
 /* 整体容器 */
@@ -365,10 +367,12 @@ function typeWriterEffect(index, text) {
   gap: 10px;
   margin-bottom: 8px;
 }
+
 /* 用户头像容器 */
 .avatar-container-user {
   order: 2; /* 将头像放在右侧 */
 }
+
 /* 用户消息气泡 */
 .user-bubble {
   background-color: rgba(122, 138, 117, 0.25); /* 用户消息气泡背景色 */
@@ -394,7 +398,7 @@ function typeWriterEffect(index, text) {
 
 /* AI 消息气泡 */
 .bot-bubble {
-  background-color: rgba(122, 138, 117, 0.25);
+  background-color: rgb(255, 255, 255);
   border-radius: 16px 16px 4px 16px; /* 左侧圆角 */
   padding: 3px 4px;
   max-width: 100%;

@@ -21,8 +21,21 @@
               <div class="avatar-container-user">
                 <img src="@/image/user-icon.png" alt="用户图标" class="chat-icon"/>
               </div>
-              <div class="bubble user-bubble">{{ item.question }}</div>
+              <div>
+                <!-- 用户上传的图片（如果存在） -->
+                <img
+                    v-if="item.image"
+                    :src="item.image"
+                    class="chat-image"
+                    alt="用户上传图片"
+                    @click="showImagePreview(item.image)"
+                />
+
+                <!-- 用户消息内容 -->
+                <div class="bubble user-bubble">{{ item.question }}</div>
+              </div>
             </div>
+
             <!-- 思考内容（用特殊样式展示） -->
             <div v-if="item.thinking" class="thinking-content">
               <div class="label">🧠 思考过程：</div>
@@ -76,6 +89,9 @@
       <p class="disclaimer">
         服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不代表我们的态度或观点。
       </p>
+      <el-dialog v-model="dialogVisible" width="60%" center>
+        <img :src="dialogImage" alt="预览图" class="dialog-preview-image"/>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -84,8 +100,17 @@
 import {reactive, nextTick, ref} from 'vue';
 import axios from "axios";
 import MarkdownIt from 'markdown-it';
+//图片预览
+const dialogVisible = ref(false);
+const dialogImage = ref("");
 
-const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+function showImagePreview(imgUrl) {
+  dialogImage.value = imgUrl;
+  dialogVisible.value = true;
+}
+
+const md = new MarkdownIt({html: true, linkify: true, typographer: true});
+
 function parseMarkdown(content) {
   try {
     return md.render(content);
@@ -105,32 +130,26 @@ function setScrollToBottom() {
 const uploadedFiles = ref([]);
 
 async function customUpload(fileData) {
-  const formData = new FormData();
-  formData.append("file", fileData.file);
-  try {
-    const response = await axios.post("/api/ques/upload", formData, {
-      headers: {"Content-Type": "multipart/form-data"}
-    });
-    if (response.data && response.data.fileIP) {
-      const fileIP = response.data.fileIP;
-      const fileName = fileData.file.name;
-      let previewUrl = null;
-      if (["image/jpeg", "image/png", "image/jpg"].includes(fileData.file.type)) {
-        const reader = new FileReader();
-        previewUrl = await new Promise((resolve) => {
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(fileData.file);
-        });
-      }
-      uploadedFiles.value.push({ name: fileName, previewUrl });
-      form.fileIPs.push(fileIP);
-    } else {
-      throw new Error("后端返回数据不完整");
-    }
-  } catch (error) {
-    alert("文件上传失败");
-    console.error("文件上传失败:", error);
+  const file = fileData.file;
+  let previewUrl = null;
+
+  if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+    alert("仅支持 JPG/PNG 图像上传");
+    return;
   }
+
+  const reader = new FileReader();
+  previewUrl = await new Promise((resolve) => {
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+
+  // 仅保留一张图片
+  uploadedFiles.value = [{
+    name: file.name,
+    previewUrl,
+    raw: file
+  }];
 }
 
 function removeFile(index) {
@@ -145,33 +164,37 @@ const form = reactive({
 });
 
 let LLMs_messages = [];
+import { v4 as uuidv4 } from 'uuid'; // 顶部引入
 
+const session_id = uuidv4(); // 页面加载生成一次会话 ID
 async function sendMsg() {
   if (form.input.length > 0) {
     const user_question = form.input;
     const msg = {
       question: user_question,
       thinking: "AI正在思考中……",
-      answer: ""
+      answer: "",
+      image: uploadedFiles.value[0]?.previewUrl || null
     };
+
     form.msgList.push(msg);
     form.input = "";
     setScrollToBottom();
 
-    const llm_cont = {
-      role: 'user',
-      content: user_question
-    };
-    LLMs_messages.push(llm_cont);
+    const formData = new FormData();
+    formData.append("message", user_question);
+    formData.append("session_id", session_id); // ✅ 关键新增
+
+
+    // 如果有上传的图片，添加到表单中（目前支持一张）
+    if (uploadedFiles.value.length > 0 && uploadedFiles.value[0].raw) {
+      formData.append("file", uploadedFiles.value[0].raw);
+    }
 
     try {
       const response = await fetch("/api/ques/chat", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          message: LLMs_messages,
-          image_urls: form.fileIPs || []
-        })
+        body: formData
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -226,7 +249,8 @@ async function sendMsg() {
         setScrollToBottom();
       }
 
-      LLMs_messages.push({ role: 'assistant', content: form.msgList[lastMsgIndex].answer });
+      // 清空上传列表，避免重复提交
+      uploadedFiles.value = [];
     } catch (error) {
       console.error("Error:", error);
       form.msgList[form.msgList.length - 1].answer = "生成失败，请稍后重试";
@@ -271,6 +295,26 @@ function typeWriterEffect(index, text) {
 
 
 <style scoped>
+.chat-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.chat-image:hover {
+  transform: scale(1.02);
+}
+
+.dialog-preview-image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
 /* 整体容器 */
 .main_container {
   display: flex;

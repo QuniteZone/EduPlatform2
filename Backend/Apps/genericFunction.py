@@ -2,12 +2,14 @@
 import json
 import os
 import re
+import pandas as pd
 import numpy as np
 from joblib import load
 import docx
 import fitz
 import openai
 import requests
+from Apps.DKT.KnowledgeTracing.evaluation.run import predict_with_trained_model
 from Apps.ragflow_operations import RAGflow
 from config.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY, LLMs_ALLOWED_IMAGE_EXTENSIONS, \
     LLMs_ALLOWED_FILE_EXTENSIONS, LLMs_model, web_video_url, web_message_url, web_api_key
@@ -15,6 +17,23 @@ import config.config
 
 ALLOWED_EXTENSIONS = {'pdf', 'docx'}  # 在生成逐字稿时，所允许上传的文件类型
 ragflow = RAGflow(ragflow_BASE_URL, ragflow_API_KEY)
+
+#这是测试函数，用于测试知识追踪模型 用于没有接入贵兰在线，故单个学生做题数据存放在EduPlatform2/Backend/static
+def student_knowledge():
+    pkl_path=os.path.join('static','dkt_model_final.pth')
+
+    #获得学生的各个知识点掌握情况
+    knowledge_states= predict_with_trained_model(pkl_path)[0]
+
+    #读取知识点具体描述“知识点库.xls”，将其余知识点掌握情况对应起来
+    DataK_path=os.path.join('static','知识点库.xls')
+    df = pd.read_excel(DataK_path, sheet_name='output')  # 使用工作表名称
+    combined_list = []
+    for idx, knowledge in enumerate(df['label']):
+        print(f"{idx}: {knowledge}")
+        combined_list.append((knowledge, float(knowledge_states[idx]))) #知识点 掌握情况权重。共计534个知识点
+
+    return combined_list
 
 
 def divide_learning_style():
@@ -35,11 +54,40 @@ def divide_learning_style():
     ])
 
     # 预测
-    prediction = model.predict(new_data)
+    prediction = model.predict(new_data)[0]
     # 输出
     print("预测结果：", prediction)
 
-    return prediction
+    # 定义映射
+    learning_time_map = {
+        0: "深夜学习型",
+        1: "日间学习型",
+        2: "全时段学习型"
+    }
+    task_type_map = {
+        0: "视觉导向型",
+        1: "听觉导向型",
+        2: "读写导向型",
+        3: "多元导向型"
+    }
+    efficiency_map = {
+        0: "高效学习型",
+        1: "低效学习型"
+    }
+
+    def parse_result(result):
+        try:
+            learning_time = learning_time_map.get(result[0], "未知类型")
+            task_type = task_type_map.get(result[1], "未知类型")
+            efficiency = efficiency_map.get(result[2], "未知类型")
+            return f"学习时间段分布: {learning_time}, 任务类型分布: {task_type}, 学习效率: {efficiency}"
+        except:
+            return "无特定学习风格"
+
+    # 调用解析函数
+    parsed_output = parse_result(prediction)
+
+    return parsed_output
     # 输出示例 预测结果： [[0 0 0]]
     # 按照学习时间段分布：深夜学习型【0】，日间学习型【1】，全时段学习型【2】
     # 按照任务类型分布：视觉导向型【0】，听觉导向型【1】，读写导向型【2】，多元导向型【3】

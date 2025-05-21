@@ -1,10 +1,11 @@
 import sys
 sys.path.append('../')
+import os
 import torch
 import torch.utils.data as Data
-from DKT.KnowledgeTracing.Constant import Constants as C
-from DKT.KnowledgeTracing.data.readdata import DataReader
-from DKT.KnowledgeTracing.data.DKTDataSet import DKTDataSet
+from Apps.DKT.KnowledgeTracing.Constant import Constants as C
+from Apps.DKT.KnowledgeTracing.data.readdata import DataReader
+from Apps.DKT.KnowledgeTracing.data.DKTDataSet import DKTDataSet
 import pandas as pd
 
 def getTrainLoader(train_data_path):
@@ -25,9 +26,16 @@ def getLoader(dataset):
     trainLoaders = []
     testLoaders = []
     if dataset == 'DKT_DATA':
-        trainLoader = getTrainLoader(C.Dpath + '/DKT_DATA/train.txt')
+        train_path=os.path.join('static','DKT_DATA','train.txt')
+        test_path=os.path.join('static','DKT_DATA','test.txt')
+        # 初试的调用方式，需修改
+        # trainLoader = getTrainLoader(C.Dpath + '/DKT_DATA/train.txt')
+        # trainLoaders.append(trainLoader)
+        # testLoader = getTestLoader(C.Dpath + '/DKT_DATA/test.txt')
+        # testLoaders.append(testLoader)
+        trainLoader = getTrainLoader(train_path)
         trainLoaders.append(trainLoader)
-        testLoader = getTestLoader(C.Dpath + '/DKT_DATA/test.txt')
+        testLoader = getTestLoader(test_path)
         testLoaders.append(testLoader)
     return trainLoaders, testLoaders
 

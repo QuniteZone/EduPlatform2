@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from sklearn import metrics
 from torch.autograd import Variable
-from DKT.KnowledgeTracing.Constant import Constants as C
+from Apps.DKT.KnowledgeTracing.Constant import Constants as C
 
 def performance(ground_truth, prediction):
     fpr, tpr, thresholds = metrics.roc_curve(ground_truth.detach().numpy(), prediction.detach().numpy())

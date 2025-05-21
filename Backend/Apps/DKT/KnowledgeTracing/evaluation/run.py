@@ -1,11 +1,12 @@
 import sys
 import os
 import torch
-from DKT.KnowledgeTracing.model.RNNModel import DKT
-from DKT.KnowledgeTracing.data.dataloader import getTrainLoader, getTestLoader, getLoader
-from DKT.KnowledgeTracing.Constant import Constants as C
+
+from Apps.DKT.KnowledgeTracing.model.RNNModel import DKT
+from Apps.DKT.KnowledgeTracing.data.dataloader import getTrainLoader, getTestLoader, getLoader
+from Apps.DKT.KnowledgeTracing.Constant import Constants as C
 import torch.optim as optim
-from DKT.KnowledgeTracing.evaluation import eval
+from Apps.DKT.KnowledgeTracing.evaluation import eval
 
 
 def dkt_train():
@@ -52,15 +53,15 @@ def predict_with_trained_model(model_path):
     # 5. 获取最终的知识状态预测
     final_knowledge_states = eval.get_final_step_predictions(model, testLoaders)
 
-    # 打印前3个学生的最终掌握度
-    for i in range(min(3, len(final_knowledge_states))):
-        print(f"Student {i + 1} mastery:", final_knowledge_states[i])
+    # # 打印前3个学生的最终掌握度
+    # for i in range(min(3, len(final_knowledge_states))):
+    #     print(f"Student {i + 1} mastery:", final_knowledge_states[i])
 
     return final_knowledge_states
 
 
-if __name__ == "__main__":
-    # dkt_train()
-    model_path = 'dkt_model_final.pth'
-    predict_with_trained_model(model_path)
+# if __name__ == "__main__":
+#     # dkt_train()
+#     model_path = 'dkt_model_final.pth'
+#     predict_with_trained_model(model_path)
 

@@ -2,14 +2,15 @@ import uuid
 from datetime import datetime
 import os
 import json
+import pandas as pd
+import numpy as np
 import fitz  # PyMuPDF
 import docx  # python-docx
 from flask import Blueprint, jsonify, request
 from .genericFunction import LLM, lesson_plan_prompt, class_meeting_prompt, allowed_file, extract_text_from_pdf, \
     extract_text_from_docx, ragflow, script_gen_prompt, jugement_ques_prompt, generate_question_prompt, \
-    get_globalWeb_source,divide_learning_style,recommendation_prompt
+    get_globalWeb_source,divide_learning_style,recommendation_prompt,student_knowledge
 from config.config import TextbookRetr_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS,resourceFinder_AgentID
-
 
 #这是教案生成
 lesson_plan_bp = Blueprint('lesson_plan', __name__)
@@ -161,13 +162,10 @@ def handle_lesson_script():
 
 
 
-
-
-
-
 ##个性化学习 推荐
-@lesson_plan_bp.route('/study_plan', methods=['POST'])
+@lesson_plan_bp.route('/study_plan', methods=['GET','POST'])
 def create_study_plan():
+    stu_knowledge=student_knowledge()
 
     data = request.get_json()# 从请求中获取 JSON 数据
     content={} #返回内容
@@ -205,461 +203,54 @@ def create_study_plan():
 
     #学习风格函数
     study_style=divide_learning_style()
+    print(f"study_style:{study_style}")
 
-    need_study_knowledge = [
-        {"knowledge_ID": 1, "content": "HTML基础语法", "weight": 0.55},
-        {"knowledge_ID": 2, "content": "CSS基础语法", "weight": 0.54},
-        {"knowledge_ID": 3, "content": "JavaScript基本语法", "weight": 0.56},
-        {"knowledge_ID": 4, "content": "响应式设计原理", "weight": 0.50},
-        {"knowledge_ID": 5, "content": "DOM操作与事件处理", "weight": 0.53},
-        {"knowledge_ID": 6, "content": "CSS布局模型", "weight": 0.48},
-        {"knowledge_ID": 7, "content": "CSS选择器的使用", "weight": 0.45},
-        {"knowledge_ID": 8, "content": "JavaScript异步编程", "weight": 0.50},
-        {"knowledge_ID": 9, "content": "Web标准与最佳实践", "weight": 0.40},
-        {"knowledge_ID": 10, "content": "CSS预处理器（如Sass、Less）", "weight": 0.42},
-        {"knowledge_ID": 11, "content": "JavaScript框架（如React、Vue）", "weight": 0.51},
-        {"knowledge_ID": 12, "content": "前端构建工具（如Webpack）", "weight": 0.49},
-        {"knowledge_ID": 13, "content": "版本控制工具（如Git）", "weight": 0.44},
-        {"knowledge_ID": 14, "content": "表单验证与处理", "weight": 0.47},
-        {"knowledge_ID": 15, "content": "API与前后端交互", "weight": 0.52},
-        {"knowledge_ID": 16, "content": "浏览器开发者工具使用", "weight": 0.46},
-        {"knowledge_ID": 17, "content": "CSS框架（如Bootstrap、Tailwind）", "weight": 0.55},
-        {"knowledge_ID": 18, "content": "网页加载优化技巧", "weight": 0.48},
-        {"knowledge_ID": 19, "content": "跨域问题及解决方案", "weight": 0.45},
-        {"knowledge_ID": 20, "content": "JavaScript设计模式", "weight": 0.50},
-        {"knowledge_ID": 21, "content": "图形与动画（如Canvas、SVG）", "weight": 0.41},
-        {"knowledge_ID": 22, "content": "国际化与本地化", "weight": 0.39},
-        {"knowledge_ID": 23, "content": "SEO基础知识", "weight": 0.37},
-        {"knowledge_ID": 24, "content": "Web安全基础（如XSS、CSRF）", "weight": 0.54},
-        {"knowledge_ID": 25, "content": "CSS变量与自定义属性", "weight": 0.43},
-        {"knowledge_ID": 26, "content": "模块化JavaScript", "weight": 0.46},
-        {"knowledge_ID": 27, "content": "前端性能监控", "weight": 0.38},
-        {"knowledge_ID": 28, "content": "浏览器兼容性处理", "weight": 0.40},
-        {"knowledge_ID": 29, "content": "Web组件概念", "weight": 0.33},
-        {"knowledge_ID": 30, "content": "前端架构模式", "weight": 0.35},
-        {"knowledge_ID": 31, "content": "单页应用（SPA）开发", "weight": 0.49},
-        {"knowledge_ID": 32, "content": "多页面应用（MPA）开发", "weight": 0.45},
-        {"knowledge_ID": 33, "content": "Websocket及实时通信", "weight": 0.43},
-        {"knowledge_ID": 34, "content": "前端测试基础（如Jest）", "weight": 0.42},
-        {"knowledge_ID": 35, "content": "类型检查与TypeScript", "weight": 0.41},
-        {"knowledge_ID": 36, "content": "图形用户界面设计原则", "weight": 0.37},
-        {"knowledge_ID": 37, "content": "UX/UI设计基础", "weight": 0.36},
-        {"knowledge_ID": 38, "content": "移动端适配技巧", "weight": 0.39},
-        {"knowledge_ID": 39, "content": "服务工作者与离线应用", "weight": 0.32},
-        {"knowledge_ID": 40, "content": "CSS Grid布局", "weight": 0.48},
-        {"knowledge_ID": 41, "content": "Flexbox布局", "weight": 0.44},
-        {"knowledge_ID": 42, "content": "编写可访问性友好的网站", "weight": 0.46},
-        {"knowledge_ID": 43, "content": "使用图标字体与SVG", "weight": 0.34},
-        {"knowledge_ID": 44, "content": "前端部署与发布流程", "weight": 0.38},
-        {"knowledge_ID": 45, "content": "Web前端框架选择", "weight": 0.35},
-        {"knowledge_ID": 46, "content": "自定义事件与事件总线", "weight": 0.42},
-        {"knowledge_ID": 47, "content": "Webpack配置与使用", "weight": 0.35},
-        {"knowledge_ID": 48, "content": "代码优化与重构", "weight": 0.41},
-        {"knowledge_ID": 49, "content": "小型与大型项目管理", "weight": 0.36},
-        {"knowledge_ID": 50, "content": "邮件模板编写", "weight": 0.33},
-        {"knowledge_ID": 51, "content": "动态数据绑定原理", "weight": 0.50},
-        {"knowledge_ID": 52, "content": "客户端路由管理", "weight": 0.45},
-        {"knowledge_ID": 53, "content": "环境变量与配置管理", "weight": 0.40},
-        {"knowledge_ID": 54, "content": "前端代码规范与Lint工具", "weight": 0.39},
-        {"knowledge_ID": 55, "content": "使用状态管理库（如Redux）", "weight": 0.52},
-        {"knowledge_ID": 56, "content": "TypeScript在前端开发中的应用", "weight": 0.46},
-        {"knowledge_ID": 57, "content": "使用图形库进行可视化（如D3.js）", "weight": 0.38},
-        {"knowledge_ID": 58, "content": "UI组件库的使用与定制", "weight": 0.49},
-        {"knowledge_ID": 59, "content": "异步请求的优化", "weight": 0.44},
-        {"knowledge_ID": 60, "content": "客户端存储技术（如LocalStorage、SessionStorage）", "weight": 0.50},
-        {"knowledge_ID": 61, "content": "使用微服务架构进行前端开发", "weight": 0.46},
-        {"knowledge_ID": 62, "content": "使用RESTful API设计规范", "weight": 0.43},
-        {"knowledge_ID": 63, "content": "使用GraphQL进行数据获取", "weight": 0.52},
-        {"knowledge_ID": 64, "content": "日期与时间处理库（如Moment.js）", "weight": 0.37},
-        {"knowledge_ID": 65, "content": "用户身份验证与授权", "weight": 0.55},
-        {"knowledge_ID": 66, "content": "动态导入与代码分割", "weight": 0.40},
-        {"knowledge_ID": 67, "content": "使用CSS动画增强用户体验", "weight": 0.35},
-        {"knowledge_ID": 68, "content": "前端开发中的数据格式（如JSON、XML）", "weight": 0.43},
-        {"knowledge_ID": 69, "content": "利用状态管理优化复杂应用", "weight": 0.48},
-        {"knowledge_ID": 70, "content": "本地开发环境的搭建与使用", "weight": 0.36},
-        {"knowledge_ID": 71, "content": "视频与音频处理", "weight": 0.30},
-        {"knowledge_ID": 72, "content": "使用安全框架提高应用安全性", "weight": 0.45},
-        {"knowledge_ID": 73, "content": "可重用组件的设计与架构", "weight": 0.42},
-        {"knowledge_ID": 74, "content": "开发环境与生产环境的区别", "weight": 0.38},
-        {"knowledge_ID": 75, "content": "网站性能分析工具的使用", "weight": 0.31},
-        {"knowledge_ID": 76, "content": "使用客户反馈改善用户体验", "weight": 0.41},
-        {"knowledge_ID": 77, "content": "文档编写与团队协作", "weight": 0.36},
-        {"knowledge_ID": 78, "content": "使用配置文件管理项目设置", "weight": 0.34},
-        {"knowledge_ID": 79, "content": "数据可视化的前端技术", "weight": 0.30},
-        {"knowledge_ID": 80, "content": "访问性测试与审核", "weight": 0.32},
-        {"knowledge_ID": 81, "content": "相关工具与技术栈的选择", "weight": 0.33},
-        {"knowledge_ID": 82, "content": "自适应与响应式设计的区别", "weight": 0.35},
-        {"knowledge_ID": 83, "content": "前端框架生态概述", "weight": 0.29},
-        {"knowledge_ID": 84, "content": "搭建本地服务器进行调试", "weight": 0.30},
-        {"knowledge_ID": 85, "content": "小型项目快速开发技巧", "weight": 0.36},
-        {"knowledge_ID": 86, "content": "处理移动端特有的问题", "weight": 0.40},
-        {"knowledge_ID": 87, "content": "和后端协作的有效沟通", "weight": 0.34},
-        {"knowledge_ID": 88, "content": "数据流管理与优化", "weight": 0.35},
-        {"knowledge_ID": 89, "content": "模块化CSS的实践", "weight": 0.32},
-        {"knowledge_ID": 90, "content": "使用方言与框架的优缺点", "weight": 0.29},
-        {"knowledge_ID": 91, "content": "了解Web Components的标准", "weight": 0.30},
-        {"knowledge_ID": 92, "content": "编写文档与开发规范", "weight": 0.31},
-        {"knowledge_ID": 93, "content": "图像优化与处理技术", "weight": 0.33},
-        {"knowledge_ID": 94, "content": "动画与交互设计基础", "weight": 0.35},
-        {"knowledge_ID": 95, "content": "使用第三方库与框架", "weight": 0.32},
-        {"knowledge_ID": 96, "content": "微服务前端架构探讨", "weight": 0.28},
-        {"knowledge_ID": 97, "content": "CMS的前端整合", "weight": 0.37},
-        {"knowledge_ID": 98, "content": "客户端的性能考量", "weight": 0.39},
-        {"knowledge_ID": 99, "content": "Web应用的法律合规", "weight": 0.30},
-        {"knowledge_ID": 100, "content": "前端开发者与用户的支持技巧", "weight": 0.36}
-    ]
+    # study_aim = "想一周之内，学习数字素养基础内容知识。例如编程基础、开源教育"
+    study_aim =goal
 
-    study_aim = "想一周之内，学习数字素养基础内容知识。例如编程基础、开源教育"
-
-    student_type = "视觉型学习者"
     result1, result2 = get_globalWeb_source(study_aim)
     onlineSearch = result2
     if result1 != None:
         onlineSearch = result1 + result2
 
+    ###### RAGflow中检索资源库内容
+    # 构建代理Agent会话
+    agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
 
-    try:
-        ###### RAGflow中检索资源库内容
-        # 构建代理Agent会话
-        agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
+    # 进行代理Agent聊天
+    question = f"{study_aim}"
 
-        # 进行代理Agent聊天
-        question = f"{study_aim}"
+    source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
+                                                      session_id=agent_session_id)
 
-        source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
-                                                          session_id=agent_session_id)
-
-        # 删除该Agent会话
-        ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
-        ###### RAGflow中检索资源库内容
+    # 删除该Agent会话
+    ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
+    ###### RAGflow中检索资源库内容
 
 
-        new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=student_type, knowledge_point=need_study_knowledge,
-                                   source_response_data=source_response_data, onlineSearch=onlineSearch)
+    new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=study_style, knowledge_point=stu_knowledge,
+                               source_response_data=source_response_data, onlineSearch=onlineSearch)
 
-        messages = [
-            {"role": "system",
-             "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
-            {"role": "user", "content": new_prompt}]
+    messages = [
+        {"role": "system",
+         "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
+        {"role": "user", "content": new_prompt}]
 
-        print("*" * 50)
-        # json缩进形式打印message
-        print(f"new_prompt:{new_prompt}")
+    # print("*" * 50)
+    # # json缩进形式打印message
+    # print(f"new_prompt:{new_prompt}")
+    #
+    # print("*" * 50)
 
-        print("*" * 50)
+    message = LLM(messages)
 
-        message = LLM(messages)
+    # print("*" * 50)
+    # # json缩进形式打印message
+    # print(json.dumps(message, indent=4, ensure_ascii=False))
+    # print("*" * 50)
 
-        print("*" * 50)
-        # json缩进形式打印message
-        print(json.dumps(message, indent=4, ensure_ascii=False))
-        print("*" * 50)
+    return jsonify({"content": message, 'status': 1})
 
-        return jsonify({"content": message, 'status': 1})
-    except Exception as e:
-        message = {
-            "content":[{
-                "learningPath": [
-                    {
-                        "duration": "2025.4.26-2025.4.30",
-                        "goal": "掌握数字素养的基础知识和技能",
-                        "stage": "第一阶段",
-                        "suggestion": "结合视频资源和在线文章，确保理解每个知识点，并进行实际练习，以巩固学习效果。",
-                        "tasks": [
-                            {
-                                "learningObjectives": [
-                                    "理解数字素养的基本概念",
-                                    "掌握数字技术的基本知识",
-                                    "认识数字素养在生活和工作中的应用"
-                                ],
-                                "online_source": [
-                                    {
-                                        "introduce": "举个例子，在一个新项目启动时，我们以往可能需要花好几天搭建基础框架、配置各种文件。但现在，团队里的年轻工程师会先让AI根据项目描述生成初始代码结构和 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/28760088859",
-                                        "title": "AI原生一代的崛起：当年轻程序员遇上AI编程 - 知乎专栏"
-                                    },
-                                    {
-                                        "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
-                                        "title": "生成式人工智能对未来经济活动的影响：战略趋势报告"
-                                    },
-                                    {
-                                        "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。",
-                                        "is_video": 0,
-                                        "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
-                                        "title": "少儿编程概述- 梁君牧- 博客园"
-                                    }
-                                ],
-                                "resources": [
-                                    {
-                                        "favorites": "33",
-                                        "likes": "15",
-                                        "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "26",
-                                        "tags": [
-                                            "科普",
-                                            "数据",
-                                            "智慧",
-                                            "数字化转型",
-                                            "数字素养"
-                                        ],
-                                        "title": "什么是数字素养",
-                                        "upload_time": "2024-01-07 09:28:01",
-                                        "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：数字化意识、数字技术知识与技能、数字化应用、数字社会责任和专业发展。",
-                                        "views": "1574"
-                                    },
-                                    {
-                                        "favorites": "6",
-                                        "likes": "5",
-                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "1",
-                                        "tags": [
-                                            "ChatGPT研究所",
-                                            "少年",
-                                            "数字",
-                                            "对话",
-                                            "素养",
-                                            "万物研究所·奖学金计划"
-                                        ],
-                                        "title": "数字素养：少年对话",
-                                        "upload_time": "2023-09-26 16:47:13",
-                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
-                                        "views": "453"
-                                    }
-                                ],
-                                "taskDescription": "观看视频，了解数字素养的定义和重要性，学习如何在数字环境中有效运用数字技术。",
-                                "taskName": "学习数字素养概念"
-                            },
-                            {
-                                "learningObjectives": [
-                                    "掌握编程的基本概念",
-                                    "了解常用编程语言的特点",
-                                    "学习如何使用编程工具"
-                                ],
-                                "online_source": [
-                                    {
-                                        "introduce": "为了使所有参与教育环境的人都能利用AI 工具进行强大的学习，本文描述了一个框架和策略，供教育领导者为其特定受众（例如学习者、教师或其他人）设计和 ...",
-                                        "is_video": 0,
-                                        "link": "https://blog.csdn.net/qq_29868553/article/details/144214511",
-                                        "title": "美国数字承诺发布“人工智能素养框架”《AI Literacy - CSDN博客"
-                                    },
-                                    {
-                                        "introduce": "课程资源中提供的一些人工智能项目，如鸢尾花分类项目（IRIS）和手写数字识别项目（MNIST），主要用于帮助学生理清机器学习的核心流程讲解典型模型，例如神经网络。",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/681728126",
-                                        "title": "如何开设面向10年级学生的机器学习（人工智能）课程"
-                                    },
-                                    {
-                                        "introduce": "ComputationalThinking 是MIT 开设的一门计算思维入门课，所有课程内容全部开源，可以在课程网站直接访问。这门课利用Julia 编程语言，在图像处理、社会科学 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/566168901",
-                                        "title": "CS自学指南 - 知乎专栏"
-                                    }
-                                ],
-                                "resources": [
-                                    {
-                                        "duration": "46:26",
-                                        "favorites": "271",
-                                        "likes": "61",
-                                        "link": "https://www.bilibili.com/video/BV1VP411C7MW/",
-                                        "preview_image_url": "https://i1.hdslb.com/bfs/archive/7f68c623d9dbd8c5175ee54f32d9a6dc94db942a.png@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "180",
-                                        "tags": [
-                                            "教育",
-                                            "数字",
-                                            "教师",
-                                            "素养",
-                                            "教育技术"
-                                        ],
-                                        "title": "教师数字素养",
-                                        "upload_time": "2023-07-22 14:26:12",
-                                        "video_summary": "教育技术| 教师数字素养|暑期研修",
-                                        "views": "5907"
-                                    },
-                                    {
-                                        "favorites": "6",
-                                        "likes": "5",
-                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "1",
-                                        "tags": [
-                                            "ChatGPT研究所",
-                                            "少年",
-                                            "数字",
-                                            "对话",
-                                            "素养",
-                                            "万物研究所·奖学金计划"
-                                        ],
-                                        "title": "数字素养：少年对话",
-                                        "upload_time": "2023-09-26 16:47:13",
-                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
-                                        "views": "453"
-                                    }
-                                ],
-                                "taskDescription": "通过视频和在线文章，了解编程的基本概念和常用语言的特点，学习如何使用编程工具。",
-                                "taskName": "学习基本编程概念"
-                            }
-                        ]
-                    },
-                    {
-                        "duration": "2025.5.1-2025.5.7",
-                        "goal": "掌握编程基础和数字素养的应用",
-                        "stage": "第二阶段",
-                        "suggestion": "结合实际项目进行练习，尝试将所学知识应用到实际问题中，以提升综合能力。",
-                        "tasks": [
-                            {
-                                "learningObjectives": [
-                                    "掌握HTML基本标签和语法",
-                                    "了解网页结构和布局",
-                                    "能够独立编写简单的网页"
-                                ],
-                                "online_source": [
-                                    {
-                                        "introduce": "举个例子，在一个新项目启动时，我们以往可能需要花好几天搭建基础框架、配置各种文件。但现在，团队里的年轻工程师会先让AI根据项目描述生成初始代码结构和 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/28760088859",
-                                        "title": "AI原生一代的崛起：当年轻程序员遇上AI编程 - 知乎专栏"
-                                    },
-                                    {
-                                        "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
-                                        "title": "生成式人工智能对未来经济活动的影响：战略趋势报告"
-                                    },
-                                    {
-                                        "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。",
-                                        "is_video": 0,
-                                        "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
-                                        "title": "少儿编程概述- 梁君牧- 博客园"
-                                    }
-                                ],
-                                "resources": [
-                                    {
-                                        "favorites": "33",
-                                        "likes": "15",
-                                        "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "26",
-                                        "tags": [
-                                            "科普",
-                                            "数据",
-                                            "智慧",
-                                            "数字化转型",
-                                            "数字素养"
-                                        ],
-                                        "title": "HTML基础语法",
-                                        "upload_time": "2024-01-07 09:28:01",
-                                        "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：数字化意识、数字技术知识与技能、数字化应用、数字社会责任和专业发展。",
-                                        "views": "1574"
-                                    },
-                                    {
-                                        "favorites": "6",
-                                        "likes": "5",
-                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "1",
-                                        "tags": [
-                                            "ChatGPT研究所",
-                                            "少年",
-                                            "数字",
-                                            "对话",
-                                            "素养",
-                                            "万物研究所·奖学金计划"
-                                        ],
-                                        "title": "数字素养：少年对话",
-                                        "upload_time": "2023-09-26 16:47:13",
-                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
-                                        "views": "453"
-                                    }
-                                ],
-                                "taskDescription": "学习HTML基础知识，编写一个简单的个人网页，展示个人信息和兴趣。",
-                                "taskName": "编写简单的HTML页面"
-                            },
-                            {
-                                "learningObjectives": [
-                                    "理解CSS的基本语法",
-                                    "掌握常用的CSS属性和选择器",
-                                    "能够独立为网页添加样式"
-                                ],
-                                "online_source": [
-                                    {
-                                        "introduce": "举个例子，在一个新项目启动时，我们以往可能需要花好几天搭建基础框架、配置各种文件。但现在，团队里的年轻工程师会先让AI根据项目描述生成初始代码结构和 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/28760088859",
-                                        "title": "AI原生一代的崛起：当年轻程序员遇上AI编程 - 知乎专栏"
-                                    },
-                                    {
-                                        "introduce": "对于个人而言，不断学习、提升数字素养和适应能力是确保职业生涯韧性的关键；对于企业和社会而言，制定有效的培训计划和转岗支持政策，培育“AI+人”的 ...",
-                                        "is_video": 0,
-                                        "link": "https://zhuanlan.zhihu.com/p/1893952867007694847",
-                                        "title": "生成式人工智能对未来经济活动的影响：战略趋势报告"
-                                    },
-                                    {
-                                        "introduce": "少儿编程教育并非高等教育那样学习如何写代码、编制应用程序，而是通过编程游戏启蒙、可视化图形编程等课程，培养学生的计算思维和创新解难能力。",
-                                        "is_video": 0,
-                                        "link": "https://www.cnblogs.com/lwp-nicol/p/18376020",
-                                        "title": "少儿编程概述- 梁君牧- 博客园"
-                                    }
-                                ],
-                                "resources": [
-                                    {
-                                        "favorites": "33",
-                                        "likes": "15",
-                                        "link": "https://www.bilibili.com/video/BV1di4y1z7QM/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/e5f442cb6b847082217ab7c557f296c81479836b.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "26",
-                                        "tags": [
-                                            "科普",
-                                            "数据",
-                                            "智慧",
-                                            "数字化转型",
-                                            "数字素养"
-                                        ],
-                                        "title": "CSS基础语法",
-                                        "upload_time": "2024-01-07 09:28:01",
-                                        "video_summary": "数字素养是指个体对数字化环境的认知、理解、应用和责任意识的能力和素养。它包括以下几个方面：数字化意识、数字技术知识与技能、数字化应用、数字社会责任和专业发展。",
-                                        "views": "1574"
-                                    },
-                                    {
-                                        "favorites": "6",
-                                        "likes": "5",
-                                        "link": "https://www.bilibili.com/video/BV17j41187LQ/",
-                                        "preview_image_url": "https://i2.hdslb.com/bfs/archive/bc8f41ad530205d5f9052f5c0b74e5b53d823142.jpg@672w_378h_1c_!web-search-common-cover",
-                                        "shares": "1",
-                                        "tags": [
-                                            "ChatGPT研究所",
-                                            "少年",
-                                            "数字",
-                                            "对话",
-                                            "素养",
-                                            "万物研究所·奖学金计划"
-                                        ],
-                                        "title": "数字素养：少年对话",
-                                        "upload_time": "2023-09-26 16:47:13",
-                                        "video_summary": "数志凌云专注国民数字素养提升，重点面向特殊地区、特殊行业、特殊群体等数字应用水平不高和数字福利覆盖不足的领域，通过引入相应的资源，拉平数字鸿沟。",
-                                        "views": "453"
-                                    }
-                                ],
-                                "taskDescription": "通过视频学习CSS的基本语法和布局，掌握如何美化网页。",
-                                "taskName": "学习CSS基础"
-                            }
-                        ]
-                    }
-                ],
-                "suggestion": [
-                    "建议结合视频教程和实际操作，确保对每个知识点有深刻理解。",
-                    "每天设定固定学习时间，保持学习的连贯性和系统性。",
-                    "在学习过程中，尝试与他人讨论，分享学习心得，以加深理解。"
-                ]
-            }],
-            "status": 1
-        }
-
-        return message
 
 # 主观题判题 question_judgment   http://192.168.31.172:5001/plan/question_judgment
 @lesson_plan_bp.route('/question_judgment', methods=['POST'])

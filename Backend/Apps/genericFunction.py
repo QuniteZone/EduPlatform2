@@ -30,7 +30,7 @@ def student_knowledge():
     df = pd.read_excel(DataK_path, sheet_name='output')  # 使用工作表名称
     combined_list = []
     for idx, knowledge in enumerate(df['label']):
-        print(f"{idx}: {knowledge}")
+        # print(f"{idx}: {knowledge}")
         combined_list.append((knowledge, float(knowledge_states[idx]))) #知识点 掌握情况权重。共计534个知识点
 
     return combined_list

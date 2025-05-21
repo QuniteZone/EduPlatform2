@@ -187,6 +187,7 @@
 EduPlatform2/
 ├── Backend/                       # 后端目录
 │   ├── Apps/                      # 应用逻辑相关
+│   │   ├── DKT                    # 存放知识追踪相关DKT算法
 │   │   ├── DatabaseTables.py      # 数据库表相关定义  
 │   │   ├── genericFunction.py     # 通用函数
 │   │   ├── lesson_plan.py         # 课程教案等功能路由

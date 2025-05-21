@@ -165,10 +165,8 @@ def handle_lesson_script():
 ##个性化学习 推荐
 @lesson_plan_bp.route('/study_plan', methods=['GET','POST'])
 def create_study_plan():
-    stu_knowledge=student_knowledge()
-
+    stu_knowledge=student_knowledge() #获得学生的各个知识点掌握情况
     data = request.get_json()# 从请求中获取 JSON 数据
-    content={} #返回内容
 
     # 检查必需的参数是否存在
     required_fields = ['goal', 'background', 'preferences', 'time', 'deadline', 'title']
@@ -192,41 +190,38 @@ def create_study_plan():
 
     # 格式化时间为字符串
     current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-    content={
-        'createdAt': current_time,
-        'goal':goal,
-        'background':background,
-        'time':time,
-        'deadline':deadline,
-        'title':title,
-    }
+
 
     #学习风格函数
     study_style=divide_learning_style()
-    print(f"study_style:{study_style}")
+    # print(f"study_style:{study_style}")
 
     # study_aim = "想一周之内，学习数字素养基础内容知识。例如编程基础、开源教育"
-    study_aim =goal
+    study_aim =f"我的目标是{goal}，我打算每周学习{time}小时，我的学习背景是{background}，我的学习偏好是{preferences}，计划的开始时间：{current_time},截止日期是{deadline}。"
 
     result1, result2 = get_globalWeb_source(study_aim)
     onlineSearch = result2
     if result1 != None:
         onlineSearch = result1 + result2
 
-    ###### RAGflow中检索资源库内容
-    # 构建代理Agent会话
-    agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
 
-    # 进行代理Agent聊天
-    question = f"{study_aim}"
 
-    source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
-                                                      session_id=agent_session_id)
+    try:
+        ###### RAGflow中检索资源库内容
+        # 构建代理Agent会话
+        agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
 
-    # 删除该Agent会话
-    ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
-    ###### RAGflow中检索资源库内容
+        # 进行代理Agent聊天
+        question = f"{study_aim}"
+        source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
+                                                          session_id=agent_session_id)
 
+        # 删除该Agent会话
+        ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
+        ###### RAGflow中检索资源库内容
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        source_response_data = None
 
     new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=study_style, knowledge_point=stu_knowledge,
                                source_response_data=source_response_data, onlineSearch=onlineSearch)
@@ -236,18 +231,18 @@ def create_study_plan():
          "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
         {"role": "user", "content": new_prompt}]
 
-    # print("*" * 50)
-    # # json缩进形式打印message
-    # print(f"new_prompt:{new_prompt}")
-    #
-    # print("*" * 50)
+    print("*" * 50)
+    # json缩进形式打印message
+    print(f"new_prompt:{new_prompt}")
+
+    print("*" * 50)
 
     message = LLM(messages)
 
-    # print("*" * 50)
-    # # json缩进形式打印message
-    # print(json.dumps(message, indent=4, ensure_ascii=False))
-    # print("*" * 50)
+    print("*" * 50)
+    # json缩进形式打印message
+    print(json.dumps(message, indent=4, ensure_ascii=False))
+    print("*" * 50)
 
     return jsonify({"content": message, 'status': 1})
 

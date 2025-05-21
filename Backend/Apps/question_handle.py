@@ -19,6 +19,7 @@ def get_LLM_key():
 #####多模态的问题问答
 @ques_handle_bp.route('/upload', methods=['POST'])
 def upload_file():
+
     if 'file' not in request.files:
         return jsonify({"content": "没有文件上传", 'status': 0})
 
@@ -181,6 +182,10 @@ def kn_chat():
 def chat():
     data = request.json
     image_urls = data.get('image_urls')  # 从请求中获取图片URL，至少是一个空list
+    print(f"image_urls:{image_urls}")
+
+    image_urls="None"
+    
     # files_urls = data.get('files_urls')  # 从请求中获取文件的URL
     user_message = data.get('message')  # 从请求中获取用户消息及历史记录
 

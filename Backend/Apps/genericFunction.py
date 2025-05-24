@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import time
 import pandas as pd
 import numpy as np
 from joblib import load
@@ -117,7 +118,6 @@ def format_lesson_plan(text, is_json):
             return match.group(1).strip()
         else:
             return False
-
 
 def LLM(messages, is_json=True):
     max_retries = 5

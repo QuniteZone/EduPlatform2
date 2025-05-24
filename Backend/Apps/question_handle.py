@@ -4,7 +4,8 @@ import uuid
 from flask import Blueprint, jsonify, request, stream_with_context, Response
 from .genericFunction import LLMs_allowed_file, LLMs_StreamOutput, LLM, ragflow, get_globalWeb_source,LLM_StreamOutput
 from config.config import LLMs_IMAGE_UPLOAD_FOLDER,LLMs_FILE_UPLOAD_FOLDER,Public_ip,LLMs_model
-
+import time
+import json
 import base64
 ques_handle_bp = Blueprint('ques_handle', __name__)
 
@@ -50,134 +51,38 @@ def upload_file():
         return jsonify({"content": "不支持的文件类型", 'status': -2})
 
 
-#知识点梳理——思维导图
 @ques_handle_bp.route('/kn_chat', methods=['POST'])
 def kn_chat():
-    import time
     data = request.json
-    user_message = data.get('message')  # 从请求中获取用户消息及历史记录
-    title = data.get('title')  # 从请求中获取用户消息及历史记录
-
-    user_mesg = user_message[-1]['content']  # 获取最新一条的用户消息提问
-
-    print(f"最新一条的用户消息提问:{user_mesg}")
-    print(f"最新一条的用户消息提问:{title}")
-
-    messages = [
-        {
-            "role": "system",
-            "content":"""你是一个思维导图专家，请根据用户输入的标题和内容生成思维导图，也就是返回markown格式内容，此外不要输出任何多余无关内容话语，例如如果用户提问，输出机器学习基础内容知识点，你需要回复下面内容：
-            
-# 机器学习基础知识点梳理
-## 1. 机器学习概述
-- 1.1 机器学习定义
-- 1.2 机器学习与人工智能的关系
-- 1.3 机器学习的分类
-  - 1.3.1 监督学习
-  - 1.3.2 无监督学习
-  - 1.3.3 强化学习
-            """
-        },
-        {
-            "role": "user",
-            "content": "机器学习基础内容知识点"
-        }
-    ]
-
-    # return Response(stream_with_context(LLM_StreamOutput(messages)), content_type='text/plain')
+    user_messages = data.get('message')  # 获取对话历史
 
     def generate_stream():
-        # 模拟延迟的生成器
-        messages = [
-            "# 高中语文写作技巧思维导图",
-            "## 写作基础",
-            "### 字词运用",
-            "#### 常用文学词汇积累",
-            "#### 成语与典故的使用",
-            "### 句子结构",
-            "#### 简单句与复合句",
-            "#### 并列句与复杂句",
-            "#### 修辞手法的应用",
-            "## 写作准备",
-            "### 选题",
-            "#### 主题选择的广度与深度",
-            "#### 兴趣与社会热点结合",
-            "### 构思",
-            "#### 思维导图法",
-            "#### 列提纲与框架搭建",
-            "### 资料收集",
-            "#### 阅读经典文学作品",
-            "#### 查找相关论文与网络资源",
-            "## 写作过程",
-            "### 开头",
-            "#### 引人注目的开场白",
-            "#### 突出中心思想",
-            "### 正文",
-            "#### 分段展开论述",
-            "#### 使用情节故事例证",
-            "#### 引入对话与心理撰写",
-            "### 结尾",
-            "#### 阐述主要观点",
-            "#### 留下深刻的读者启示",
-            "## 文笔与语气",
-            "### 个人风格",
-            "#### 培养独特语言风格",
-            "#### 灵活运用叙述视角",
-            "#### 避免冗长与重复表达",
-            "### 情感渲染",
-            "#### 抒情与议论结合",
-            "#### 情景描写增强代入感",
-            "#### 控制情感强度以避免过度煽情",
-            "### 语气选择",
-            "#### 根据文体调整正式或轻松语气",
-            "#### 使用恰当的褒贬词汇传递态度",
-            "#### 注意用词的分寸感和礼貌性",
-            "## 修改与润色",
-            "### 自我检查",
-            "#### 检查逻辑是否清晰连贯",
-            "#### 核对语法错误与错别字",
-            "#### 确保段落过渡自然流畅",
-            "### 反复打磨",
-            "#### 删除多余内容，突出重点",
-            "#### 替换平淡词语为生动表述",
-            "#### 调整句子结构使文章更具节奏感",
-            "### 外部反馈",
-            "#### 向老师或同学征求意见",
-            "#### 借助批改工具进行客观分析",
-            "#### 综合多方建议优化作品",
-            "## 高分写作技巧",
-            "### 创新思维",
-            "#### 打破常规立意出新",
-            "#### 运用逆向思维引发思考",
-            "#### 巧妙设置悬念吸引读者",
-            "### 论证方法",
-            "#### 引用权威观点增加说服力",
-            "#### 对比论证强化论点鲜明度",
-            "#### 举例说明让观点更具体可感",
-            "### 文体掌握",
-            "#### 熟悉记叙文、议论文、说明文特点",
-            "#### 掌握应用文（如书信、演讲稿）格式",
-            "#### 结合多种文体丰富表达形式",
-            "## 应试策略",
-            "### 时间分配",
-            "#### 审题与构思时间控制",
-            "#### 写作过程中的高效推进",
-            "#### 预留充足时间用于修改",
-            "### 卷面整洁",
-            "#### 字迹工整避免涂改",
-            "#### 合理布局页面提升视觉效果",
-            "#### 注意标点符号的规范使用",
-            "### 心态管理",
-            "#### 克服紧张情绪保持冷静",
-            "#### 相信自己的准备与能力",
-            "#### 积极应对突发状况灵活调整"
-        ]
-        # 逐条发送消息，模拟延迟
-        for message in messages:
-            yield f"data: {message}\n"
-            # time.sleep(0.1)  # 模拟处理时间
+        try:
+            # 调用 LLM 获取最终的 Markdown 内容
+            result = LLM(user_messages, is_json=False)
 
-    return Response(generate_stream(), content_type='text/event-stream')
+            if not result:
+                yield "data: [ERROR] AI 未能生成有效内容，请重试。\n\n"
+                return
+
+            # 如果 result 是 dict，可进一步转换为 Markdown（视需求而定）
+            markdown_content = result if isinstance(result, str) else json.dumps(result, indent=2)
+
+            # 按行分割内容
+            lines = markdown_content.split('\n')
+
+            for line in lines:
+                yield f"data: {line}\n\n"
+                time.sleep(0.1)  # 模拟流式延迟
+
+            # 发送结束标识
+            yield "data: [DONE]\n\n"
+
+        except Exception as e:
+            yield f"data: [ERROR] {str(e)}\n\n"
+
+    return Response(generate_stream(), mimetype='text/event-stream')
+
 
 #tx_新增聊天历史保存、base64编码传递给大模型-5-21日新增
 # 用于存储不同 session 的历史

@@ -28,7 +28,8 @@ def get_lesson_plan():
         subject = request.args.get('subject')
         knowledge = request.args.get('knowledge')
     promtp=lesson_plan_prompt.format(grade=grade, subject=subject, knowledge=knowledge)
-    print("教案提示词",promtp)
+    # print("教案提示词",promtp)
+    print(f'教案生成中......')
     messages = [{"role": "system",
                  "content": "你是一个教案生成专家，严格按Markdown格式输出结构化教案内容，确保键值命名与层级关系绝对准确"},
                 {"role": "user", "content": promtp}]

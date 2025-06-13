@@ -1,16 +1,21 @@
-from flask import Flask,request,g
+from flask import Flask,request,g,jsonify
 from flask_cors import CORS
 import logging
 from Apps.lesson_plan import lesson_plan_bp
 from Apps.question_handle import ques_handle_bp
-from Apps.DatabaseTables import db
+from Apps.user_plan import user_plan_bp
+from Apps.DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
 import config.config
 from config.config import Config
+import pandas as pd
+from datetime import timedelta
+import ast
 
 app = Flask(__name__)
 # 注册蓝图
 app.register_blueprint(lesson_plan_bp, url_prefix='/plan')  # 可以设置 URL 前缀
 app.register_blueprint(ques_handle_bp, url_prefix='/ques')  # 可以设置 URL 前缀
+app.register_blueprint(user_plan_bp, url_prefix='/user')  # 可以设置 URL 前缀
 CORS(app)
 
 config_obj = Config()
@@ -25,6 +30,7 @@ service_config = config_obj.SERVICE_CONFIG
 if service_config.enable_nacos:
     service_config.connect()  # 自动注册服务到 Nacos
     print(f"Service {service_config.instance_name} registered to Nacos")
+
 
 
 @app.before_request

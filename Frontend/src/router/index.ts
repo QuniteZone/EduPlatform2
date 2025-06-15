@@ -14,12 +14,31 @@ import KnowledgeOrganization from "../views/Knowledge_Organization.vue";
 import PageEditor from '../views/Func1_page/PageEditor.vue'
 import PagePreview2 from '@/views/Func1_page/PagePreview2.vue'
 import WangEditor from '@/views/tool/WangEditor.vue'
-import Test from '../views/Test/test.vue' 
+import Test from '../views/Test/test.vue'
+import DataShow from '../views/DataShow/HOME.vue'
+import test from '../views/DataShow/test.vue'
+import KnowledgeGraphPage from "../views/DataShow/data_components/KnowledgeGraphPage.vue";
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/function1',
     name: 'Function1',
     component: Func1
+  },
+  {
+    path: '/DataShow',
+    name: 'DataShow',
+    component: DataShow
+  },
+  {
+    path: '/DataShow/KnowledgeGraphPage',
+    name: 'KnowledgeGraphPage',
+    component: KnowledgeGraphPage
+  },
+  {
+    path: '/test',
+    name: 'test',
+    component: test
   },
   {
     path: '/Knowledge_Organization',

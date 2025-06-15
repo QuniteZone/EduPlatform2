@@ -1,15 +1,5 @@
-<<<<<<< HEAD
-=======
-// import { createApp } from 'vue'
-// import App from './App.vue'
-// import router from './router'
-// import store from './store'
-
 
 import 'element-plus/dist/index.css'
-
-
->>>>>>> 38592bc618cf2a72127afcf785e0bbee2f9d15d2
 import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'

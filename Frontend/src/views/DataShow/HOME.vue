@@ -76,18 +76,14 @@
                 <el-icon size="large"><Files /></el-icon>
                 <span style="font-size: 18px;">&nbsp;&nbsp;&nbsp;课程考察情况</span>
               </div>
-              <EChartsComponent
-                chartType="pie"
-                :data="mockData.pie1Data"
-                style="height: 200px;"
-              />
+              <EChartsComponent chartType="pie" :data="mockData.pie1Data" style="height: 30vh;"/>
             </div>
             <div class="pie-item">
                 <div style="display: flex; align-items: center; margin-bottom: 15px">
                   <el-icon size="large"><Files /></el-icon>
                   <span style="font-size: 18px;">&nbsp;&nbsp;&nbsp;学生专业分布</span>
                 </div>
-                <EChartsComponent chartType="pie2" :data="mockData.pie2Data" style="height: 200px;" />
+                <EChartsComponent chartType="pie2" :data="mockData.pie2Data" style="height: 30vh;" />
               </div>
           </div>
         </div>
@@ -100,7 +96,7 @@
             <el-icon size="large"><Bell /></el-icon>
             <span style="font-size: 18px;">&nbsp;&nbsp;&nbsp;最新学习动态</span>
           </div>
-          <el-table :data="mockData.topClassProgress" height=90vh style="width: 100%">
+          <el-table :data="mockData.topClassProgress"  style="width: 100%">
             <el-table-column prop="stu" label="学号" width="60" />
             <el-table-column prop="time" label="学习时间" width="130" />
             <el-table-column prop="chapter" label="章节名称" />
@@ -159,7 +155,7 @@ const getMockDataFromBackend = async (keyword: string): Promise<MockData | null>
     return response.data
   } catch (error) {
     console.error('请求失败:', error)
-    // return mockData_test
+    return mockData_test
   }
 }
 
@@ -186,16 +182,6 @@ const querySearch = async (queryString: string, cb: any) => {
   const results = queryString
     ? restaurants.value.filter(createFilter(queryString))
     : restaurants.value
-  // if (queryString) {
-  //   try {
-  //     const fetchedData = await getMockDataFromBackend(queryString)
-  //     if (fetchedData) {
-  //       Object.assign(mockData, fetchedData)
-  //     }
-  //   } catch (err) {
-  //     console.error('搜索请求出错:', err)
-  //   }
-  // }
   cb(results)
 }
 const createFilter = (queryString: string) => {
@@ -226,21 +212,21 @@ onMounted(() => {
 const mockData_test = {
   // 数字指标卡片
   studentCount: 67879,
-  classCount: 20890,
+  classCount: 2081,
   // 图谱路径
   knowledgeGraphUrl: '/All_shuzi_Xiaorong.json',
   // 学习相关指标
-  learningCount: '21065次',
-  learningDuration: '120小时',
-  avgLearningFrequency: '4次/周',
-  avgLearningDuration: '2.5小时',
+  learningCount: '21亿次',
+  learningDuration: '84万小时',
+  avgLearningFrequency: '5.1次/周',
+  avgLearningDuration: '17.5小时',
 
   // 折线图：近一周学习情况
   weeklyLearningTrend: {
     title: '数字素养',
-    categories: ['周一', '周二', '周三', '周四', '周五', '周六'],
+    categories: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
     seriesData: [
-      { name: '学习人次', data: [300, 500, 600, 400, 700, 550] },
+      { name: '学习人次', data: [690, 526, 650, 300, 122, 74, 62] },
     ],
   },
   // 考察情况分布
@@ -252,21 +238,26 @@ const mockData_test = {
       { name: '判断题', value: 322 },
       { name: '简答题', value: 90 },
       { name: '计算题', value: 40 },
-      { name: '应用', value: 17 },
+      { name: '应用题', value: 17 },
     ],
     legend: true
   },
   pie2Data: {
   title: '学生专业分布',
-  subtext: '专业分布',
-  seriesName: 'Access From',
+  subtext: '学生专业分布',
+  seriesName: '学生专业分布',
   radius: '50%',
   seriesData: [
-    { value: 1048, name: '计算机' },
-    { value: 732, name: '数学' },
-    { value: 580, name: '信息媒体技术' },
-    { value: 484, name: '播音主持' },
-    { value: 300, name: '人工智能' }
+    { value: 1048, name: '计算机技术' },
+    { value: 904, name: '电子信息' },
+    { value: 516, name: '大数据' },
+    { value: 102, name: '数学' },
+    { value: 1048, name: '大数据' },
+    { value: 79, name: '信息媒体技术' },
+    { value: 484, name: '软件工程' },
+    { value: 484, name: '物联网工程' },
+    { value: 169, name: '统计学' },
+    { value: 210, name: '自动化' }
   ]
 },
   // 表格数据 - 排行榜
@@ -328,6 +319,7 @@ const mockData_test = {
   padding-left: 20px;
   background-color: #f5f8fd;
   width: 100%;
+  height: 100%;
   box-sizing: border-box;
 }
 
@@ -348,6 +340,7 @@ const mockData_test = {
   gap: 20px;
   margin-bottom: 24px;
   max-width: 100vw;
+  max-height: 100vh;
   overflow-x: hidden;
   box-sizing: border-box;
 }
@@ -361,6 +354,7 @@ const mockData_test = {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
+  height: 92vh;
 }
 
 .center-section {
@@ -379,6 +373,7 @@ const mockData_test = {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  height: 50vh;
 }
 /* 下半部分 - 独立白底 */
 .center-bottom {
@@ -390,10 +385,11 @@ const mockData_test = {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  height: 40vh;
 }
 .graph-container {
   width: 100%;
-  height: 300px;
+  height: 100%;
 }
 
 .pie-container {
@@ -409,10 +405,4 @@ const mockData_test = {
   box-sizing: border-box;
 }
 
-/* 响应式布局：当屏幕小于 900px 时切换为单列布局 */
-@media (max-width: 900px) {
-  .main-content {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

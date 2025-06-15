@@ -222,20 +222,22 @@ def generate_student_tags(data):
     return tags
 
 
-# 取学生信息，假设返回DataFrame或Series，转换成字典传入
-student_info = get_full_student_profile('1842595446920237056','2024-10-11 00:00:00')
 
-print(student_info.T)
-
-# 转成字典再传入
-if hasattr(student_info, "iloc"):  # DataFrame
-    student_info_dict = student_info.iloc[0].to_dict()
-elif hasattr(student_info, "to_dict"):  # Series
-    student_info_dict = student_info.to_dict()
-else:
-    student_info_dict = student_info  # 本身就是字典
-
-tags = generate_student_tags(student_info_dict)
-print(tags)
+# # 取学生信息，假设返回DataFrame或Series，转换成字典传入
+# student_info = get_full_student_profile('1842595446920237056','2024-10-11 00:00:00')
+#
+# print(student_info.T)
+#
+#
+# # 转成字典再传入
+# if hasattr(student_info, "iloc"):  # DataFrame
+#     student_info_dict = student_info.iloc[0].to_dict()
+# elif hasattr(student_info, "to_dict"):  # Series
+#     student_info_dict = student_info.to_dict()
+# else:
+#     student_info_dict = student_info  # 本身就是字典
+#
+# tags = generate_student_tags(student_info_dict)
+# print(tags)
 
 

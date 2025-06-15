@@ -11,6 +11,7 @@ import Func9 from '../views/Func9.vue'
 import Func10 from '../views/Func10.vue'
 import student from '../views/student/analysis.vue'
 import KnowledgeOrganization from "../views/Knowledge_Organization.vue";
+import student_analyze from "../views/student_analyze.vue";
 import PageEditor from '../views/Func1_page/PageEditor.vue'
 import PagePreview2 from '@/views/Func1_page/PagePreview2.vue'
 import WangEditor from '@/views/tool/WangEditor.vue'
@@ -20,6 +21,11 @@ import test from '../views/DataShow/test.vue'
 import KnowledgeGraphPage from "../views/DataShow/data_components/KnowledgeGraphPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
+    {
+    path: '/student_analyze',
+    name: 'Function1',
+    component: student_analyze
+  },
   {
     path: '/function1',
     name: 'Function1',

@@ -15,14 +15,14 @@ from datetime import timedelta
 import ast
 from .DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
 
-from sqlalchemy import func
+from sqlalchemy import func,text
 
 #这是教案生成
 user_plan_bp = Blueprint('user_plan', __name__)
 
 
 #课程数据呈现页面
-@user_plan_bp.route('/course', methods=['GET', 'POST'])
+@user_plan_bp.route('/course_data', methods=['GET', 'POST'])
 def get_course_data():
 
     # 统计学生数
@@ -60,12 +60,27 @@ def get_course_data():
         for log,title in study_logs:
             update_time = datetime.strptime(log.update_time, '%Y-%m-%d %H:%M:%S')
             logList.append({
-                "student_id":str(log.create_by)[-4:],
-                "time": update_time.strftime('%Y-%m-%d %H:%M') if update_time else None,
-                "lesson": f"数字素养-{eval(title)}", # 课程名称-课时
+                'stu': str(log.create_by)[-4:],
+                'time':  update_time.strftime('%Y-%m-%d %H:%M') if update_time else None,
+                'chapter': f"数字素养-{eval(title)}",
                 "times": log.study_time or 0,
             })
+
+
     # print(f"学生学习日志：\n{logList}")
+
+    ## 学生近一周访问次数情况
+    StudentTime = Studylog.query.with_entities(
+        func.date(Studylog.update_time).label('day'),
+        func.count().label('record_count')
+    ).group_by(
+        func.date(Studylog.update_time)
+    ).order_by(
+        text('day DESC')
+    ).limit(7).all()
+    latest_7_LogResult = [
+        row.record_count  for row in StudentTime
+    ]
 
 
     ## 学生的专业分布情况统计
@@ -78,10 +93,10 @@ def get_course_data():
         .all()
     )
     major_list=[]# 转换为列表，方便前端展示
-    major_count = []
     for major, count in major_distribution:
-        major_list.append(major)  #专业表
-        major_count.append(count)  #专业对应的数值
+        major_list.append(
+            {'value': count, 'name': major}
+        )  #专业表
     # print(f"学生的专业分布情况统计：\n{major_list}\n{major_count}")
 
 
@@ -94,7 +109,6 @@ def get_course_data():
         .order_by(func.count(CourseTask.id).desc())
         .all()
     )
-    task_count_list= []
     task_type_list = []  # 转换为列表，方便前端展示
     task_type_dict={
         '0':"图文",
@@ -106,28 +120,53 @@ def get_course_data():
         '9':"其他",
     }
     for task_type, count in task_type_distribution:
-        task_type_list.append(task_type_dict[task_type])  #任务类型表
-        task_count_list.append(count)  #任务类型对应的数值
+        task_type_list.append(
+            {'name': task_type_dict[task_type], 'value': count},
+        )  #任务类型表
     # print(f"课程任务类型 考察方式 情况统计：\n{task_type_list}\n{task_count_list}")
 
-    json_data={
-        "student_count":student_count,  #学生总数
-        "class_count":class_count,  #班级总数
-        "total_study_time":total_study_time, #总的学习时长
-        "study_count":study_count,  #总的学习次数
-        "per_capita_study_time":per_capita_study_time,  # 人均学习时长
-        "per_capita_study_count":per_capita_study_count, # 人均学习次数
-        "major_list":major_list,  #专业表
-        "major_count":major_count, #专业对应的数值
-        "task_type_list":task_type_list, #任务类型表
-        "task_count_list":task_count_list, #任务类型对应的数值
-        "logList":logList, #学生学习日志
+
+    needData = {
+        # 数字指标卡片
+        'studentCount': student_count,
+        'classCount': class_count,
+        # 图谱路径
+        'knowledgeGraphUrl': '/All_shuzi_Xiaorong.json',
+        # 学习相关指标
+        'learningCount': f'{round(study_count/1000000,2)}百万次',
+        'learningDuration': f'{round(total_study_time/3600/10000 ,2)}万h',
+        'avgLearningFrequency': f'{per_capita_study_count}次',
+        'avgLearningDuration': f"{round(per_capita_study_time/3600,2)}h",
+
+        # 折线图：近一周学习情况
+        'weeklyLearningTrend': {
+            'title': '数字素养',
+            'categories': ['周一', '周二', '周三', '周四', '周五', '周六','周日'],
+            'seriesData': [
+                {'name': '学习人次', 'data': latest_7_LogResult},
+            ],
+        },
+        # 考察情况分布
+        'pie1Data': {
+            'title': '',
+            'seriesData': task_type_list,
+            'legend': True
+        },
+        'pie2Data': {
+            'title': '学生专业分布',
+            'subtext': '专业分布',
+            'seriesName': 'Access From',
+            'radius': '50%',
+            'seriesData': major_list
+        },
+        # 表格数据 - 排行榜
+        'topClassProgress': logList
     }
 
-    print(f"课程页面数据json呈现:")
-    print(json_data)
+    # print(f"最终数据整合：\n{needData}")
+    #
 
-    return jsonify(json_data),200
+    return jsonify(needData),200
 
 
 
@@ -183,14 +222,16 @@ def get_tags():
         }
 
     # 输出需要查询的学生ID 和起始的时间
-    student_id = "1830475870539571200"
+    # student_id = "1830475870539571200"
     data_time = '2024-10-11 00:00:00'  # current time 起始时间
+    student_id =request.json.get('student_id')
+    print(f"qgz test 中:{student_id}")
 
     #获取统计分析学生基本信息
     data,tags=get_user_profile(student_id,data_time)
     StrTags=convert_numbers_to_labels(tags)
-    print(f"data:\n {data}, \ntags: {tags}")
-    print(f"StrTags:{StrTags}")
+    # print(f"data:\n {data}, \ntags: {tags}")
+    # print(f"StrTags:{StrTags}")
 
 
     # loaded_model = StudentClusterModel.load_model()    # 加载模型
@@ -223,7 +264,7 @@ def get_tags():
                 "time": update_time.strftime('%H:%M') if update_time else None,
                 "lesson": "数字素养",
                 "teach": title or "未知课程",
-                "times": log.study_time or 0,
+                "times": round(log.study_time,2) or 0,
             })
 
     # 利用LLM生成学习建议
@@ -276,7 +317,7 @@ def get_tags():
                 # 四个小卡片
                 "all_questions": data["answer_count"],
                 "all_lessons": 1,
-                "all_time": data["total_study_time"],
+                "all_time": round(data["total_study_time"]/60,2),
                 "right": data["correct_rate"],
 
                 # 最好的8知识点和其分数

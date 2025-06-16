@@ -9,37 +9,20 @@ import os
 DIALECT = 'mysql'
 DRIVER = 'pymysql'
 USERNAME = 'root'
-PASSWORD = '123456'
-<<<<<<< HEAD
-# HOST = '127.0.0.1'
-# PORT = '3306'
-# 远程连接qgz的MySQL数据库 fz68ok24676.vicp.fun:40694
-HOST = 'fz68ok24676.vicp.fun'
-PORT = '40694'
-=======
+PASSWORD = 'qweQWE123!'
 HOST = '127.0.0.1'
 PORT = '3306'
->>>>>>> 38592bc618cf2a72127afcf785e0bbee2f9d15d2
 DATABASE = 'eduplatform'
 SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = True
 
 
-#LLM 基本配置信息
-<<<<<<< HEAD
-os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
-os.environ["OPENAI_API_KEY"] = "sk-OyEPaIflRbJXIospoq197kPskfatY1UmbfKKOszLJicK7RuJ"
-model = "gpt-4o-mini"
-# os.environ["OPENAI_BASE_URL"] = "https://maas-api.cn-huabei-1.xf-yun.com/v1"
-# os.environ["OPENAI_API_KEY"] = "sk-kWw6gDp0ZYWcNTMtD35a4f613921425a9c87312c36C5D3Ca"
-# model='xdeepseekv3'
-=======
+
 os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.tech/v1"
 os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"
 model = "gpt-4o-mini"
 
->>>>>>> 38592bc618cf2a72127afcf785e0bbee2f9d15d2
 temperature=0.5 #LLM 温度
 
 
@@ -48,12 +31,7 @@ os.environ["DASHSCOPE_API_KEY"] = "sk-b8ee8eb0b16a4f8099a7492bdbe405c9"
 LLMs_model="qvq-max"
 
 Public_ip="https://fz68ok24676.vicp.fun" #后端公网IP地址
-<<<<<<< HEAD
 
-=======
->>>>>>> 38592bc618cf2a72127afcf785e0bbee2f9d15d2
-
-#rag_flow 基本配置信息
 ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
 ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
 
@@ -82,7 +60,7 @@ LLMs_ALLOWED_FILE_EXTENSIONS = {'pdf', 'doc', 'docx'}          # 允许的文件
 
 
 #后端注册为微服务——配置文件
-class Config(object):s
+class Config(object):
     __SVC_CONFIG_FP__ = None
 
     @property

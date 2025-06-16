@@ -23,7 +23,7 @@ import KnowledgeGraphPage from "../views/DataShow/data_components/KnowledgeGraph
 const routes: Array<RouteRecordRaw> = [
     {
     path: '/student_analyze',
-    name: 'Function1',
+    name: 'Function_analyze',
     component: student_analyze
   },
   {

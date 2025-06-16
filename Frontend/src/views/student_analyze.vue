@@ -2,7 +2,7 @@
   <div class="dashboard">
      <div class="theme-card">
    <span class="theme">学生画像分析</span>
-    <input class="input_id" v-model="studentId" placeholder="1830475870539571200" />
+    <input class="input_id" v-model="studentId" placeholder="请输入学号" />
         <el-button
         class="click_id"
         @click="sendStudentInfo"

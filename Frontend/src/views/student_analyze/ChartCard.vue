@@ -2,7 +2,7 @@
   <div class="chart-card" :style="{ backgroundColor: color }">
     <div class="card-content">
       <p>{{ title }}</p>
-      <h2>{{title==="做题正确率"?Math.floor(value)+'%':Math.floor(value) }}</h2>
+      <h2>{{title==="做题正确率"?Math.floor(value*100)+'%':Math.floor(value) }}</h2>
     </div>
   </div>
 </template>

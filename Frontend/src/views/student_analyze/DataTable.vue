@@ -16,7 +16,7 @@
             <td>{{ item.data }}</td>
             <td>{{ item.time }}</td>
             <td>{{ item.lesson }}</td>
-            <td>{{ item.teach }}</td>
+            <td>{{ item.teach.length>6?item.teach:item.teach.slice(0,6)+"..." }}</td>
             <td>{{ item.times }}</td>
           </tr>
         </tbody>

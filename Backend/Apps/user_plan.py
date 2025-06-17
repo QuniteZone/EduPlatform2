@@ -133,10 +133,10 @@ def get_course_data():
         # 图谱路径
         'knowledgeGraphUrl': '/All_shuzi_Xiaorong.json',
         # 学习相关指标
-        'learningCount': f'{round(study_count/1000000,2)}百万次',
-        'learningDuration': f'{round(total_study_time/3600/10000 ,2)}万h',
-        'avgLearningFrequency': f'{per_capita_study_count}次',
-        'avgLearningDuration': f"{round(per_capita_study_time/3600,2)}h",
+        'learningCount': f'{round(study_count/10000,0)}万次', #学习总次数
+        'learningDuration': f'{round(total_study_time/3600/10000 ,2)}万h', #学习总时长
+        'avgLearningFrequency': f'{per_capita_study_count}次',  # 人均学习次数
+        'avgLearningDuration': f"{round(per_capita_study_time/3600,2)}h", # 人均学习时长
 
         # 折线图：近一周学习情况
         'weeklyLearningTrend': {
@@ -149,7 +149,7 @@ def get_course_data():
         # 考察情况分布
         'pie1Data': {
             'title': '',
-            'seriesData': task_type_list,
+            'seriesData': task_type_list,     # 课程任务资源类型 分布表
             'legend': True
         },
         'pie2Data': {
@@ -157,10 +157,10 @@ def get_course_data():
             'subtext': '专业分布',
             'seriesName': 'Access From',
             'radius': '50%',
-            'seriesData': major_list
+            'seriesData': major_list   #课程学生 专业分布表
         },
         # 表格数据 - 排行榜
-        'topClassProgress': logList
+        'topClassProgress': logList  #最新课程学生学习日志
     }
 
     # print(f"最终数据整合：\n{needData}")
@@ -225,7 +225,6 @@ def get_tags():
     # student_id = "1830475870539571200"
     data_time = '2024-10-11 00:00:00'  # current time 起始时间
     student_id =request.json.get('student_id')
-    print(f"qgz test 中:{student_id}")
 
     #获取统计分析学生基本信息
     data,tags=get_user_profile(student_id,data_time)
@@ -233,10 +232,20 @@ def get_tags():
     # print(f"data:\n {data}, \ntags: {tags}")
     # print(f"StrTags:{StrTags}")
 
+    cluster_labels = {
+        0: '自主领袖型',
+        1: '自主管理型',
+        2: '被动接受型',
+        3: '反复试探型',
+        4: '目标模糊型',
+        5: '随机应变型',
+        6: '静默观察型'
+    }
+    loaded_model = StudentClusterModel.load_model()  # 加载模型
+    cluster = loaded_model.predict(student_id, data_time)
+    student_ml_lable=cluster_labels.get(cluster, '未知类型')
+    StrTags.append(student_ml_lable)
 
-    # loaded_model = StudentClusterModel.load_model()    # 加载模型
-    # cluster = loaded_model.predict(student_id, data_time)
-    # print(f"\n预测结果: 学生 {student_id} 属于聚类 {cluster}")
 
     #分析学生知识点掌握情况
     stu_knowledge = student_knowledge()  # 获得学生的各个知识点掌握情况
@@ -259,13 +268,14 @@ def get_tags():
     if study_logs:
         for log,title in study_logs:
             update_time = datetime.strptime(log.update_time, '%Y-%m-%d %H:%M:%S')
-            logList.append({
-                "data": update_time.strftime('%Y-%m-%d') if update_time else None,
-                "time": update_time.strftime('%H:%M') if update_time else None,
-                "lesson": "数字素养",
-                "teach": title or "未知课程",
-                "times": round(log.study_time,2) or 0,
-            })
+            if log.study_time !=0 and log.study_time !="0" and title != "课程PPT" and title !="\"课程PPT\"" :
+                logList.append({
+                    "data": update_time.strftime('%Y-%m-%d') if update_time else None,
+                    "time": update_time.strftime('%H:%M') if update_time else None,
+                    "lesson": "数字素养",
+                    "teach": eval(title) or "未知课程",
+                    "times": round(float(log.study_time)/60,2) or 0,
+                })
 
     # 利用LLM生成学习建议
     prompt_plan=f"""请你根据下面的信息，给出这位学生一些学习建议。
@@ -303,6 +313,7 @@ def get_tags():
                  "content": "对学生基本情况分析，然后给出学习建议！"},
                 {"role": "user", "content": prompt_plan}]
     return_result=LLM(messages)
+    print(f'时间：{round(data["total_study_time"]/60)}')
 
     json_data = {
         "data": {
@@ -317,7 +328,7 @@ def get_tags():
                 # 四个小卡片
                 "all_questions": data["answer_count"],
                 "all_lessons": 1,
-                "all_time": round(data["total_study_time"]/60,2),
+                "all_time": round(data["total_study_time"]/60),
                 "right": data["correct_rate"],
 
                 # 最好的8知识点和其分数
@@ -340,6 +351,6 @@ def get_tags():
         }
     }
 
-    print(f"用户画像前端返回数据：\n{json_data}")
+    # print(f"用户画像前端返回数据：\n{json_data}")
     # 返回标签列表
     return jsonify(json_data), 200

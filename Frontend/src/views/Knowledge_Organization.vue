@@ -8,7 +8,7 @@
     <el-col :span="8" class="left-panel">
       <el-row :gutter="20">
         <el-col :span="24">
-          <el-input v-model="title" placeholder="输入标题"></el-input>
+          <el-input v-model="title" type="textarea" rows="4" placeholder="输入标题"></el-input>
         </el-col>
       </el-row>
       <el-row :gutter="20" style="margin-top: 10px;">
@@ -286,7 +286,7 @@ display: flex;
   background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  height: 50vh;
+  height: 60vh;
 }
 
 /* 右侧面板 */
@@ -298,7 +298,7 @@ display: flex;
   background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  height: 50vh;
+  height: 60vh;
   flex-direction: column;
 
 }

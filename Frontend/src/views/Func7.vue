@@ -1,9 +1,9 @@
 <template>
   <div class="main_container">
     <!-- 顶部区域 -->
-    <div class="header">
+    <div class="about">
       <h2>作业辅导</h2>
-      <p>助学场景：AI作业辅导</p>
+      <h4>助学场景：AI作业辅导</h4>
     </div>
     <!-- 主体内容 -->
     <div class="content-container">
@@ -326,31 +326,45 @@ function typeWriterEffect(index, text) {
   padding: 20px;
 }
 
-/* 顶部区域 */
-.header {
-  background-color: #e6fffa;
-  border-radius: 8px;
-  padding: 20px;
-  display: flex; /* 使用 Flexbox */
-  flex-direction: column; /* 垂直排列 */
-  justify-content: center; /* 垂直居中 */
+/* 标题区域样式 */
+.about {
+  display: flex; /* 使用flex布局 */
+  flex-direction: column; /* 垂直方向排列 */
   align-items: center; /* 水平居中 */
-  width: 100%;
+  justify-content: center; /* 垂直居中 */
+  text-align: center; /* 文本居中对齐 */
+  margin: 2rem auto; /* 上下外边距2rem，左右自动居中 */
+  background: linear-gradient(135deg, #f18e8e 0%, #e9ecef 100%); /* 浅灰色渐变背景 */
+  border-radius: 1rem; /* 圆角边框 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 阴影效果 */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* 半透明白色边框 */
+  width: 80vw;
+  height: 250px; /* 固定高度 */
 }
 
-.header h2 {
-  color: #0079bf;
-  font-size: 24px;
-  margin: 0;
+/* 主标题样式 */
+.about h2 {
+  color: #458fd8; /* 文字颜色 */
+  font-size: 2.5rem; /* 字体大小 */
+  font-weight: 700; /* 字体粗细 */
+  margin-top: 0; /* 移除顶部外边距 */
+  margin-bottom: 0.5rem; /* 减小底部外边距 */
+  letter-spacing: -0.5px; /* 字间距 */
+  position: relative; /* 相对定位 */
+  padding-top: -10rem; /* 添加顶部内边距 */
 }
 
-.header p {
-  background-color: #fff;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #333;
-  margin-top: 10px; /* 调整间距 */
+/* 副标题样式 */
+.about h4 {
+  color: #518fc5; /* 文字颜色 */
+  font-size: 1.3rem; /* 字体大小 */
+  font-weight: 400; /* 字体粗细 */
+  margin: 0; /* 移除外边距 */
+  padding: 0.8rem 1.5rem; /* 内边距 */
+  background: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+  border-radius: 1rem; /* 圆角边框 */
+  display: inline-block; /* 行内块级元素 */
+  border: 1px solid rgba(0, 0, 0, 0.05); /* 细边框 */
 }
 
 /* 主体内容 */
@@ -472,6 +486,8 @@ function typeWriterEffect(index, text) {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 40px;
+  margin-bottom: 20px;
 }
 
 .input-box {

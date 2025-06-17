@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-     <div class="theme-card">
+    <div class="theme-card">
    <span class="theme">学生画像分析</span>
     <input class="input_id" v-model="studentId" placeholder="请输入学号" />
         <el-button
@@ -8,9 +8,9 @@
         @click="sendStudentInfo"
         :loading="loading"
         :icon="loading ? 'Loading' : ''"
-    >
-      {{ loading ? '生成中...' : '生成内容' }}
-    </el-button>
+        >
+          {{ loading ? '生成中...' : '生成内容' }}
+        </el-button>
   </div>
     <!-- 头部指标 -->
     <div class="header-cards">
@@ -39,7 +39,7 @@
             :color="'#007bff'"
           />
           <ChartCard
-            :title="'总学习小时数'"
+            :title="'总学习时长'"
             :value="studentInfo.all_time"
             :color="'#00bfff'"
           />
@@ -295,7 +295,7 @@ const sendStudentInfo = async () => {
 .middle-section {
   display: grid;
   grid-template-columns: 5fr 3fr 3fr;
-  gap: 20px;
+  gap: 10px;
   color:  #f7f9fc;
 }
 

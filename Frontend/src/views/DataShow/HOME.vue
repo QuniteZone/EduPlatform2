@@ -1,8 +1,11 @@
 <template>
   <div class="dashboard">
-    <div class="title_datashow">
-      <h2 class="white-title">课程数据展示</h2>
-    </div>
+    <div class="theme-card">
+   <span class="theme">课程数据展示</span>
+  </div>
+<!--    <div class="title_datashow">-->
+<!--      <h2 class="white-title">课程数据展示</h2>-->
+<!--    </div>-->
     <!-- 主体内容 -->
     <div class="main-content">
       <!-- 左侧区域 -->
@@ -74,7 +77,7 @@
             <div class="pie-item">
               <div style="display: flex; align-items: center;margin-bottom: 15px">
                 <el-icon size="large"><Files /></el-icon>
-                <span style="font-size: 18px;">&nbsp;&nbsp;&nbsp;课程考察情况</span>
+                <span style="font-size: 18px;">&nbsp;&nbsp;&nbsp;课程资源类型</span>
               </div>
               <EChartsComponent chartType="pie" :data="mockData.pie1Data" style="height: 30vh;"/>
             </div>
@@ -96,7 +99,7 @@
             <el-icon size="large"><Bell /></el-icon>
             <span style="font-size: 18px;">&nbsp;&nbsp;&nbsp;最新学习动态</span>
           </div>
-          <el-table :data="mockData.topClassProgress"  style="width: 100%">
+          <el-table :data="mockData.topClassProgress" style="width: 100%; height:90vh">
             <el-table-column prop="stu" label="学号" width="60" />
             <el-table-column prop="time" label="学习时间" width="130" />
             <el-table-column prop="chapter" label="章节名称" />
@@ -283,6 +286,72 @@ const mockData_test = {
 </script>
 
 <style scoped>
+/* 对顶部主题容器框进行美化 */
+.theme-card {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  padding: 30px 40px;
+  background: linear-gradient(135deg, #e6f7ff 0%, #c2e9fb 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(44, 92, 152, 0.1);
+  position: relative;
+  overflow: hidden;
+  /* 装饰性元素 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
+    background: rgba(100, 149, 237, 0.1);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 60px;
+    height: 60px;
+    background: rgba(162, 228, 156, 0.1);
+    border-radius: 50%;
+  }
+}
+.theme {
+  display: inline-flex;
+  align-items: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: #2c5c98;
+
+  /* 左侧图标 */
+  &::before {
+    content: '📊';
+    margin-right: 10px;
+    font-size: 28px;
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+  }
+
+  /* 悬停效果：图标旋转 */
+  &:hover::before {
+    transform: translateY(-2px) rotate(15deg);
+  }
+
+  /* 文字动效 */
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    letter-spacing: 1px;
+  }
+
+}
+
 .title_datashow {
   display: flex;
   /* 使用flex布局 */
@@ -354,7 +423,7 @@ const mockData_test = {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
-  height: 92vh;
+  height: 100vh;
 }
 
 .center-section {
@@ -385,7 +454,7 @@ const mockData_test = {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  height: 40vh;
+  height: 48vh;
 }
 .graph-container {
   width: 100%;

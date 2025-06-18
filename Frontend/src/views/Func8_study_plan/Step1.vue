@@ -8,7 +8,6 @@
         :rows="5"
         placeholder="例如，能够使用 Python 编码并使用 OpenAI API..."
       ></el-input>
-      <el-link type="primary" @click="optimizeGoal">使用 AI 优化您的目标</el-link>
     </div>
   </template>
   
@@ -27,12 +26,6 @@
         },
         deep: true
       }
-    },
-    methods: {
-      optimizeGoal() {
-        // 调用AI优化逻辑
-        this.localData.goal = '优化后的目标描述'
-      }
     }
   }
   </script>
@@ -41,10 +34,5 @@
   .description {
     color: #909399;
     margin-bottom: 10px;
-  }
-  
-  .el-link {
-    display: block;
-    margin-top: 10px;
   }
   </style>

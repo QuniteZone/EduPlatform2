@@ -45,7 +45,7 @@
       <div v-for="(task, taskIndex) in learningData.learningPath[activeStage].tasks" :key="taskIndex" class="task">
         <h4 class="icon-class">
           <img src="@/assets/icons/taskName-icon.png" class="tag-icon"/>
-          {{ task.taskName }}
+          子任务 {{ taskIndex + 1 }}: {{ task.taskName }}
         </h4>
         <p>{{ task.taskDescription }}</p>
 
@@ -71,7 +71,8 @@
                 视频资源列表
               </h5>
               <ul>
-                <li v-for="(res, idx) in task.resources" :key="idx" class="resource-item">
+                <li v-for="(res, idx) in task.bili_resource.slice(0, getDisplayCount('video'))" :key="idx"
+                    class="resource-item">
                   <!-- 左右布局 -->
                   <div class="video-wrapper">
                     <a :href="res.link" target="_blank">
@@ -87,7 +88,7 @@
                   <div class="resource-info">
                     <a :href="res.link" target="_blank" class="resource-title">{{ res.title }}</a>
                     <div class="summary-container">
-                      <p class="summary-text"><strong>视频摘要：</strong>{{ res.video_summary }}</p>
+                      <p class="summary-text"><strong>视频摘要：</strong>{{ res.video_summary}}</p>
                     </div>
                     <div class="tags-container">
                       <img src="@/assets/icons/tag-icon.png" class="tag-icon"/>
@@ -107,7 +108,27 @@
               </ul>
             </div>
           </div>
-
+          <!--github-->
+          <!-- GitHub 开源项目 -->
+          <div class="task-section github-section">
+            <div class="task-section-box">
+              <h5 class="icon-class">
+                <img src="@/assets/icons/github-icon.png" class="tag-icon"/>
+                GitHub 开源项目推荐
+              </h5>
+              <ul v-if="task.github_resource && task.github_resource.length > 0">
+                <li v-for="(repo, idx) in task.github_resource.slice(0, getDisplayCount('github'))" :key="idx"
+                    class="github-item">
+                  <a :href="repo.link" target="_blank" class="github-name">{{ repo.name }}</a>
+                  <p class="github-desc">{{ repo.description }}</p>
+                  <div class="github-meta">
+                    <span>⭐ {{ repo.stars }}</span>
+                  </div>
+                </li>
+              </ul>
+              <p v-else>暂无推荐项目</p>
+            </div>
+          </div>
           <!-- 在线资料 -->
           <div class="task-section online-section">
             <div class="task-section-box">
@@ -116,7 +137,7 @@
                 在线资料列表
               </h5>
               <ul>
-                <li v-for="(source, idx) in task.online_source" :key="idx">
+                <li v-for="(source, idx) in task.article_resource.slice(0, getDisplayCount('article'))" :key="idx">
                   <a :href="source.link" target="_blank">{{ source.title }}</a>
                   <p style="font-size: 0.85em; color: #666;">{{ source.introduce }}</p>
                 </li>
@@ -141,6 +162,20 @@
 
 <script setup>
 import {defineProps, ref} from 'vue'
+
+// 计算当前任务中应展示的资源数量
+const getDisplayCount = (resourceType) => {
+  const preference = learningData.value?.preference_type || []
+  if (!Array.isArray(preference)) return 1 // 默认只展示一个
+
+  const displayConfig = {
+    video: preference.includes('video') ? 3 : 1,
+    github: preference.includes('project') ? 3 : 1,
+    article: preference.includes('article') ? 3 : 1
+  }
+
+  return displayConfig[resourceType] || 1
+}
 
 // 接收来自父组件传入的 learningData
 const props = defineProps({
@@ -212,13 +247,15 @@ const toggleStage = (stageIndex) => {
 
 .task-content-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 15px;
+  padding-bottom: 10px;
 }
 
 /* 学习目标 */
 .target-section {
-  flex: 1 1 10%; /* 设置更窄的宽度 */
+  flex: 1 1 15%; /* 设置更窄的宽度 */
   min-width: 50px; /* 最小宽度 */
 }
 
@@ -227,8 +264,9 @@ const toggleStage = (stageIndex) => {
   flex: 1 1 40%; /* 更宽的宽度，适应视频内容 */
 }
 
+/* 在线资源 */
 .online-section {
-  flex: 1 1 40%;
+  flex: 1 1 20%;
 }
 
 /* 新增：为每个任务小块加边框 */
@@ -403,5 +441,42 @@ const toggleStage = (stageIndex) => {
   text-overflow: ellipsis;
   line-height: 1.2em;
   max-height: calc(1.2em * 3); /* 3行高度 */
+}
+
+/* GitHub 推荐 */
+.github-section {
+  flex: 1 1 20%;
+}
+
+.github-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.github-item:last-child {
+  border-bottom: none;
+}
+
+.github-name {
+  font-weight: bold;
+  color: #1e6bb8;
+  text-decoration: none;
+  display: block;
+}
+
+.github-name:hover {
+  text-decoration: underline;
+}
+
+.github-desc {
+  margin: 6px 0;
+  font-size: 0.9em;
+  color: #666;
+  -webkit-line-clamp: 3; /* 限制显示3行 */
+}
+
+.github-meta {
+  font-size: 0.85em;
+  color: #999;
 }
 </style>

@@ -9,7 +9,9 @@ import docx  # python-docx
 from flask import Blueprint, jsonify, request
 from .genericFunction import LLM, lesson_plan_prompt, class_meeting_prompt, allowed_file, extract_text_from_pdf, \
     extract_text_from_docx, ragflow, script_gen_prompt, jugement_ques_prompt, generate_question_prompt, \
-    get_globalWeb_source,divide_learning_style,recommendation_prompt,student_knowledge
+    get_globalWeb_source, divide_learning_style, recommendation_prompt, student_knowledge, get_resource_by_task, \
+    recommendation_prompt_2, add_id_to_resources, search_github_repos_api, search_videos_by_goal, \
+    extract_keywords_with_llm
 from config.config import TextbookRetr_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS,resourceFinder_AgentID
 
 #这是教案生成
@@ -161,12 +163,11 @@ def handle_lesson_script():
     con["content"] = return_result
     return jsonify(con)
 
-
-
-##个性化学习 推荐
+#-------------tx--------
 @lesson_plan_bp.route('/study_plan', methods=['GET','POST'])
 def create_study_plan():
-    stu_knowledge=student_knowledge() #获得学生的各个知识点掌握情况
+
+    stu_knowledge=student_knowledge() #获得学生的各个知识点掌握情况--测试
     data = request.get_json()# 从请求中获取 JSON 数据
 
     # 检查必需的参数是否存在
@@ -183,6 +184,10 @@ def create_study_plan():
     deadline = data['deadline']
     title = data['title']
 
+
+    print("preferences\n",preferences)
+
+
     # 在这里可以添加处理学习计划的逻辑
     # 例如，保存到数据库或进行其他处理
     # 这里我们只是返回接收到的数据作为示例
@@ -195,57 +200,161 @@ def create_study_plan():
 
     #学习风格函数
     study_style=divide_learning_style()
-    # print(f"study_style:{study_style}")
+    print(f"study_style:{study_style}")
 
     # study_aim = "想一周之内，学习数字素养基础内容知识。例如编程基础、开源教育"
     study_aim =f"我的目标是{goal}，我打算每周学习{time}小时，我的学习背景是{background}，我的学习偏好是{preferences}，计划的开始时间：{current_time},截止日期是{deadline}。"
+    #study_aim=f"我的学习目标是{goal}，我的学习偏好是{preferences}，学习背景0基础。计划的开始时间：2025-06-01 00:00:00,截止日期是2025-06-15 00:00:00。"#测试用
 
-    result1, result2 = get_globalWeb_source(study_aim)
-    onlineSearch = result2
-    if result1 != None:
-        onlineSearch = result1 + result2
+   #------------------------------1 视频资源检索-------------------
+    #拆分关键词
+    bili_resource = []
+    github_resource=[]
+    article_resource=[]
+    keywords = extract_keywords_with_llm(goal)
+    #获取keywords的长度
+    num_keywords = len(keywords)
+    print(f"关键词数量：{num_keywords}")
 
 
+    for keyword in keywords:
+         print(f"关键词：{keyword}")
+         #bilibili视频资源
+         results_bili = search_videos_by_goal(keyword, (4-num_keywords)*10)
+         bili_resource.extend(results_bili)  # 使用 extend 将结果合并进总列表
+         #github资源检索
+         results_git = search_github_repos_api(keyword,4-num_keywords)
+         github_resource.extend(results_git)  # 使用 extend 将结果合并进总列表
 
-    try:
-        ###### RAGflow中检索资源库内容
-        # 构建代理Agent会话
-        agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
+         #在线资源检索
+         results_article= get_globalWeb_source(keyword, (4-num_keywords)*10)
+         article_resource.extend(results_article)  # 使用 extend 将结果合并进总列表
 
-        # 进行代理Agent聊天
-        question = f"{study_aim}"
-        source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
-                                                          session_id=agent_session_id)
+    #bili_resource = search_videos_by_goal(goal, 30)#根据目标匹配离线视频资源，默认30个视频
+    print("bili_resource:\n")
 
-        # 删除该Agent会话
-        ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
-        ###### RAGflow中检索资源库内容
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        source_response_data = None
+    print(json.dumps(bili_resource, ensure_ascii=False, indent=2))
 
-    new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=study_style, knowledge_point=stu_knowledge,
-                               source_response_data=source_response_data, onlineSearch=onlineSearch)
+   # ------------------------------1 视频资源检索-------------------
 
+   # ------------------------------2 github项目资源检索-------------------
+    #github_resource=scrape_github_repos(goal,7)#调用github项目实时爬取，默认1页
+    print("github_resource:\n")
+    add_id_to_resources(github_resource)
+    print(json.dumps(github_resource, ensure_ascii=False, indent=2))
+
+   # ------------------------------2 github项目资源检索-------------------
+
+   # ------------------------------3 在线博客资源检索-------------------
+
+   # article_resource = get_globalWeb_source(goal,30)#调用在线资源实时爬取，默认25个
+    print("get_globalWeb_source:\n")
+    add_id_to_resources(article_resource)
+    print(json.dumps(article_resource, ensure_ascii=False, indent=2))
+
+   # ------------------------------3 在线博客资源检索-------------------
+
+    new_prompt = recommendation_prompt_2.format(study_aim=study_aim, student_type=study_style, knowledge_point=stu_knowledge)
     messages = [
         {"role": "system",
          "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
         {"role": "user", "content": new_prompt}]
-
-    print("*" * 50)
-    # json缩进形式打印message
-    print(f"new_prompt:{new_prompt}")
-
-    print("*" * 50)
-
     message = LLM(messages)
-
+    #根据视频资源的id进行资源填充
     print("*" * 50)
+    Final_data=get_resource_by_task(message,bili_resource,github_resource,article_resource)#根据子任务进行资源匹配
     # json缩进形式打印message
-    print(json.dumps(message, indent=4, ensure_ascii=False))
     print("*" * 50)
 
-    return jsonify({"content": message, 'status': 1})
+    Final_data["preference_type"]=preferences
+    print("Final_data\n",Final_data)
+
+    return jsonify({"content": Final_data, "preference_type":preferences,'status': 1})
+#-------------tx--------
+
+##个性化学习 推荐
+# @lesson_plan_bp.route('/study_plan', methods=['GET','POST'])
+# def create_study_plan():
+#     stu_knowledge=student_knowledge() #获得学生的各个知识点掌握情况
+#     data = request.get_json()# 从请求中获取 JSON 数据
+#
+#     # 检查必需的参数是否存在
+#     required_fields = ['goal', 'background', 'preferences', 'time', 'deadline', 'title']
+#     for field in required_fields:
+#         if field not in data:
+#             return jsonify({'content': f'缺少参数: {field}','status':0})
+#
+#     # 提取参数
+#     goal = data['goal']
+#     background = data['background']
+#     preferences = data['preferences']
+#     time = data['time']
+#     deadline = data['deadline']
+#     title = data['title']
+#
+#     # 在这里可以添加处理学习计划的逻辑
+#     # 例如，保存到数据库或进行其他处理
+#     # 这里我们只是返回接收到的数据作为示例
+#     #统计时间，返回当前时间
+#     now = datetime.now()
+#
+#     # 格式化时间为字符串
+#     current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+#
+#
+#     #学习风格函数
+#     study_style=divide_learning_style()
+#     # print(f"study_style:{study_style}")
+#
+#     # study_aim = "想一周之内，学习数字素养基础内容知识。例如编程基础、开源教育"
+#     study_aim =f"我的目标是{goal}，我打算每周学习{time}小时，我的学习背景是{background}，我的学习偏好是{preferences}，计划的开始时间：{current_time},截止日期是{deadline}。"
+#
+#     result1, result2 = get_globalWeb_source(study_aim)
+#     onlineSearch = result2
+#     if result1 != None:
+#         onlineSearch = result1 + result2
+#
+#
+#
+#     try:
+#         ###### RAGflow中检索资源库内容
+#         # 构建代理Agent会话
+#         agent_session_id = ragflow.create_agent_session(resourceFinder_AgentID)
+#
+#         # 进行代理Agent聊天
+#         question = f"{study_aim}"
+#         source_response_data = ragflow.send_agent_message(resourceFinder_AgentID, question, stream=False,
+#                                                           session_id=agent_session_id)
+#
+#         # 删除该Agent会话
+#         ragflow.delete_agent_session(resourceFinder_AgentID, agent_session_id)
+#         ###### RAGflow中检索资源库内容
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+#         source_response_data = None
+#
+#     new_prompt = recommendation_prompt.format(study_aim=study_aim, student_type=study_style, knowledge_point=stu_knowledge,
+#                                source_response_data=source_response_data, onlineSearch=onlineSearch)
+#
+#     messages = [
+#         {"role": "system",
+#          "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
+#         {"role": "user", "content": new_prompt}]
+#
+#     print("*" * 50)
+#     # json缩进形式打印message
+#     print(f"new_prompt:{new_prompt}")
+#
+#     print("*" * 50)
+#
+#     message = LLM(messages)
+#
+#     print("*" * 50)
+#     # json缩进形式打印message
+#     print(json.dumps(message, indent=4, ensure_ascii=False))
+#     print("*" * 50)
+#
+#     return jsonify({"content": message, 'status': 1})
 
 
 # 主观题判题 question_judgment   http://192.168.31.172:5001/plan/question_judgment

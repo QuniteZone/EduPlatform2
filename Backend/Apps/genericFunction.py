@@ -1,8 +1,11 @@
 #### 该文件用于存放各蓝图功能所通用功能函数、提示词等信息
 import json
 import os
+import random
 import re
 import time
+
+import jieba
 import pandas as pd
 import numpy as np
 from joblib import load
@@ -18,6 +21,7 @@ import config.config
 from datetime import timedelta
 import ast
 from Apps.DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
+from rank_bm25 import BM25Okapi
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score
@@ -25,6 +29,7 @@ import joblib
 import os
 from typing import List, Dict
 
+from Edu2.EduPlatform2.Backend.config.config import git_key
 
 ALLOWED_EXTENSIONS = {'pdf', 'docx'}  # 在生成逐字稿时，所允许上传的文件类型
 ragflow = RAGflow(ragflow_BASE_URL, ragflow_API_KEY)
@@ -762,20 +767,13 @@ def LLMs_allowed_file(filename, file_type):
 
 
 ##定义实时网络访问检索的函数
-def get_globalWeb_source(input_content):
+def get_globalWeb_source(input_content,max_num=25):
     # 构造请求的payload
-    # payload_video = json.dumps({
-    #     "q": input_content,
-    #     "gl": "cn",
-    #     "hl": "zh-cn",
-    #     "num": 10,
-    #     "page": 1
-    # })
     payload_message = json.dumps({
-        "q": f"site:csdn.net OR site:zhihu.com OR site:cnblogs.com OR site:jianshu.com  {input_content}",
+        "q": f"site:csdn.net OR site:zhihu.com OR site:cnblogs.com OR site:jianshu.com 要求是{input_content}",
         "gl": "cn",
         "hl": "zh-cn",
-        "num": 25
+        "num": max_num
     })
 
     headers = {
@@ -783,46 +781,32 @@ def get_globalWeb_source(input_content):
         'Content-Type': 'application/json'
     }
 
-    # # # 整理视频信息
-    # response_video = requests.request("POST", web_video_url, headers=headers, data=payload_video)
-    # json_content = response_video.json()
-    # videos = json_content['videos']
-    # sorted_videos = []
-    # for video in videos:
-    #     video_info = {
-    #         'title': video.get('title'),
-    #         'link': video.get('link'),
-    #         'introduce': video.get('snippet'),
-    #         'duration': video.get('duration'),
-    #         'source': video.get('source'),
-    #         'date': video.get('date'),
-    #         'position': video.get('position'),
-    #         'imageUrl': video.get('imageUrl'),
-    #         'is_video': 1,
-    #     }
-    #     sorted_videos.append(video_info)
-
     ## 文本网络实时资源检索
+    web_message_url = "https://google.serper.dev/search"
     response_message = requests.request("POST", web_message_url, headers=headers, data=payload_message)
     json_content = response_message.json()
+    print("json_content:\n", json_content)
+
     # 整理资源信息
     resources = json_content['organic']
     sorted_messages = []
-    for resource in resources:
+
+    for idx, resource in enumerate(resources):
         title = resource.get('title')
         link = resource.get('link')
         snippet = resource.get('snippet')
         position = resource.get('position')
+
 
         # 整理成字典
         sorted_messages.append({
             'title': title,
             'link': link,
             'introduce': snippet,
-            'position': position,
             'is_video': 0,
         })
-    return None, sorted_messages
+
+    return sorted_messages
 
 
 # result,result2=get_globalWeb_source("Python编程")
@@ -852,6 +836,303 @@ def get_globalWeb_source(input_content):
 ######## 下面为提示词设计 #######
 ## 教案提示词
 ## 教案提示词
+
+
+#-------------------------tx
+def retrieve_resources(
+        task: Dict,
+        stage_info: Dict,
+        bili_resource: List[Dict],
+        github_resource: List[Dict],
+        article_resource: List[Dict]
+) -> Dict[str, List[int]]:
+    """
+    根据学习阶段信息检索相关资源ID
+    Args:
+        stage_info: 阶段信息字典（包含任务描述和学习目标）
+        bili_resource: B站视频资源列表（每个元素是包含id、title、tags等的字典）
+        github_resource: GitHub项目资源列表
+        article_resource: 文章资源列表
+    Returns:
+        包含检索结果的字典（每个资源类型返回至少3个ID）
+    """
+    bili_results = []
+    github_results = []
+    article_results = []
+
+    # 遍历所有任务
+        # 构建提示词（现在包含详细的资源信息）
+    prompt = build_prompt(task, stage_info, bili_resource, github_resource, article_resource)
+    try:
+        # 调用LLM
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system",
+                 "content": "你是一个专业的资源检索系统，根据学习任务需求从提供的资源中精准匹配最相关的资源ID"},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0,
+             max_tokens = 16384,
+
+        )
+        # 解析响应
+        content = response.choices[0].message.content
+        result = json.loads(content)
+
+        # 收集结果（确保去重）
+        bili_results.extend(list(set(result.get("bili_res", []))))
+        github_results.extend(list(set(result.get("github_res", []))))
+        article_results.extend(list(set(result.get("article_res", []))))
+    except Exception as e:
+        print(f"检索失败: {str(e)}")
+
+    return {
+        "bili_res": list(set(bili_results))[:3],  # 确保返回3个有效ID
+        "github_res": list(set(github_results))[:3],
+        "article_res": list(set(article_results))[:3]
+    }
+
+def build_prompt(
+        task: Dict,
+        stage_info: Dict,
+        bili_resource: List[Dict],
+        github_resource: List[Dict],
+        article_resource: List[Dict]
+) -> str:
+    """构建提示词"""
+    github_resource_promt=truncate_descriptions_git(github_resource)#对于项目描述太长的进行截断，否则会超出模型输入长度
+    # 示例：只保留 id、title、tags
+    include_fields = {"id", "title", "tags", "video_summary"}#bilibili resource 保留的字段
+    bili_resource_promt=keep_bilibili_fields(bili_resource, include_fields)
+    prompt = f"""你是一个专业的学习资源推荐系统，请根据以下学习阶段和任务需求，从提供的资源中选择最相关的资源ID。
+当前任务:
+任务名称: {task.get('taskName', '')}
+任务描述: {task.get('taskDescription', '')}
+请从以下资源中选择最相关的资源ID（每个类别至少3个）:
+【B站视频资源】
+{bili_resource_promt}
+【GitHub项目资源】
+{github_resource_promt}
+【文章/博客 资源】
+{article_resource}
+返回严格的JSON格式:
+{{
+  "bili_res": [bili_id1, bili_id2, bili_id3],  // B站视频资源ID，一定不能为空字符串
+  "github_res": [git_id1, git_id2, git_id3],  // GitHub项目资源ID，一定不能为空字符串
+  "article_res": [article_id1, article_id2, article_id3]  // 文章资源ID,一定不能为空字符串
+}}
+注意:
+1. 返回的ID必须是数字类型
+2. 每个类别必须包含至少3个资源ID
+3. 确保资源(B站视频资源，项目资源以及文章/博客资源)与学习目标高度相关、任务名称、任务描述高度相关
+4. 只能从上面列出的资源中选择，不能虚构或编造ID
+5. 确保返回的bili_res，github_res，article_res不能为,即时资源不太匹配，也要保证返回三个资源ID
+6. 确保返回的id是数字类型，不能是字符串类型
+"""
+    return prompt
+#github项目描述简短化
+def truncate_descriptions_git(data):
+
+    # 遍历每一块JSON数据，截断description字段为前20个字符
+    for item in data:
+        if 'description' in item:
+            item['description'] = item['description'][:20]
+    for item in data:
+        item['description'] = item['description'].replace('\u3000', ' ').strip()
+    # 返回处理后的数据（Python对象）
+    return data
+#github项目描述简短化
+def keep_bilibili_fields(data, include_fields):
+    return [
+        {key: value for key, value in item.items() if key in include_fields}
+        for item in data
+    ]
+def remove_previous_stage_resources(resource_list: List[Dict], ids_to_remove: List[int]) -> List[Dict]:
+    """
+    移除指定资源列表中与给定ID匹配的资源。
+    """
+    return [resource for resource in resource_list if resource["id"] not in ids_to_remove]
+
+def add_retrieved_resources(resource_list: List[Dict], ids_to_add: List[int]) -> List[Dict]:
+    """
+    添加指定ID的资源到资源列表中。
+    """
+    return [resource for resource in resource_list if resource["id"] in ids_to_add]
+def get_resources_by_ids(resource_pool: List[Dict], ids: List[int]) -> List[Dict]:
+    """
+    根据资源ID列表从资源池中提取完整的资源对象。
+    """
+    return [res for res in resource_pool if res["id"] in ids]
+# 主函数示例
+# if __name__ == "__main__":
+def get_resource_by_task(
+    Learning_List: Dict,
+    bili_resource: List[Dict],
+    github_resource: List[Dict],
+    article_resource: List[Dict]
+):
+    #下列三个列表存储已经选过的ID列表
+    global_bili_resource = []
+    global_github_resource = []
+    global_article_resource = []
+
+    # 分阶段处理每个学习阶段
+    for stage in Learning_List["learningPath"]:
+        for task_item in stage["tasks"]:
+             # 清理之前阶段的资源
+            current_bili = remove_previous_stage_resources(bili_resource, global_bili_resource)
+            current_github = remove_previous_stage_resources(github_resource, global_github_resource)
+            current_article = remove_previous_stage_resources(article_resource, global_article_resource)
+            retrieved_ids = retrieve_resources(task_item,stage, current_bili, current_github, current_article)
+            # 更新全局资源ID
+            current_bili_ids = retrieved_ids["bili_res"]
+            current_github_ids = retrieved_ids["github_res"]
+            current_article_ids = retrieved_ids["article_res"]
+            #追加当前阶段的资源到全局资源池
+            global_bili_resource += current_bili_ids
+            global_github_resource += current_github_ids
+            global_article_resource += current_article_ids
+
+            # 提取完整的资源对象
+            bili_objects = get_resources_by_ids(bili_resource, retrieved_ids["bili_res"])
+            github_objects = get_resources_by_ids(github_resource, retrieved_ids["github_res"])
+            article_objects = get_resources_by_ids(article_resource, retrieved_ids["article_res"])
+
+            #完整的资源添加到任务中
+            task_item["bili_resource"] = bili_objects
+            task_item["github_resource"] = github_objects
+            task_item["article_resource"] = article_objects
+
+    # 输出最终结果
+    print("最终结果:\n", (json.dumps(Learning_List, indent=4, ensure_ascii=False)))
+    return Learning_List
+#2 github项目爬取
+
+def search_github_repos_api(keyword, max_pages=3):
+    base_url = "https://api.github.com/search/repositories"
+    all_repos = []
+    for page_num in range(1, max_pages + 1):
+        params = {
+            "q": keyword,
+            "sort": "stars",
+            "order": "desc",
+            "page": page_num,
+            "per_page": 10
+        }
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        if git_key:
+            headers["Authorization"] = f"token {git_key}"
+
+        response = requests.get(base_url, params=params, headers=headers)
+        if response.status_code != 200:
+            print(f"API 请求失败：{response.status_code}, {response.text}")
+            continue
+
+        data = response.json()
+        items = data.get("items", [])
+        print(f"第 {page_num} 页获取到 {len(items)} 个仓库")
+
+        for item in items:
+            repo_info = {
+                "name": item["full_name"],
+                "link": item["html_url"],
+                "description": item["description"],
+                "language": item["language"],
+                "stars": item["stargazers_count"],
+            }
+            all_repos.append(repo_info)
+
+        time.sleep(random.uniform(2, 5))
+
+    return all_repos
+#3 搜索视频资源
+#函数说明：此函数用来将 模型根据目标生成的资源 ID 替换为 离线资源.json ID中的资源信息。 保证信息不会乱
+
+
+# 预处理函数：对文本进行分词
+def tokenize(text):
+    return list(jieba.cut(text))
+# 构建语料库（将 title + tags + summary 合并）
+# 构造 video_resource.json 的路径
+json_path = os.path.join('static', 'video_resource.json')
+# 读取文件
+with open(json_path, "r", encoding="utf-8") as f:
+    videos = json.load(f)
+corpus = []
+for video in videos:
+    title = video.get("title", "")
+    tags = " ".join(video.get("tags", []))
+    summary = video.get("video_summary", "") or ""
+
+    combined_text = f"{title} {tags} {summary}"
+    corpus.append(tokenize(combined_text))
+
+# 构建 BM25 模型
+bm25 = BM25Okapi(corpus)
+
+def search_videos_by_goal(learning_goal, top_n=30):
+    tokenized_query = tokenize(learning_goal)
+    # 获取相关性分数
+    doc_scores = bm25.get_scores(tokenized_query)
+    # 获取排名前 top_n 的结果索引
+    top_indices = doc_scores.argsort()[-top_n:][::-1]
+
+    results = []
+    for idx in top_indices:
+        video = videos[idx]
+        results.append({
+            "id":video["id"],
+            "title": video["title"],
+            "preview_image_url": video["preview_image_url"],
+            "link": video["link"],
+            "tags": video["tags"],
+            "video_summary": video.get("video_summary", "")
+        })
+
+    return results
+#给爬取的资源添加id
+def add_id_to_resources(resources_json):
+    if isinstance(resources_json, str):
+        resources = json.loads(resources_json)
+    else:
+        resources = resources_json
+
+    # 为每个资源对象添加 id
+    for index, item in enumerate(resources):
+        item['id'] = index + 1  # 从1开始编号
+    # 返回更新后的 JSON 字符串
+    return resources
+
+# 设置你的 OpenAI API 密钥
+def extract_keywords_with_llm(text, model="gpt-4o-mini"):
+    prompt = f"""
+请从以下文本中提取出最重要的关键词列表。要求：
+1. 关键词应是名词或技术术语。
+2. 按重要性排序。
+3. 不要编号，不要解释，只输出关键词，每个关键词一行。
+4. 每个关键词前加一个前缀“学习”
+
+文本内容如下：
+\"\"\"{text}\"\"\"
+"""
+
+    response = openai.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": "你是一个关键词提取助手，擅长从文本中提取核心关键词。关键词是技术性的词语,不超过三个"},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=16384,
+    )
+
+    keywords = response.choices[0].message.content.strip().split('\n')
+    keywords = [kw.strip() for kw in keywords if kw.strip()]
+    return keywords
+#------------------------tx
 lesson_plan_prompt = """
 
 一，任务描述：
@@ -1364,4 +1645,95 @@ recommendation_prompt = """
     }}
     ```
     """
+recommendation_prompt_2 = """
+    一、任务描述：你需要根据用户输入的学习目标、学习风格和知识点要求，制定一个清晰的学习路径。学习路径包括阶段规划和时间安排，同时清晰说明每个阶段的学习任务和目标。
+    二、用户输入
+    用户输入包括学习目标、学习风格、需要掌握的知识点和推荐资源，请根据这些要素制定学习路径。
+    学习目标：{study_aim}
+    学习风格：{student_type}
+    --------------------------
+    以下是知识点掌握情况，知识点的权值是指知识点掌握情况。取值为0-1，值越大掌握情况越好：
+    {knowledge_point}
+    以上是知识点掌握情况。
+    --------------------------
+    三、要求
+    1. 学习路径应包括多个阶段，每个阶段有明确的学习目标和时间安排，需要分析任务的难易，综合划分合理的不同阶段。总阶段数保持在至少3个及以上。
+    2. 每个阶段应包含至少两个学习任务，每个任务应包括任务名称、任务描述等。
+    4. 学习路径应尽可能涵盖用户需要掌握的所有知识点，并确保每个知识点都有相应的学习任务。
+    5. 学习路径应提供实际可行的建议，帮助用户在实际操作中提升学习效果。
+    8. 学习路径应考虑到用户的实际需求，例如，如果用户要求规定在一周内完成任务，则整体任务必须规定在一周内。
 
+
+    四、输出格式
+    输出格式需遵循以下格式，确保信息清晰有序；同时请确保你的输出能被Python的json.loads函数解析，此外不要输出其他任何内容！
+    ```json
+    {{
+    "learningPath": [
+    {{
+    "stage": "第一阶段",
+    "duration": "2025.4.26-2025.4.30",
+    "goal": "达到基础口语交流能力",
+    "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "tasks": [
+        {{
+            "subtask":"子任务1",
+            "taskName": "学习日常对话",
+            "taskDescription": "学习日常对话，包括问候、介绍、询问天气等基本对话内容。",#尽量详细点，按照总分，通过xx达到xx目标等形式。
+            "learningObjectives":["基本问候语（如你好、早上好）","自我介绍的常用句型","询问对方姓名的方式","询问天气的常用句子","日常生活中的常见对话场景（如购物、点餐）","基本感谢与道歉的表达方式","询问时间和日期的句型","描述天气状况的常用形容词（如晴天、雨天）","进行闲聊的常用话题（如兴趣爱好）","结束对话的礼貌用语"],#该任务涉及需要学习、强化的知识点。list对象呈现
+        {{
+            "subtask":"子任务2",
+            "taskName": "练习发音技巧",
+            "taskDescription": "练习发音技巧，包括音标、连读、重音等。",
+            "learningObjectives":"",
+        }}
+    ]
+    }},
+    {{
+    "stage": "第二阶段",
+    "duration": "2025.5.1-2025.5.7",
+    "goal": "达到流利口语交流能力",
+    "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "tasks": [
+        {{
+            "subtask":"子任务1",
+            "taskName": "参与讨论活动",
+            "taskDescription": "通过讨论活动提高口语流利度。",
+            "learningObjectives":"",
+        }},
+        {{
+            "subtask":"子任务2",
+            "taskName": "加强听力练习",
+            "taskDescription": "通过听新闻、播客等素材来提升听力理解能力。",
+            "learningObjectives":"",
+        }}
+    ]
+    }},
+    {{
+    "stage": "第三阶段",
+    "duration": "2025.5.8-2025.5.14",
+    "goal": "达到高级表达与实际应用能力",
+    "suggestion": "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "tasks": [
+        {{
+            "subtask":"子任务1",
+            "taskName": "进行主题演讲训练",
+            "taskDescription": "围绕指定主题准备并进行演讲，提高逻辑组织能力和语言表达的流畅性。",
+            "learningObjectives":"",
+        }},
+        {{
+            "subtask":"子任务2",
+            "taskName": "完成真实场景模拟任务",
+            "taskDescription": "通过模拟真实情境下的任务操作，提高解决实际问题的能力。",
+            "learningObjectives":"",
+        }}
+    ]
+    }}        
+    ],
+    "suggestion": [
+    "在练习口语时，请确保发音准确，并注意语调的变化。同时，可以尝试与母语为英语的人进行交流，以提升实际应用能力。",
+    "建议每日练习与模拟对话，设定每日的口语练习时间，比如30分钟，进行英语口语的自我练习。这可以包括朗读课文、跟读英语视频或音频，或与语言交换伙伴进行对话练习",
+    "观看和模仿英语影视作品,选择一些您喜欢的英语电影、电视剧或YouTube频道，观看时注意人物的对话和语音语调。暂停并模仿他们的发音和表达方式。"
+    ] #请根据学生的学习进度和表现，给出个性化的3-5条学习建议。
+    }}
+    ```
+    """

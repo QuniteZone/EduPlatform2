@@ -28,6 +28,12 @@ const initChart = () => {
   }
 
   chartInstance = echarts.init(chartRef.value)
+ // 获取容器尺寸，用于响应式调整
+  const containerWidth = chartRef.value.clientWidth
+
+  // 动态计算字体大小（基于容器宽度）
+  const baseFontSize = Math.max(10, containerWidth * 0.02) // 基础字体大小，最小10px
+
 
   // 根据 chartType 动态生成 option
   let option = {}
@@ -50,7 +56,7 @@ const initChart = () => {
             color: '#2c5c98',              // 文字颜色
             backgroundColor: 'rgba(0, 0, 0, 0)',    // 背景色
             padding: [0, 0],            // 内边距
-            fontSize:16,
+            fontSize:baseFontSize*1.5,
             fontWeight: 'bold',
              formatter: function (value) {
             if (value.length <= 6) { // 如果字符串长度小于等于6，直接显示完整内容
@@ -62,8 +68,8 @@ const initChart = () => {
 
           },
         },
-        //内部颜色
 
+        padding:[0,0]
 
       }
     ],
@@ -74,7 +80,7 @@ const initChart = () => {
         data: props.data.seriesData.map(item => ({
           ...item,
           // 保留原始配置中的默认样式，同时允许用户自定义
-          symbolSize: item.symbolSize || 12,
+          symbolSize: item.symbolSize || baseFontSize,
 
           label: item.label || {
             show: true,
@@ -108,7 +114,7 @@ const initChart = () => {
           color: '#b34633',              // 文字颜色
           backgroundColor: 'rgba(0, 0, 0, 0)',    // 背景色
           padding: [0, 0],            // 内边距
-          fontSize: 16,
+          fontSize: baseFontSize*1.5,
           fontWeight: 'bold',
           formatter: function (value) {
             if (value.length <= 6) { // 如果字符串长度小于等于6，直接显示完整内容
@@ -120,8 +126,8 @@ const initChart = () => {
 
           },
           //内部颜色
-        }
-
+        },
+        padding:[0,0],
       }
     ],
     series: [
@@ -131,7 +137,7 @@ const initChart = () => {
         data: props.data.seriesData.map(item => ({
           ...item,
           // 保留原始配置中的默认样式，同时允许用户自定义
-          symbolSize: item.symbolSize || 12,
+          symbolSize: item.symbolSize || baseFontSize,
 
 
           label: item.label || {
@@ -147,8 +153,11 @@ const initChart = () => {
         },
          lineStyle: {
         color: '#eca9aa',  // 红色边界线
+      },
 
-      }
+          itemStyle: {
+            color: '#cf0b0e',
+          },
 
         }))
       }

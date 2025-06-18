@@ -79,8 +79,8 @@
 
       <div class="center-column">
 
-        <div class="ly ly--test" >
-          <h3>掌握程度最高的知识点</h3>
+        <div class="ly" >
+          <h3>熟练知识点</h3>
         <EChartsComponent
           :chartType="'g_radar'"
           :data="{
@@ -107,7 +107,7 @@
 
       <div class="right-column">
          <div class="ly" >
-          <h3>掌握程度最低的知识点</h3>
+          <h3>薄弱知识点</h3>
         <EChartsComponent
           :chartType="'b_radar'"
           :data="{
@@ -256,7 +256,7 @@ const sendStudentInfo = async () => {
   background-color: #ffffff;
   border-radius: 30px; /* 圆角边框，数值越大圆角越明显 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 立体感阴影 */
-  padding: 20px; /* 内部边距，根据内容调整 */
+  padding: 0px; /* 内部边距，根据内容调整 */
   transition: all 0.3s ease; /* 鼠标悬停动画过渡效果 */
   border: 1px solid #8ec8e1; /* 浅灰色边框 */
 
@@ -308,7 +308,7 @@ const sendStudentInfo = async () => {
 }
 
 .ly{
-  padding: 25px 30px;
+  padding: 25px 10px;
   border-radius: 20px;
   background-color: #fff;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);

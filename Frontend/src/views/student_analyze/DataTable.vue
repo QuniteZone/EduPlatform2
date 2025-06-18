@@ -16,8 +16,8 @@
             <td>{{ item.data }}</td>
             <td>{{ item.time }}</td>
             <td>{{ item.lesson }}</td>
-            <td>{{ item.teach.length>6?item.teach:item.teach.slice(0,6)+"..." }}</td>
-            <td>{{ item.times }}</td>
+            <td>{{ item.teach.length>10?item.teach.slice(0,10)+"...":item.teach }}</td>
+            <td>{{ Math.floor(item.times )}}</td>
           </tr>
         </tbody>
       </table>
@@ -124,5 +124,36 @@ defineProps({
 
 .data-table-container::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
+}
+
+.data-table th:nth-child(1),
+.data-table td:nth-child(1) {
+  width: 15%; /* 日期列宽度 */
+}
+.data-table td:nth-child(1) {
+  width: 18%; /* 日期列宽度 */
+}
+.data-table th:nth-child(2),
+.data-table td:nth-child(2) {
+  width: 10%; /* 时间列宽度 */
+}
+
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+  width: 20%; /* 课程名列宽度 */
+}
+
+.data-table th:nth-child(4),
+.data-table td:nth-child(4) {
+  width: 25%; /* 课时名列宽度（内容最长） */
+}
+.data-table td:nth-child(4) {
+  width: 30%; /* 课时名列宽度（内容最长） */
+}
+
+
+.data-table th:nth-child(5),
+.data-table td:nth-child(5) {
+  width: 15%; /* 分钟列宽度 */
 }
 </style>

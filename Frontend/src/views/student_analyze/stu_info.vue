@@ -29,13 +29,10 @@ defineProps({
     <div class="info-card">
       <div class="card-header">
         <i class="el-icon-user"></i>
-        <span>学生基本信息卡片</span>
+        <span>学生基本信息</span>
       </div>
       <div class="info-content">
-        <div class="info-row">
-          <div class="info-label">姓名</div>
-          <div class="info-value">{{ name }}</div>
-        </div>
+
          <div class="info-row">
           <div class="info-label">学号</div>
           <div class="info-value">{{ id }}</div>

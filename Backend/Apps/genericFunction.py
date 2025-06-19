@@ -29,8 +29,6 @@ import joblib
 import os
 from typing import List, Dict
 
-from Edu2.EduPlatform2.Backend.config.config import git_key
-
 ALLOWED_EXTENSIONS = {'pdf', 'docx'}  # 在生成逐字稿时，所允许上传的文件类型
 ragflow = RAGflow(ragflow_BASE_URL, ragflow_API_KEY)
 

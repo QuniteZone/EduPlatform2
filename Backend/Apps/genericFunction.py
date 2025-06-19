@@ -1010,6 +1010,7 @@ def get_resource_by_task(
 
 def search_github_repos_api(keyword, max_pages=3):
     base_url = "https://api.github.com/search/repositories"
+    git_key=""#个人github账号的token 
     all_repos = []
     for page_num in range(1, max_pages + 1):
         params = {

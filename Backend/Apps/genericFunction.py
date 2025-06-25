@@ -20,7 +20,7 @@ from config.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY,
 import config.config
 from datetime import timedelta
 import ast
-from Apps.DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
+from Apps.DatabaseTables import db, Answer_Log, CourseTask, Students, Study_Task, Studylog
 from rank_bm25 import BM25Okapi
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans

@@ -4,12 +4,9 @@ import logging
 from Apps.lesson_plan import lesson_plan_bp
 from Apps.question_handle import ques_handle_bp
 from Apps.user_plan import user_plan_bp
-from Apps.DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
+from Apps.DatabaseTables import db
 import config.config
 from config.config import Config
-import pandas as pd
-from datetime import timedelta
-import ast
 
 app = Flask(__name__)
 # 注册蓝图
@@ -30,7 +27,6 @@ service_config = config_obj.SERVICE_CONFIG
 if service_config.enable_nacos:
     service_config.connect()  # 自动注册服务到 Nacos
     print(f"Service {service_config.instance_name} registered to Nacos")
-
 
 
 @app.before_request

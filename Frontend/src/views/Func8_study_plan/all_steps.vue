@@ -20,10 +20,7 @@
       <!-- 底部操作栏 -->
       <template #footer>
         <div class="dialog-footer">
-          <el-button v-if="currentStep > 0" type="primary" plain @click="currentStep--">{{
-              currentStep === steps.length - 1 ? '取消' : '上一步'
-            }}
-          </el-button>
+          <el-button v-if="currentStep > 0" type="primary" plain @click="handlePrevious">上一步</el-button>
           <el-button type="primary" :loading="submitting" @click="handleNextOrSubmit">{{
               currentStep === steps.length - 1 ? '生成' : '下一步'
             }}
@@ -93,42 +90,94 @@ export default {
     handleDataUpdate(data) {
       Object.assign(this.formData, data)
     },
-    async handleNextOrSubmit() {
-  if (this.currentStep < this.steps.length - 1) {
-    this.currentStep++
-  } else {
-    this.submitting = true
-    try {
-      const response = await axios.post('/api/plan/study_plan', this.formData)
+    validateCurrentStep() {
+      const { goal, background, preferences, time, title } = this.formData;
 
-      console.log('YTYPlan:', response.data)
-
-      // 后端返回格式为 { content: "", status: "" }
-
-      if (response.data.status === 1) {
-        // 只有 status 为 '1' 时才 emit 内容
-        this.$emit('create-plan', response.data.content)
-
-        // 本地保存一份计划用于展示（假设 content 是对象）
-        this.plans.push(response.data.content)
-
-        // 关闭弹窗
-        this.showModal = false
-
-        // 提示成功
-        this.$message.success('计划生成成功')
-      } else {
-        // 失败处理
-        this.$message.error('生成失败：' + (response.data.message || '请重试'))
+      // 验证当前步骤
+      switch (this.currentStep) {
+        case 0:
+          if (!goal.trim()) {
+            this.$message.error('请填写目标');
+            return false;
+          }
+          break;
+        case 1:
+          if (!background.trim()) {
+            this.$message.error('请填写背景信息');
+            return false;
+          }
+          break;
+        case 2:
+          if (preferences.length === 0) {
+            this.$message.error('请选择至少一个偏好');
+            return false;
+          }
+          break;
+        case 3:
+          if (!time || time <= 0) {
+            this.$message.error('请输入有效的时间');
+            return false;
+          }
+          break;
+        case 4:
+          if (!title.trim()) {
+            this.$message.error('请填写计划标题');
+            return false;
+          }
+          break;
+        default:
+          return true;
       }
-    } catch (error) {
-      console.error('请求出错:', error)
-      this.$message.error('网络错误，请重试')
-    } finally {
-      this.submitting = false
-    }
-  }
-},
+
+      return true;
+    },
+    async handleNextOrSubmit() {
+      // 验证当前步骤
+      if (!this.validateCurrentStep()) {
+        return;
+      }
+
+      if (this.currentStep < this.steps.length - 1) {
+        // 如果验证通过，进入下一步
+        this.currentStep++;
+      } else {
+        // 最后一步提交逻辑
+        this.submitting = true;
+        try {
+          const response = await axios.post('/api/plan/study_plan', this.formData);
+
+          console.log('YTYPlan:', response.data);
+
+          // 后端返回格式为 { content: "", status: "" }
+          if (response.data.status === 1) {
+            // 只有 status 为 '1' 时才 emit 内容
+            this.$emit('create-plan', response.data.content);
+
+            // 本地保存一份计划用于展示（假设 content 是对象）
+            this.plans.push(response.data.content);
+
+            // 关闭弹窗
+            this.showModal = false;
+
+            // 提示成功
+            this.$message.success('计划生成成功');
+          } else {
+            // 失败处理
+            this.$message.error('生成失败：' + (response.data.message || '请重试'));
+          }
+        } catch (error) {
+          console.error('请求出错:', error);
+          this.$message.error('网络错误，请重试');
+        } finally {
+          this.submitting = false;
+        }
+      }
+    },
+    handlePrevious() {
+      if (this.currentStep > 0) {
+        this.currentStep--;
+      }
+    },
     showPlanDetails(plan) {
       this.selectedPlan = null; // 先清空 selectedPlan
       this.$nextTick(() => {
@@ -139,15 +188,15 @@ export default {
     },
     async fetchPlans() {
       try {
-        const response = await axios.post('/api/plan/study_plan')
-        this.plans = response.data
+        const response = await axios.post('/api/plan/study_plan');
+        this.plans = response.data;
       } catch (error) {
-        console.error('加载计划失败:', error)
+        console.error('加载计划失败:', error);
       }
     }
   },
   mounted() {
-    this.fetchPlans()
+    this.fetchPlans();
   }
 };
 </script>

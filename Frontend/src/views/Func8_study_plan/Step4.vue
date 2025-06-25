@@ -1,11 +1,11 @@
 <template>
     <div class="step-content">
-      <h3>为您的计划增加时间</h3>
+      为您的计划增加时间
       <div class="time-settings">
         <div class="deadline">
           <p>1. 您的计划有截止日期吗？</p>
-          <small>您也可以稍后添加截止日期</small>
-          <el-date-picker 
+          <small> 如有请添加截止日期 </small>
+          <el-date-picker
             v-model="localData.deadline"
             type="date"
             placeholder="选择日期"
@@ -13,7 +13,7 @@
         </div>
         <div class="weekly-hours">
           <p>* 2. 您每周可以在此计划上花费多少小时？</p>
-          <el-slider 
+          <el-slider
             v-model="localData.time"
             :min="5"
             :max="40"
@@ -25,7 +25,7 @@
       </div>
     </div>
   </template>
-  
+
   <script>
   export default {
     props: ['data'],
@@ -44,17 +44,17 @@
     }
   }
   </script>
-  
+
   <style scoped>
   .time-settings {
     margin-top: 10px;
   }
-  
+
   .deadline,
   .weekly-hours {
     margin-bottom: 20px;
   }
-  
+
   .current-value {
     display: block;
     text-align: center;

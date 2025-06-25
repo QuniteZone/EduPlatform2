@@ -4,8 +4,6 @@ import os
 import json
 import pandas as pd
 import numpy as np
-import fitz  # PyMuPDF
-import docx  # python-docx
 from flask import Blueprint, jsonify, request
 from .genericFunction import LLM, lesson_plan_prompt, class_meeting_prompt, allowed_file, extract_text_from_pdf, \
     extract_text_from_docx, ragflow, script_gen_prompt, jugement_ques_prompt, generate_question_prompt, \
@@ -183,11 +181,6 @@ def create_study_plan():
     time = data['time']
     deadline = data['deadline']
     title = data['title']
-
-
-    print("preferences\n",preferences)
-
-
     # 在这里可以添加处理学习计划的逻辑
     # 例如，保存到数据库或进行其他处理
     # 这里我们只是返回接收到的数据作为示例
@@ -214,11 +207,7 @@ def create_study_plan():
     keywords = extract_keywords_with_llm(goal)
     #获取keywords的长度
     num_keywords = len(keywords)
-    print(f"关键词数量：{num_keywords}")
-
-
     for keyword in keywords:
-         print(f"关键词：{keyword}")
          #bilibili视频资源
          results_bili = search_videos_by_goal(keyword, (4-num_keywords)*10)
          bili_resource.extend(results_bili)  # 使用 extend 将结果合并进总列表
@@ -231,15 +220,12 @@ def create_study_plan():
          article_resource.extend(results_article)  # 使用 extend 将结果合并进总列表
 
     #bili_resource = search_videos_by_goal(goal, 30)#根据目标匹配离线视频资源，默认30个视频
-    print("bili_resource:\n")
-
     print(json.dumps(bili_resource, ensure_ascii=False, indent=2))
 
    # ------------------------------1 视频资源检索-------------------
 
    # ------------------------------2 github项目资源检索-------------------
     #github_resource=scrape_github_repos(goal,7)#调用github项目实时爬取，默认1页
-    print("github_resource:\n")
     add_id_to_resources(github_resource)
     print(json.dumps(github_resource, ensure_ascii=False, indent=2))
 
@@ -248,7 +234,6 @@ def create_study_plan():
    # ------------------------------3 在线博客资源检索-------------------
 
    # article_resource = get_globalWeb_source(goal,30)#调用在线资源实时爬取，默认25个
-    print("get_globalWeb_source:\n")
     add_id_to_resources(article_resource)
     print(json.dumps(article_resource, ensure_ascii=False, indent=2))
 
@@ -267,9 +252,10 @@ def create_study_plan():
     print("*" * 50)
 
     Final_data["preference_type"]=preferences
+    Final_data["title"]=title
     print("Final_data\n",Final_data)
 
-    return jsonify({"content": Final_data, "preference_type":preferences,'status': 1})
+    return jsonify({"content": Final_data,'status': 1})
 #-------------tx--------
 
 ##个性化学习 推荐

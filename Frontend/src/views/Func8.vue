@@ -29,7 +29,6 @@ export default {
      * @param {Object} planData - 来自后端返回的学习计划 JSON 数据
      */
     handleCreatePlan(planData) {
-      console.log('收到学习计划数据:', planData)
       this.currentLearningData = planData
     }
   }

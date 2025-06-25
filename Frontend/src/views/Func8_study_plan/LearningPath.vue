@@ -1,13 +1,15 @@
 <template>
   <header class="app-header">
-    <h2>个性化学习路径</h2>
+    <h2>个性化学习路径 </h2>
   </header>
   <el-card class="learning-path" v-if="learningData">
+    <el-button type="primary" @click="downloadAllStagesHTML" class="export-button">
+        导出学习路径
+</el-button>
     <h2 class="learning-path-line">
       <img src="@/assets/icons/learning-path-icon.png" class="icon-class-head"/>
-      学习路径规划
+      学习路径规划:{{ Plan_Title }}
     </h2>
-
     <!-- 阶段列表 -->
     <div class="stage-list">
       <div
@@ -35,7 +37,6 @@
         <i class="el-icon-arrow-right"></i>
       </div>
     </div>
-
     <!-- 显示当前选中的阶段任务 -->
     <div v-if="activeStage !== null" class="task-details">
       <h3 class="stage-title">
@@ -48,7 +49,6 @@
           子任务 {{ taskIndex + 1 }}: {{ task.taskName }}
         </h4>
         <p>{{ task.taskDescription }}</p>
-
         <div class="task-content-grid">
           <!-- 学习目标 -->
           <div class="task-section target-section">
@@ -62,7 +62,6 @@
               </ul>
             </div>
           </div>
-
           <!-- 视频资源 -->
           <div class="task-section video-section">
             <div class="task-section-box">
@@ -108,7 +107,6 @@
               </ul>
             </div>
           </div>
-          <!--github-->
           <!-- GitHub 开源项目 -->
           <div class="task-section github-section">
             <div class="task-section-box">
@@ -145,11 +143,9 @@
             </div>
           </div>
         </div>
-
         <el-divider/>
       </div>
     </div>
-
     <h3 class="final-suggestion-icon">
       <img src="@/assets/icons/final-sugestion.png" class="icon-class-head"/>
       学习建议
@@ -161,22 +157,8 @@
 </template>
 
 <script setup>
-import {defineProps, ref} from 'vue'
-
-// 计算当前任务中应展示的资源数量
-const getDisplayCount = (resourceType) => {
-  const preference = learningData.value?.preference_type || []
-  if (!Array.isArray(preference)) return 1 // 默认只展示一个
-
-  const displayConfig = {
-    video: preference.includes('video') ? 3 : 1,
-    github: preference.includes('project') ? 3 : 1,
-    article: preference.includes('article') ? 3 : 1
-  }
-
-  return displayConfig[resourceType] || 1
-}
-
+import {computed, defineProps, ref} from 'vue'
+import { nextTick } from 'vue'
 // 接收来自父组件传入的 learningData
 const props = defineProps({
   learningData: {
@@ -187,6 +169,8 @@ const props = defineProps({
 
 // 使用 props 中的数据
 const learningData = ref(props.learningData)
+//console.log("learningData title", learningData.value.title)
+const Plan_Title = computed(() => props.learningData?.title || '默认标题')
 const activeStage = ref(null)
 
 // 切换阶段显示
@@ -197,8 +181,91 @@ const toggleStage = (stageIndex) => {
     activeStage.value = stageIndex
   }
 }
+
+// 计算当前任务中应展示的资源数量
+const getDisplayCount = (resourceType) => {
+  const preference = learningData.value?.preference_type || []
+  if (!Array.isArray(preference)) return 1 // 默认只展示一个
+  const displayConfig = {
+    video: preference.includes('video') ? 3 : 1,
+    github: preference.includes('project') ? 3 : 1,
+    article: preference.includes('article') ? 3 : 1
+  }
+  return displayConfig[resourceType] || 1
+}
+
+//下载学习路径
+const downloadAllStagesHTML = async () => {
+  const originalStage = activeStage.value
+  const styles = Array.from(document.querySelectorAll('style')).map(style => style.outerHTML).join('\n')
+  const title = Plan_Title.value.replace(/[\\/:*?"<>|]/g, '')
+  let combinedContent = ''
+
+  for (let i = 0; i < learningData.value.learningPath.length; i++) {
+    activeStage.value = i
+    await nextTick()
+
+    const stageElement = document.querySelector('.task-details')
+    if (!stageElement) continue
+
+    const clone = stageElement.cloneNode(true)
+    const stageData = learningData.value.learningPath[i]
+    const stageName = stageData.stage.replace(/[\\/:*?"<>|]/g, '')
+
+    const section = `
+      <section style="margin-bottom: 40px;">
+        <h2>${title} ——${stageName}</h2>
+        <p><strong>时间：</strong>${stageData.duration}</p>
+        <p><strong>目标：</strong>${stageData.goal}</p>
+        <p><strong>建议：</strong>${stageData.suggestion}</p>
+        ${clone.outerHTML}
+      </section>
+    `
+    combinedContent += section
+  }
+  activeStage.value = originalStage
+  const html = `
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>${title} - 所有阶段</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+    h2, h3, h4 { color: #333; }
+    img { max-width: 100%; border-radius: 6px; margin: 5px 0; }
+  </style>
+  ${styles}
+</head>
+<body>
+  <h1>${title} - 所有阶段学习路径</h1>
+  ${combinedContent}
+</body>
+</html>
+  `
+  const blob = new Blob([html], { type: 'text/html' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `${title}_所有阶段.html`
+  link.click()
+  URL.revokeObjectURL(link.href)
+}
 </script>
 <style scoped>
+.export-button {
+  background-color: rgba(122, 138, 117, 0.53);
+  color: rgb(87, 80, 80);
+  border-radius: 20px;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.export-button:hover {
+  background-color: rgba(184, 199, 218, 0.25); /* 鼠标悬停时更浅的色 */
+}
 .learning-path {
   padding: 15px;
   font-size: 12px;

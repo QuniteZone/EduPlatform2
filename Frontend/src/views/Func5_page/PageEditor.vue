@@ -10,9 +10,19 @@
           <input v-model="subject" placeholder="请输入..."/>
         </div>
         <!--体量-->
+<!--        <div class="input_box">-->
+<!--          <label>题量<span style="color: red;">(必填)</span></label>-->
+<!--          <input v-model="questionCount" type="number" placeholder="请输入..."/>-->
+<!--        </div>-->
+        <!--题量，修改-->
         <div class="input_box">
           <label>题量<span style="color: red;">(必填)</span></label>
-          <input v-model="questionCount" type="number" placeholder="请输入..."/>
+          <input
+            v-model="questionCount"
+            type="text"
+            placeholder="题量（1~50）"
+            @input="onQuestionCountInput"
+          />
         </div>
         <!-- 题型 -->
 
@@ -83,7 +93,7 @@ const grade = ref('') // 年级
 const subject = ref('') // 学科
 const questionType = ref('不限') // 题型
 const difficulty = ref('不限') // 难度
-const questionCount = ref(0) // 题量
+const questionCount = ref('') // 题量
 const knowledgePoints = ref('') // 知识点
 const otherRequirements = ref('') // 其他要求
 const loading = ref(false) // 控制加载状态
@@ -102,6 +112,15 @@ const difficultyOptions = [
   {value: '中等', label: '中等'},
   {value: '困难', label: '困难'},
 ]
+
+const onQuestionCountInput = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, ''); // 只保留数字
+  if (value) {
+    value = String(Math.max(1, Math.min(50, parseInt(value)))); // 限制范围在1到50之间
+  }
+  questionCount.value = value;
+};
 
 // 生成内容方法
 const generateContent = async () => {
@@ -122,8 +141,8 @@ const generateContent = async () => {
     alert('请选择难度');
     return;
   }
-  if (!questionCount.value || questionCount.value <= 0) {
-    alert('请填写有效的题量');
+  if (!questionCount.value || parseInt(questionCount.value) < 1 || parseInt(questionCount.value) > 50) {
+    alert('请填写有效的题量（1到50之间）');
     return;
   }
   if (!knowledgePoints.value) {

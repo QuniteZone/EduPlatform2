@@ -105,6 +105,32 @@ const difficultyOptions = [
 
 // 生成内容方法
 const generateContent = async () => {
+  // 验证必填项
+  if (!subject.value) {
+    alert('请填写学科');
+    return;
+  }
+  if (!grade.value) {
+    alert('请填写年级');
+    return;
+  }
+  if (!questionType.value) {
+    alert('请选择题型');
+    return;
+  }
+  if (!difficulty.value) {
+    alert('请选择难度');
+    return;
+  }
+  if (!questionCount.value || questionCount.value <= 0) {
+    alert('请填写有效的题量');
+    return;
+  }
+  if (!knowledgePoints.value) {
+    alert('请填写知识点');
+    return;
+  }
+
   loading.value = true // 开始加载
   try {
     const response = await axios.post('/api/plan/question_generate', {

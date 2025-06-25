@@ -13,7 +13,7 @@ from .genericFunction import LLM, get_user_profile, StudentClusterModel, student
 from config.config import TextbookRetr_AgentID, UPLOAD_FOLDER, LLMs_ALLOWED_FILE_EXTENSIONS,resourceFinder_AgentID
 from datetime import timedelta
 import ast
-from .DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
+from .DatabaseTables import db, Answer_Log, CourseTask, Students, Study_Task, Studylog
 
 from sqlalchemy import func,text
 

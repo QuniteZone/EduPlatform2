@@ -32,7 +32,7 @@ LLMs_model="qvq-max"
 
 Public_ip="https://fz68ok24676.vicp.fun" #后端公网IP地址
 
-ragflow_BASE_URL = "https://9vh4ik686619.vicp.fun"  # rag_flow的后端地址
+ragflow_BASE_URL = "http://10.10.10.164:20344"  # rag_flow的后端地址
 ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
 
 

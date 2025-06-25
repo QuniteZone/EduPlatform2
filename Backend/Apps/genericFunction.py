@@ -20,7 +20,7 @@ from config.config import model, temperature, ragflow_BASE_URL, ragflow_API_KEY,
 import config.config
 from datetime import timedelta
 import ast
-from Apps.DatabaseTables import db, User, Answer_Log, CourseTask, Students, Study_Task, Studylog
+from Apps.DatabaseTables import db, Answer_Log, CourseTask, Students, Study_Task, Studylog
 from rank_bm25 import BM25Okapi
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
@@ -1454,35 +1454,39 @@ jugement_ques_prompt = """
 # 出题提示词
 generate_question_prompt = """
 一，任务描述：
-请为{grade}年级，设计一份包含{question_count}道题目的{subject}学科的题目，题目类型为{question_type}，难度为{difficulty}，围绕{knowledge_points}知识点展开，确保题目数量与需求一致，并输出解析与标准答案。
+请为{grade}年级设计一份包含{question_count}道题目的{subject}学科试卷，题目类型为{question_type}，难度为{difficulty}，围绕{knowledge_points}知识点展开。请确保题目数量与需求完全一致，并附上标准答案与详细解析。
+
+【特别说明】  
+若{question_count}超过50，请只生成50题，且不分批生成。
+
 用户其他要求：{other_requirements}
 
 二，输出要求:
 # 格式规范
 
-1. 使用Markdown代码块符号返回
-2. 字段顺序固定为：[题目模块,知识库检索,生成逻辑,输出样例]
-3. 每个题目必须包含：
-- 题目正文（具体到题目内容）
-- 选项/答案（如果适用，包括正确答案和解析）
-4. 数学符号使用markdown格式输出
-5. 每个层级的键名必须与示例完全一致
-6. 输出内容用```markdown   ```包裹起来
-7. 使用{question_type}任务类型的模板进行题目的生成，确保难度适应{grade}年级水平，同时与{subject}学科紧密结合。
-8. 严格按照题量数：{question_count}生成对应的题目数量，不允许省略。
-三，知识点检索
-知识点：根据提供的{knowledges}进行知识点的检索，确保题目符合相关知识要求。
+1. 使用Markdown代码块符号返回  
+2. 字段顺序固定为：[题目模块,知识库检索,生成逻辑,输出样例]  
+3. 每个题目必须包含：  
+- 题目正文（具体到题目内容）  
+- 选项/答案（如适用，包含正确答案及解析）  
+4. 数学符号使用Markdown数学格式（如$...$或$$...$$）  
+5. 每个层级的键名必须与示例完全一致  
+6. 输出内容必须用```markdown```包裹  
+7. 使用{question_type}任务类型的模板生成题目，确保难度适合{grade}年级且紧密结合{subject}学科  
+8. 严格按照题量{question_count}生成对应题目数；但若{question_count}大于50，仅生成50题，不得超过此数量。
 
+三，知识点检索  
+根据提供的{knowledge_points}进行知识点检索，确保所有题目内容符合相关知识要求。
 
-四、示例
-下面是输出示例，严格按照如下格式来输出。不允许有其他任何类型
+四，示例  
+下面示例请严格参考格式，不得有其他内容：  
 ```markdown
 **题目1**：一个矩形的长是8厘米，宽是5厘米，求这个矩形的周长。(2分)  
 A. 20厘米  
-B. 26厘米
+B. 26厘米  
 C. 40厘米  
 D. 30厘米  
-**答案:** A  
+**答案:** B  
 **解析:** 矩形周长的计算公式为：周长 = 2 × (长 + 宽) = 2 × (8 + 5) = 26厘米。
 
 ---
@@ -1495,8 +1499,7 @@ D. 30厘米
 
 **题目3**：一块草地的长度是12米，宽度是4米，草地的面积是多少平方米？(2分)  
 **答案:** 48平方米  
-**解析:** 草地的面积计算公式为：面积 = 长 × 宽 = 12 × 4 = 48平方米。
-```
+**解析:** 草地面积 = 长 × 宽 = 12 × 4 = 48平方米。
 
 """
 

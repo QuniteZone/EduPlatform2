@@ -43,7 +43,8 @@
    ```bash
    git clone https://github.com/QuniteZone/EduPlatform2.git
    ```
-2. **安装并配置RAGflow：**
+2. **部署准备工作：**
+   - **安装并配置RAGflow**
    
     按照[RAGflow官方文档](https://github.com/infiniflow/ragflow/blob/main/README_zh.md)，安装好RAGflow。并且需要分别构建好两个知识库（教材知识库、离线资源知识库），简单测试达到基本能使用程度。
 
@@ -67,7 +68,9 @@
    TextbookRetr_AgentID = f"4962e4b824051*********42ac120006"    #Agent ID
    QuesGen_AgentID="cca846541d1d11f*************f6ef"            #Agent ID
    ```
-
+   - **导入数据库**
+   将EduPlatform2/Backend/db文件夹下的edu_platform2.sql文件导入到MySQL数据库中。
+   具体步骤：①首先在mysql数据库中创建edupaltform数据库。②然后运行先运行后端。（运行后端会先链接上edupaltform数据库后，直接创建所需数据库——对应的各个表结构。③最后使用navicat等工具将edu_platform2.sql文件导入到该数据库中即可。
 
 
 3. **环境参数配置：**

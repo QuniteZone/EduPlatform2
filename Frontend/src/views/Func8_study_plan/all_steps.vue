@@ -6,8 +6,9 @@
       <div class="wizard-container">
         <!-- 左侧步骤导航 -->
         <div class="steps-sidebar">
-          <div v-for="(step, index) in steps" :key="index" :class="['step-item', { active: currentStep === index }]"
-               @click="currentStep = index">
+          <div v-for="(step, index) in steps" :key="index"
+               :class="['step-item', { active: currentStep === index }]"
+               style="pointer-events: none; cursor: default;">
             <span class="step-number">{{ step.number }}</span>
             {{ step.title }}
           </div>

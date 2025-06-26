@@ -12,38 +12,38 @@ USERNAME = 'root'
 PASSWORD = '123456'
 HOST = '127.0.0.1'
 PORT = '3306'
-DATABASE = 'eduplatform'
+DATABASE = 'edupla**tform'
 SQLALCHEMY_DATABASE_URI = f"{DIALECT}+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = True
 
 
 
-os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.tech/v1"
-os.environ["OPENAI_API_KEY"] = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"
+os.environ["OPENAI_BASE_URL"] = "https://v1"
+os.environ["OPENAI_API_KEY"] = "sk-FUFek****************XwmsQgUaJO5i"
 model = "gpt-4o-mini"
 
 temperature=0.5 #LLM 温度
 
 
 #多模态LLM的基本配置信息 QVQ -max
-os.environ["DASHSCOPE_API_KEY"] = "sk-b8ee8eb0b16a4f8099a7492bdbe405c9"
+os.environ["DASHSCOPE_API_KEY"] = "sk-b8ee8be405c9"
 LLMs_model="qvq-max"
 
-Public_ip="https://fz68ok24676.vicp.fun" #后端公网IP地址
+Public_ip="https://fz68.fun" #后端公网IP地址
 
-ragflow_BASE_URL = "http://10.10.10.164:20344"  # rag_flow的后端地址
-ragflow_API_KEY = "ragflow-k5MTJmNmQ0MDdiMjExZjA5ZWY4MDI0Mm"  # rag_flow的后端端口
+ragflow_BASE_URL = "http://1020344"  # rag_flow的后端地址
+ragflow_API_KEY = "ragflow******Y4MDI0Mm"  # rag_flow的后端端口
 
 
-TextbookRetr_AgentID = f"4962e4b8240511f0bfb80242ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
-resourceFinder_AgentID = "6c3e724a226611f08d100242ac120006" #RAGflow中从知识库中检索相关资源的AgentID
+TextbookRetr_AgentID = f"4962e*****2ac120006" #RAGflow中从知识库中检索教材知识点的AgentID
+resourceFinder_AgentID = "6c3e72*****c120006" #RAGflow中从知识库中检索相关资源的AgentID
 
 
 #网络检索的基本配置信息
-web_video_url = "https://google.serper.dev/videos"
-web_message_url="https://google.serper.dev/search"
-web_api_key="54933bde17093ecd3db9ef1d25f16be7c3a5a6d2"
+web_video_url = "https://goog****deos"
+web_message_url="https://***earch"
+web_api_key="54933bde17093e****7c3a5a6d2"
 
 
 

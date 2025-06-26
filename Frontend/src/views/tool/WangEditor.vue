@@ -89,40 +89,30 @@ const downloadWord = () => {
 }
 
 // 下载 PDF
+// 下载 PDF
 const downloadPDF = async () => {
   if (editorRef.value) {
-    const html = editorRef.value.getHtml()
-    const container = document.createElement('div')
-    container.innerHTML = html
-    container.style.width = '210mm' // 设置宽度为 A4 纸张宽度
-    container.style.height = '297mm' // 设置高度为 A4 纸张高度
-    container.style.margin = '10mm' // 设置页边距
-    container.style.padding = '0'
-    container.style.boxSizing = 'border-box'
-    container.style.position = 'relative'
-    container.style.overflow = 'hidden'
-    container.style.fontFamily = "'PingFang SC', 'Microsoft YaHei', sans-serif" // 设置字体
-    document.body.appendChild(container) // 将容器添加到 body 中
+    const html = editorRef.value.getHtml();
 
-    await nextTick() // 确保 DOM 更新
+    // 配置选项
+    const options = {
+      margin: 10,
+      filename: 'document.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
     try {
-      const canvas = await html2canvas(container, {
-        scale: 2, // 提高分辨率
-        useCORS: true, // 允许跨域资源
-        logging: true // 启用日志
-      })
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'mm', 'a4') // 创建 A4 纸张的 PDF
-      const imgProps = pdf.getImageProperties(imgData)
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
-      pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth - 20, pdfHeight - 20) // 添加图像并设置页边距
-      pdf.save('document.pdf')
+      // 正确导入html2pdf.js库
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+
+      // 生成并下载PDF
+      html2pdf().from(html).set(options).save();
     } catch (error) {
-      console.error('Error generating PDF:', error)
-    } finally {
-      document.body.removeChild(container) // 移除容器
+      console.error('生成PDF失败:', error);
+      alert('导出PDF时出现错误，请稍后再试');
     }
   }
 }

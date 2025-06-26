@@ -5,7 +5,7 @@
       <h4>助学场景：AI辅助自动知识点梳理</h4>
     </div>
     <div class="ci_container">
-    <el-col :span="8" class="left-panel">
+    <el-col :span="24" class="left-panel"  style="display: flex; flex-direction: column; height: 70vh">
       <el-row :gutter="20">
         <el-col :span="24">
           <el-input v-model="title" type="textarea" rows="4" placeholder="输入标题"></el-input>
@@ -13,17 +13,28 @@
       </el-row>
       <el-row :gutter="20" style="margin-top: 10px;">
         <el-col :span="24">
-          <el-button type="primary" @click="generateMindMap">生成</el-button>
+          <el-button type="primary" @click="generateMindMap" :loading="isSending">生成</el-button>
         </el-col>
       </el-row>
-      <el-row :gutter="20" style="margin-top: 20px;">
+      <div style="margin-bottom: 50px">
+      <el-row :gutter="20" style="margin-top: 10px; flex: 1; min-height: 0;">
         <el-col :span="24">
-          <el-input v-model="editorContent" type="textarea" rows="10" placeholder="编辑内容"></el-input>
+          <el-input v-model="editorContent"  :autosize="{ minRows: 10, maxRows: 15 }" type="textarea" placeholder="编辑内容" ></el-input>
         </el-col>
       </el-row>
+        <!-- 新增按钮区域 -->
+      <el-row :gutter="20" style="margin-top: 10px;">
+        <el-col :span="12">
+          <el-button @click="copyContent" type="success" style="width: 100%">快捷复制</el-button>
+        </el-col>
+        <el-col :span="12">
+          <el-button @click="regenerateMindMap" type="warning" style="width: 100%">重新生成</el-button>
+        </el-col>
+      </el-row>
+      </div>
     </el-col>
 
-    <el-col :span="16" class="right-panel">
+    <el-col :span="16" class="right-panel" style="display: flex; flex-direction: column; height: 70vh">
       <div class="svg-container">
         <svg ref="svgRef" class="markmap-svg"></svg>
       </div>
@@ -57,7 +68,7 @@ export default {
   name: 'HomeView',
   setup() {
     const transformer = new Transformer()
-
+    const isSending = ref(false)
     const title = ref('')
     const editorContent = ref('')
 
@@ -78,76 +89,162 @@ export default {
     const zoomOut = () => mm.value?.rescale(0.8)
     const fitToScreen = () => mm.value?.fit()
 
-    const onSave = async () => {
-      const dataUrl = await htmlToImage.toPng(svgRef.value)
-      saveAs(dataUrl, 'pastking.png')
+    const copyContent = () => {
+      if (!editorContent.value) {
+        alert('编辑框内容为空，无法复制')
+        return
+      }
+
+      navigator.clipboard.writeText(editorContent.value)
+        .then(() => {
+          alert('内容已复制到剪贴板')
+        })
+        .catch(err => {
+          console.error('复制失败:', err)
+          alert('复制失败，请手动复制')
+        })
     }
 
+    // const onSave = async () => {
+    //   const dataUrl = await htmlToImage.toPng(svgRef.value)
+    //   saveAs(dataUrl, 'pastking.png')
+    // }
+    const onSave = () => {
+      // 获取 SVG 元素
+      const svgElement = svgRef.value;
+      if (!svgElement) {
+        console.error('SVG 元素未找到');
+        return;
+      }
 
-    const generateMindMap = async () => {
-      try {
-        // 清空编辑内容和思维导图
-        editorContent.value = ''
-        mm.value?.setData(null)
-        mm.value?.fit()
+      // 将 SVG 转换为 XML 字符串
+      const serializer = new XMLSerializer();
+      const svgData = serializer.serializeToString(svgElement);
 
-        const response = await fetch("/api/ques/kn_chat", {  // 使用你的请求接口
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
+      // 创建 Blob 对象
+      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+
+      // 创建下载链接并触发下载
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'mindmap.svg';
+      link.click();
+
+      // 释放对象 URL
+      URL.revokeObjectURL(url);
+    };
+
+    const regenerateMindMap = () => {
+  if (!editorContent.value) {
+    alert('编辑框内容为空，无法生成')
+    return
+  }
+
+  isSending.value = true
+
+  // 销毁旧实例
+  if (mm.value) {
+    mm.value.destroy()
+    mm.value = null
+  }
+
+  // 重新创建 SVG 实例
+  mm.value = Markmap.create(svgRef.value)
+
+  // 使用当前 editorContent 内容生成思维导图
+  try {
+    const { root } = transformer.transform(editorContent.value)
+    mm.value?.setData(root)
+    mm.value?.fit()
+
+    // 延迟适配屏幕
+    setTimeout(() => {
+      fitToScreen()
+    }, 100)
+
+    isSending.value = false
+  } catch (e) {
+    console.error('转换失败:', e)
+    isSending.value = false
+  }
+}
+
+
+
+
+
+const generateMindMap = async () => {
+  try {
+
+    isSending.value = true;
+    // 👇 清空编辑内容和思维导图
+    editorContent.value = ''
+    // 销毁旧实例
+    if (mm.value) {
+      mm.value.destroy()
+      mm.value = null
+    }
+
+    // 重新创建实例
+    mm.value = Markmap.create(svgRef.value)
+
+    const response = await fetch("/api/ques/kn_chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: [
+          {
+            role: 'system',
+            content: `我是一名设计思维导图设计师，我将会详细分析用户的提出的知识点与要求，设计较为详细的思维导图，并严格按照markdown格式输出`
           },
-          body: JSON.stringify({
-            message: [
-              {
-                role: 'system',
-                content: `我是一名设计思维导图设计师，我将会详细分析用户的提出的知识点与要求，设计较为详细的思维导图，并严格按照markdown格式输出`
-              },
-              {
-                role: 'user',
-                content: `${title.value}`
-              }
-            ]
-          })
-        });
-
-        if (!response.ok) throw new Error('请求失败')
-
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder('utf-8')
-        let result = ''
-
-        // 逐块读取流式响应数据
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n').filter(line => line.trim())
-          for (const line of lines) {
-            // 新增：确认数据流结束的信号并处理
-            if (line === 'data: [DONE]') {
-              // 流式处理结束，跳出循环
-              break
-            }
-            // 新增：处理有效的数据行
-            if (line.startsWith('data: ')) {
-              const message = line.slice(6);  // 去掉前面的 'data: '
-              result += message + '\n';  // 将收到的消息添加到 result 中
-              editorContent.value += message + '\n'; // 实时更新编辑器内容
-
-              // 实时更新思维导图
-              nextTick(() => updateMindMap());
-            }
+          {
+            role: 'user',
+            content: `${title.value}`
           }
-        }
+        ]
+      })
+    });
 
-        // 流式处理结束后触发一次完整的更新
-        nextTick(() => updateMindMap());
-      } catch (error) {
-        console.error('生成失败:', error)
+    if (!response.ok) throw new Error('请求失败')
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let result = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      const chunk = decoder.decode(value, { stream: true })
+      const lines = chunk.split('\n').filter(line => line.trim())
+      for (const line of lines) {
+        if (line === 'data: [DONE]') {
+          break
+        }
+        if (line.startsWith('data: ')) {
+          const message = line.slice(6)
+          result += message + '\n'
+          editorContent.value += message + '\n'
+          nextTick(() => updateMindMap())
+        }
       }
     }
+
+     nextTick(() => {
+      updateMindMap()
+       // 延迟 100ms 确保 SVG 渲染完成
+      setTimeout(() => {
+        fitToScreen()
+      }, 100)
+       isSending.value = false
+    })
+  } catch (error) {
+    console.error('生成失败:', error)
+  }
+}
 
 
     onMounted(() => {
@@ -164,7 +261,10 @@ export default {
       zoomOut,
       fitToScreen,
       onSave,
-      svgRef
+      svgRef,
+      isSending,
+      copyContent,            // 👈 新增
+      regenerateMindMap
     }
   }
 }
@@ -275,6 +375,7 @@ display: flex;
   gap: 20px; /* 左右组件之间的间距 */
   padding: 20px;
   width: 100%; /* 确保占满父容器宽度 */
+  height: 100%;
 }
 
 /* 左侧面板 */
@@ -287,6 +388,7 @@ display: flex;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   height: 60vh;
+  overflow: hidden;
 }
 
 /* 右侧面板 */

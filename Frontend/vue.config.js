@@ -17,7 +17,7 @@ module.exports = defineConfig({
         // target: 'https://fz68ok24676.vicp.fun',
 
         // target:'http://192.168.31.171:5001',
-        target:'http://10.10.10.164:20370',
+        target:'http://210.40.16.12:51447',
         changeOrigin: true,
         // pathRewrite：路径重写规则。在这个例子中，'^/api': '' 表示将请求路径中的 /api 前缀去掉。例如，/api/generate 会被重写为 /generate。
         pathRewrite: { '^/api': '' },

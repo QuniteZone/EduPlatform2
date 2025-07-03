@@ -172,7 +172,6 @@ const generateContent = async () => {
     loading.value = false;
   }
 };
-
 </script>
 
 <style scoped>

@@ -3,54 +3,49 @@
     <!-- 两列三行布局 -->
     <div class="two-column-layout">
       <!-- 第一列 -->
-      <div class="column">
-        <!-- 学科 -->
-        <div class="input_box">
-          <label>学科 <span style="color: red;">(必填)</span></label>
-          <input v-model="subject" placeholder="请输入..."/>
-        </div>
-        <!--体量-->
-<!--        <div class="input_box">-->
-<!--          <label>题量<span style="color: red;">(必填)</span></label>-->
-<!--          <input v-model="questionCount" type="number" placeholder="请输入..."/>-->
-<!--        </div>-->
-        <!--题量，修改-->
-        <div class="input_box">
-          <label>题量<span style="color: red;">(必填)</span></label>
-          <input
-            v-model="questionCount"
-            type="text"
-            placeholder="题量（1~50）"
-            @input="onQuestionCountInput"
-          />
-        </div>
+          <div class="column">
+            <!-- 学科 -->
+            <div class="input_box">
+              <label>学科</label>
+              <input v-model="subject" placeholder="请输入（必填）..."/>
+            </div>
+            <!--题量，修改-->
+            <div class="input_box">
+              <label>题量</label>
+              <input
+                v-model="questionCount"
+                type="text"
+                placeholder="题量（1~50） （必填）"
+                @input="onQuestionCountInput"
+              />
+            </div>
         <!-- 题型 -->
 
-        <div class="select_box">
-          <label>题型 <span style="color: red;">(必填)</span></label>
-          <el-select v-model="questionType" placeholder="请选择" class="select">
-            <el-option v-for="item in questionTypeOptions" :key="item.value" :label="item.label" :value="item.value"/>
-          </el-select>
-        </div>
+          <div class="select_box">
+            <label>题型 </label>
+            <el-select v-model="questionType" placeholder="请选择 （必填）" class="select">
+              <el-option v-for="item in questionTypeOptions" :key="item.value" :label="item.label" :value="item.value"/>
+            </el-select>
+          </div>
 
 
       </div>
       <!-- 第二列 -->
       <div class="column">
         <div class="input_box">
-          <label>年级 <span style="color: red;">(必填)</span></label>
-          <input v-model="grade" placeholder="请输入..."/>
+          <label>年级</label>
+          <input v-model="grade" placeholder="请输入（必填）..."/>
         </div>
 
         <!-- 知识点 -->
         <div class="input_box">
-          <label>知识点 <span style="color: red;">(必填)</span></label>
-          <input v-model="knowledgePoints" placeholder="请输入..."/>
+          <label>知识点 </label>
+          <input v-model="knowledgePoints" placeholder="请输入（必填）..."/>
         </div>
         <!-- 难度 -->
         <div class="select_box">
-          <label>难度 <span style="color: red;">(必填)</span></label>
-          <el-select v-model="difficulty" placeholder="请选择" class="select">
+          <label>难度 </label>
+          <el-select v-model="difficulty" placeholder="请选择（必填）" class="select">
             <el-option v-for="item in difficultyOptions" :key="item.value" :label="item.label" :value="item.value"/>
           </el-select>
         </div>

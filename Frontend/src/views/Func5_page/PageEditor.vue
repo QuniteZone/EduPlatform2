@@ -123,34 +123,36 @@ const onQuestionCountInput = (event: Event) => {
 };
 
 // 生成内容方法
+import { ElMessage } from 'element-plus'
+
 const generateContent = async () => {
-  // 验证必填项
+  // 表单验证
   if (!subject.value) {
-    alert('请填写学科');
+    ElMessage.error('请填写学科');
     return;
   }
   if (!grade.value) {
-    alert('请填写年级');
+    ElMessage.error('请填写年级');
     return;
   }
   if (!questionType.value) {
-    alert('请选择题型');
+    ElMessage.error('请选择题型');
     return;
   }
   if (!difficulty.value) {
-    alert('请选择难度');
+    ElMessage.error('请选择难度');
     return;
   }
   if (!questionCount.value || parseInt(questionCount.value) < 1 || parseInt(questionCount.value) > 50) {
-    alert('请填写有效的题量（1到50之间）');
+    ElMessage.error('请填写有效的题量（1到50之间）');
     return;
   }
   if (!knowledgePoints.value) {
-    alert('请填写知识点');
+    ElMessage.error('请填写知识点');
     return;
   }
 
-  loading.value = true // 开始加载
+  loading.value = true;
   try {
     const response = await axios.post('/api/plan/question_generate', {
       subject: subject.value,
@@ -161,15 +163,16 @@ const generateContent = async () => {
       knowledgePoints: knowledgePoints.value,
       otherRequirements: otherRequirements.value,
     });
-    console.log('Generated Content:', response.data);
-    emit('update-preview', response.data)
+
+    emit('update-preview', response.data);
   } catch (error) {
-    alert('生成失败');
+    ElMessage.error('生成失败，请稍后重试');
     console.error('请求失败:', error);
-  }finally {
-    loading.value = false // 结束加载
+  } finally {
+    loading.value = false;
   }
 };
+
 </script>
 
 <style scoped>

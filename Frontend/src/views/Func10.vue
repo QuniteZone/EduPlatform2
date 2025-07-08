@@ -3,7 +3,7 @@
     <!-- 学生基本学习部分 -->
     <div class="report-card">
       <div class="card-header">
-        <h2>学生基本学习</h2>
+        <h2>学习情况</h2>
       </div>
       <div class="student-info">
         <div class="info-grid">
@@ -30,9 +30,24 @@
             <div class="score-label">总分</div>
           </div>
           <div class="completion-rate">
-            <div class="rate-label">完成度78%</div>
+            <div class="rate-label">完成度{{student.scorePercentage}}%</div>
             <div class="progress-bar">
               <div class="progress" :style="{ width: '78%' }"></div>
+            </div>
+          </div>
+          <div class="warning-card">
+            <div class="card-header">
+              <h6>学业预警</h6>
+            </div>
+            <div class="warning-content">
+              <div class="warning-level">当前预警等级：<span :class="`level-${dynamicWarning.level}`">{{ dynamicWarning.level }}</span></div>
+              <div class="warning-message">{{ dynamicWarning.message }}</div>
+              <div class="suggestion-list">
+                <h6>建议措施：</h6>
+                <ul>
+                  <li v-for="(item, index) in dynamicWarning.suggestions" :key="index">{{ item }}</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -332,9 +347,9 @@
       </div>
     </div>
     <!-- New Title Container -->
-    <div class="title-container">
+    <!-- <div class="title-container">
       <h1>学生个性化报告</h1>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -385,6 +400,29 @@ export default {
       ]
     }
   },
+  computed: {
+    dynamicWarning() {
+      if (this.student.scorePercentage < 60) {
+        return {
+        level: '高',
+        message: '学习进度严重滞后，请尽快调整学习计划！',
+        suggestions: ['制定每日学习目标', '优先掌握核心知识点', '增加复习频率']
+      };
+    } else if (this.student.scorePercentage < 70) {
+      return {
+        level: '中',
+        message: '学习进度一般，建议优化学习方法提升效率。',
+        suggestions: ['利用碎片时间进行巩固', '结合错题强化薄弱环节', '参与小组讨论']
+      };
+    } else {
+      return {
+        level: '低',
+        message: '学习进度良好，继续保持节奏稳步提升！',
+        suggestions: ['定期总结知识体系', '尝试拓展类题目练习', '分享经验帮助他人']
+      };
+    }
+    }
+  },
   mounted() {
     console.log('学生分析页面已加载');
   },
@@ -422,7 +460,9 @@ html, body {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto 1fr 1fr;
   gap: 8px;
-  padding: 8px;
+  padding-left: 8px;
+  padding-right: 16px;
+  padding-bottom: 16px;
   width: 100vw;
   height: 100vh;
   background-color: #f0f2f5;
@@ -1191,5 +1231,53 @@ h2 {
   font-size: 20px;
   font-weight: 700;
   margin: 0;
+}
+
+.warning-card {
+  width: 150px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.warning-content {
+  padding: 16px;
+}
+
+.warning-level {
+  font-size: 10px;
+  margin-bottom: 8px;
+  color: #595959;
+}
+
+.warning-level .level-低 {
+  color: green;
+}
+
+.warning-level .level-中 {
+  color: orange;
+}
+
+.warning-level .level-高 {
+  color: red;
+}
+
+.warning-message {
+  font-size: 10px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.suggestion-list ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.suggestion-list li {
+  font-size: 10px;
+  color: #666;
+  margin-bottom: 4px;
 }
 </style>

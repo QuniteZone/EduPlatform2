@@ -18,6 +18,8 @@
           <component :is="currentComponent" :data="formData" @update-data="handleDataUpdate"></component>
         </div>
       </div>
+      <el-progress v-if="isProcessing" :percentage="progressPercent" :status="progressStatus" :stroke-width="20"></el-progress>
+      <p v-if="isProcessing" class="progress-description">{{ progressDescription }}</p>
       <!-- 底部操作栏 -->
       <template #footer>
         <div class="dialog-footer">
@@ -76,7 +78,11 @@ export default {
         { number: 5, title: '设置', component: 'Step5' }
       ],
       plans: [],
-      selectedPlan: null
+      selectedPlan: null,
+      isProcessing: false, 
+      progressPercent: 0,
+      progressStatus: '',
+      progressDescription: '',
     };
   },
   computed: {
@@ -144,8 +150,32 @@ export default {
       } else {
         // 最后一步提交逻辑
         this.submitting = true;
+        this.isProcessing = true;
+        this.progressPercent = 0;
+        this.progressStatus = '';
+
+        const interval = setInterval(() => {
+          if (this.progressPercent < 98) {
+            this.progressPercent += 1;
+          if (this.progressPercent < 10) {
+            this.progressDescription = '初始化参数...';
+          } else if (this.progressPercent < 30) {
+            this.progressDescription = '生成学习目标...';
+          } else if (this.progressPercent < 50) {
+            this.progressDescription = '搜索相关学习资源...';
+          } else if (this.progressPercent < 70) {
+            this.progressDescription = '优化时间安排...';
+          }else if (this.progressPercent < 80) {
+            this.progressDescription = '生成学习建议...';
+          }else {
+            this.progressDescription = '最终调整与输出...';
+          }
+          }
+        }, 1200);
         try {
           const response = await axios.post('/api/plan/study_plan', this.formData);
+          clearInterval(interval);
+          this.progressPercent = 100;
 
           console.log('YTYPlan:', response.data);
 
@@ -163,13 +193,18 @@ export default {
             // 提示成功
             this.$message.success('计划生成成功');
           } else {
+            this.progressStatus = 'exception';
             // 失败处理
             this.$message.error('生成失败：' + (response.data.message || '请重试'));
           }
         } catch (error) {
+          clearInterval(interval);
+          this.progressPercent = 100;
+          this.progressStatus = 'exception';
           console.error('请求出错:', error);
           this.$message.error('网络错误，请重试');
         } finally {
+          this.isProcessing = false
           this.submitting = false;
         }
       }
@@ -314,5 +349,12 @@ body {
   .plan-card {
     width: 100%;
   }
+}
+
+.progress-description {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
 }
 </style>

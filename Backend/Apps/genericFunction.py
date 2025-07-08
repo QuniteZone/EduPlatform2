@@ -616,17 +616,27 @@ def format_lesson_plan(text, is_json):
         else:
             return False
 
-def LLM(messages, is_json=True):
+def LLM(messages, is_json=True, model_new=None):
     max_retries = 5
     retry_count = 0
     while retry_count < max_retries:
-        # 调用 OpenAI API
-        response = openai.chat.completions.create(
-            model=model,
-            temperature=temperature,
-            messages=messages,
-            max_tokens=16384,
-        )
+        if model_new:
+            # 调用 OpenAI API
+            response = openai.chat.completions.create(
+                model=model_new,
+                temperature=temperature,
+                messages=messages,
+                max_tokens=16384,
+            )
+        else:
+
+            # 调用 OpenAI API
+            response = openai.chat.completions.create(
+                model=model,
+                temperature=temperature,
+                messages=messages,
+                max_tokens=16384,
+            )
 
         # 提取模型返回的内容
         content = response.choices[0].message.content
@@ -765,11 +775,10 @@ def LLMs_allowed_file(filename, file_type):
 
 
 ##定义实时网络访问检索的函数
-def get_globalWeb_source(keyword,max_num=25):
-    print(f"正在根据目标:{keyword} 检索项目资源...")
+def get_globalWeb_source(input_content,max_num=25):
     # 构造请求的payload
     payload_message = json.dumps({
-        "q": f"site:csdn.net OR site:zhihu.com OR site:cnblogs.com OR site:jianshu.com 要求是{keyword}",
+        "q": f"site:csdn.net OR site:zhihu.com OR site:cnblogs.com OR site:jianshu.com 要求是{input_content}",
         "gl": "cn",
         "hl": "zh-cn",
         "num": max_num
@@ -784,6 +793,8 @@ def get_globalWeb_source(keyword,max_num=25):
     web_message_url = "https://google.serper.dev/search"
     response_message = requests.request("POST", web_message_url, headers=headers, data=payload_message)
     json_content = response_message.json()
+    print("json_content:\n", json_content)
+
     # 整理资源信息
     resources = json_content['organic']
     sorted_messages = []
@@ -853,7 +864,6 @@ def retrieve_resources(
     Returns:
         包含检索结果的字典（每个资源类型返回至少3个ID）
     """
-    print(f"正在根据任务名称:{task.get('taskName', '')}检索相关资源...")
     bili_results = []
     github_results = []
     article_results = []
@@ -885,6 +895,7 @@ def retrieve_resources(
         article_results.extend(list(set(result.get("article_res", []))))
     except Exception as e:
         print(f"检索失败: {str(e)}")
+
     return {
         "bili_res": list(set(bili_results))[:3],  # 确保返回3个有效ID
         "github_res": list(set(github_results))[:3],
@@ -982,16 +993,15 @@ def get_resource_by_task(
             current_bili = remove_previous_stage_resources(bili_resource, global_bili_resource)
             current_github = remove_previous_stage_resources(github_resource, global_github_resource)
             current_article = remove_previous_stage_resources(article_resource, global_article_resource)
-
             retrieved_ids = retrieve_resources(task_item,stage, current_bili, current_github, current_article)
-            # 确保检索结果去重
-            current_bili_ids = list(set(retrieved_ids["bili_res"]))
-            current_github_ids = list(set(retrieved_ids["github_res"]))
-            current_article_ids = list(set(retrieved_ids["article_res"]))
-            # 更新全局资源ID（使用集合去重）
-            global_bili_resource = list(set(global_bili_resource + current_bili_ids))
-            global_github_resource = list(set(global_github_resource + current_github_ids))
-            global_article_resource = list(set(global_article_resource + current_article_ids))
+            # 更新全局资源ID
+            current_bili_ids = retrieved_ids["bili_res"]
+            current_github_ids = retrieved_ids["github_res"]
+            current_article_ids = retrieved_ids["article_res"]
+            #追加当前阶段的资源到全局资源池
+            global_bili_resource += current_bili_ids
+            global_github_resource += current_github_ids
+            global_article_resource += current_article_ids
 
             # 提取完整的资源对象
             bili_objects = get_resources_by_ids(bili_resource, retrieved_ids["bili_res"])
@@ -1009,7 +1019,6 @@ def get_resource_by_task(
 #2 github项目爬取
 
 def search_github_repos_api(keyword, max_pages=3):
-    print(f"正在根据目标:{keyword} 检索项目资源...")
     base_url = "https://api.github.com/search/repositories"
     git_key=""#个人github账号的token 
     all_repos = []
@@ -1031,8 +1040,11 @@ def search_github_repos_api(keyword, max_pages=3):
         if response.status_code != 200:
             print(f"API 请求失败：{response.status_code}, {response.text}")
             continue
+
         data = response.json()
         items = data.get("items", [])
+        print(f"第 {page_num} 页获取到 {len(items)} 个仓库")
+
         for item in items:
             repo_info = {
                 "name": item["full_name"],
@@ -1071,9 +1083,8 @@ for video in videos:
 # 构建 BM25 模型
 bm25 = BM25Okapi(corpus)
 
-def search_videos_by_goal(keyword, top_n=30):
-    print(f"正在根据目标:{keyword} 检索视频资源...")
-    tokenized_query = tokenize(keyword)
+def search_videos_by_goal(learning_goal, top_n=30):
+    tokenized_query = tokenize(learning_goal)
     # 获取相关性分数
     doc_scores = bm25.get_scores(tokenized_query)
     # 获取排名前 top_n 的结果索引

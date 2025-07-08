@@ -19,6 +19,7 @@ import Test from '../views/Test/test.vue'
 import DataShow from '../views/DataShow/HOME.vue'
 import test from '../views/DataShow/test.vue'
 import KnowledgeGraphPage from "../views/DataShow/data_components/KnowledgeGraphPage.vue";
+import StudentProfile from "@/views/StudentProfile.vue";
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -121,6 +122,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Function10',
     component: Func10
   },
+  {
+    path: '/studentProfile',
+    name: 'StudentProfile',
+    component: StudentProfile
+  }
 
 ]
 

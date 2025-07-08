@@ -1,8 +1,8 @@
 <template>
   <div class="mian_container">
     <div class="about">
-      <h2>思维导图</h2>
-      <h4>助学场景：AI辅助构建思维导图</h4>
+      <h2>知识点梳理</h2>
+      <h4>助学场景：AI辅助自动知识点梳理</h4>
     </div>
     <div class="ci_container">
     <el-col :span="24" class="left-panel"  style="display: flex; flex-direction: column; height: 70vh">
@@ -63,6 +63,7 @@ import { Transformer } from 'markmap-lib'
 import { Markmap } from 'markmap-view'
 import * as htmlToImage from 'html-to-image'
 import { saveAs } from 'file-saver'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 export default {
   name: 'HomeView',
@@ -88,22 +89,68 @@ export default {
     const zoomIn = () => mm.value?.rescale(1.25)
     const zoomOut = () => mm.value?.rescale(0.8)
     const fitToScreen = () => mm.value?.fit()
+    const isCopying = ref(false) // 防止重复点击
 
     const copyContent = () => {
-      if (!editorContent.value) {
-        alert('编辑框内容为空，无法复制')
+      if (isCopying.value) return
+
+      // 判断内容是否为空（含空格/换行）
+      if (!editorContent.value || editorContent.value.trim() === '') {
+        ElMessage({
+          type: 'warning',
+          message: '编辑框内容为空，无法复制',
+        })
         return
       }
 
+      isCopying.value = true
+
+      // 尝试使用现代 API
       navigator.clipboard.writeText(editorContent.value)
         .then(() => {
-          alert('内容已复制到剪贴板')
+          ElMessage.success('内容已复制到剪贴板')
         })
-        .catch(err => {
-          console.error('复制失败:', err)
-          alert('复制失败，请手动复制')
+        .catch(() => {
+          // 降级使用 document.execCommand
+          const success = fallbackCopyText(editorContent.value)
+          if (success) {
+            ElMessage.success('内容已复制到剪贴板（降级方案）')
+          } else {
+            ElMessage.error('复制失败，请手动复制')
+          }
+        })
+        .finally(() => {
+          isCopying.value = false
         })
     }
+
+    // 降级复制方法
+    function fallbackCopyText(text) {
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.top = '-9999px'
+      textArea.style.left = '-9999px'
+      textArea.style.opacity = '0'
+      textArea.style.pointerEvents = 'none'
+
+      document.body.appendChild(textArea)
+      textArea.select()
+      textArea.setSelectionRange(0, textArea.value.length) // 移动端支持
+
+      let success = false
+      try {
+        success = document.execCommand('copy')
+      } catch (err) {
+        console.error('Fallback 复制失败', err)
+      }
+
+      document.body.removeChild(textArea)
+      return success
+    }
+
+
+
 
     // const onSave = async () => {
     //   const dataUrl = await htmlToImage.toPng(svgRef.value)
@@ -136,8 +183,8 @@ export default {
     };
 
     const regenerateMindMap = () => {
-  if (!editorContent.value) {
-    alert('编辑框内容为空，无法生成')
+   if (!editorContent.value || editorContent.value.trim() === '') {
+    ElMessage.warning('编辑框内容为空，无法生成')
     return
   }
 
@@ -170,13 +217,12 @@ export default {
   }
 }
 
-
-
-
-
 const generateMindMap = async () => {
+  if (!title.value || title.value.trim() === '') {
+    ElMessage.warning('请输入标题，再生成思维导图')
+    return
+  }
   try {
-
     isSending.value = true;
     // 👇 清空编辑内容和思维导图
     editorContent.value = ''
@@ -263,7 +309,7 @@ const generateMindMap = async () => {
       onSave,
       svgRef,
       isSending,
-      copyContent,            // 👈 新增
+      copyContent,
       regenerateMindMap
     }
   }

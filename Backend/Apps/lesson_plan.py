@@ -209,51 +209,28 @@ def create_study_plan():
     num_keywords = len(keywords)
     for keyword in keywords:
          #bilibili视频资源
-         results_bili = search_videos_by_goal(keyword, (4-num_keywords)*10)
+         results_bili = search_videos_by_goal(keyword, (5-num_keywords)*10)
          bili_resource.extend(results_bili)  # 使用 extend 将结果合并进总列表
          #github资源检索
-         results_git = search_github_repos_api(keyword,4-num_keywords)
+         results_git = search_github_repos_api(keyword,5-num_keywords)
          github_resource.extend(results_git)  # 使用 extend 将结果合并进总列表
-
          #在线资源检索
-         results_article= get_globalWeb_source(keyword, (4-num_keywords)*10)
+         results_article= get_globalWeb_source(keyword, (5-num_keywords)*10)
          article_resource.extend(results_article)  # 使用 extend 将结果合并进总列表
-
-    #bili_resource = search_videos_by_goal(goal, 30)#根据目标匹配离线视频资源，默认30个视频
-    print(json.dumps(bili_resource, ensure_ascii=False, indent=2))
-
-   # ------------------------------1 视频资源检索-------------------
-
-   # ------------------------------2 github项目资源检索-------------------
-    #github_resource=scrape_github_repos(goal,7)#调用github项目实时爬取，默认1页
-    add_id_to_resources(github_resource)
-    print(json.dumps(github_resource, ensure_ascii=False, indent=2))
-
-   # ------------------------------2 github项目资源检索-------------------
-
-   # ------------------------------3 在线博客资源检索-------------------
-
-   # article_resource = get_globalWeb_source(goal,30)#调用在线资源实时爬取，默认25个
-    add_id_to_resources(article_resource)
-    print(json.dumps(article_resource, ensure_ascii=False, indent=2))
-
-   # ------------------------------3 在线博客资源检索-------------------
-
+    add_id_to_resources(github_resource)#给github资源添加id
+    add_id_to_resources(article_resource)#给文章资源添加id
     new_prompt = recommendation_prompt_2.format(study_aim=study_aim, student_type=study_style, knowledge_point=stu_knowledge)
     messages = [
         {"role": "system",
          "content": "你是一个学习计划生成专家，严格按json格式((```json (生成的内容)```))输出结构化学习计划内容，确保键值命名与层级关系绝对准确"},
         {"role": "user", "content": new_prompt}]
-    message = LLM(messages, model_new='qwen-plus-latest')
+    message = LLM(messages)
     #根据视频资源的id进行资源填充
-    print("*" * 50)
     Final_data=get_resource_by_task(message,bili_resource,github_resource,article_resource)#根据子任务进行资源匹配
     # json缩进形式打印message
-    print("*" * 50)
-
     Final_data["preference_type"]=preferences
     Final_data["title"]=title
-    print("Final_data\n",Final_data)
+    print("最终的学习路径_json\n",Final_data)
 
     return jsonify({"content": Final_data,'status': 1})
 #-------------tx--------

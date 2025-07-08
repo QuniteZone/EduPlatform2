@@ -50,99 +50,104 @@
         </h4>
         <p>{{ task.taskDescription }}</p>
         <div class="task-content-grid">
-          <!-- 学习目标 -->
-          <div class="task-section target-section">
-            <div class="task-section-box">
-              <h5 class="icon-class">
-                <img src="@/assets/icons/study-target-icon.png" class="tag-icon"/>
-                学习目标
-              </h5>
-              <ul>
-                <li v-for="(obj, idx) in task.learningObjectives" :key="idx">{{ obj }}</li>
-              </ul>
-            </div>
-          </div>
-          <!-- 视频资源 -->
-          <div class="task-section video-section">
-            <div class="task-section-box">
-              <h5 class="icon-class">
-                <img src="@/assets/icons/video-icon.png" class="tag-icon"/>
-                视频资源列表
-              </h5>
-              <ul>
-                <li v-for="(res, idx) in task.bili_resource.slice(0, getDisplayCount('video'))" :key="idx"
-                    class="resource-item">
-                  <!-- 左右布局 -->
-                  <div class="video-wrapper">
-                    <a :href="res.link" target="_blank">
-                      <div class="video-preview">
-                        <img
-                            :src="res.preview_image_url ? res.preview_image_url : '@/assets/default_preview_image.png'"
-                            :alt="res.title"
-                            class="video-image"
-                        />
-                      </div>
-                    </a>
-                  </div>
-                  <div class="resource-info">
-                    <a :href="res.link" target="_blank" class="resource-title">{{ res.title }}</a>
-                    <div class="summary-container">
-                      <p class="summary-text"><strong>视频摘要：</strong>{{ res.video_summary}}</p>
-                    </div>
-                    <div class="tags-container">
-                      <img src="@/assets/icons/tag-icon.png" class="tag-icon"/>
-                      <el-tag
-                          v-for="(tag, tagIdx) in res.tags"
-                          :key="tagIdx"
-                          type="info"
-                          size="small"
-                          effect="plain"
-                          class="tag"
-                      >
-                        {{ tag }}
-                      </el-tag>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <!-- GitHub 开源项目 -->
-          <div class="task-section github-section">
-            <div class="task-section-box">
-              <h5 class="icon-class">
-                <img src="@/assets/icons/github-icon.png" class="tag-icon"/>
-                GitHub 开源项目推荐
-              </h5>
-              <ul v-if="task.github_resource && task.github_resource.length > 0">
-                <li v-for="(repo, idx) in task.github_resource.slice(0, getDisplayCount('github'))" :key="idx"
-                    class="github-item">
-                  <a :href="repo.link" target="_blank" class="github-name">{{ repo.name }}</a>
-                  <p class="github-desc">{{ repo.description }}</p>
-                  <div class="github-meta">
-                    <span>⭐ {{ repo.stars }}</span>
-                  </div>
-                </li>
-              </ul>
-              <p v-else>暂无推荐项目</p>
-            </div>
-          </div>
-          <!-- 在线资料 -->
-          <div class="task-section online-section">
-            <div class="task-section-box">
-              <h5 class="icon-class">
-                <img src="@/assets/icons/online-icon.png" class="tag-icon"/>
-                在线资料列表
-              </h5>
-              <ul>
-                <li v-for="(source, idx) in task.article_resource.slice(0, getDisplayCount('article'))" :key="idx">
-                  <a :href="source.link" target="_blank">{{ source.title }}</a>
-                  <p style="font-size: 0.85em; color: #666;">{{ source.introduce }}</p>
-                </li>
-              </ul>
-            </div>
+  <!-- 学习目标 -->
+        <div class="task-section target-section">
+          <div class="task-section-box">
+            <h5 class="icon-class">
+              <img src="@/assets/icons/study-target-icon.png" class="tag-icon"/>
+              学习目标
+            </h5>
+            <ul>
+              <li v-for="(obj, idx) in task.learningObjectives" :key="idx">{{ obj }}</li>
+            </ul>
           </div>
         </div>
+
+        <!-- 视频资源 -->
+        <div class="task-section video-section">
+          <div class="task-section-box">
+            <h5 class="icon-class">
+              <img src="@/assets/icons/video-icon.png" class="tag-icon"/>
+              视频资源列表
+            </h5>
+            <ul v-if="task.bili_resource && task.bili_resource.length > 0">
+              <li v-for="(res, idx) in task.bili_resource.slice(0, getDisplayCount('video'))" :key="idx"
+                  class="resource-item">
+                <!-- 左右布局 -->
+                <div class="video-wrapper">
+                  <a :href="res.link" target="_blank">
+                    <div class="video-preview">
+                      <img
+                          :src="res.preview_image_url ? res.preview_image_url : '@/assets/default_preview_image.png'"
+                          :alt="res.title"
+                          class="video-image"
+                      />
+                    </div>
+                  </a>
+                </div>
+                <div class="resource-info">
+                  <a :href="res.link" target="_blank" class="resource-title">{{ res.title }}</a>
+                  <div class="summary-container">
+                    <p class="summary-text"><strong>视频摘要：</strong>{{ res.video_summary}}</p>
+                  </div>
+                  <div class="tags-container">
+                    <img src="@/assets/icons/tag-icon.png" class="tag-icon"/>
+                    <el-tag
+                        v-for="(tag, tagIdx) in res.tags"
+                        :key="tagIdx"
+                        type="info"
+                        size="small"
+                        effect="plain"
+                        class="tag"
+                    >
+                      {{ tag }}
+                    </el-tag>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <p v-else>资源库中未检索到与目标匹配的视频资源列表</p>
+          </div>
+        </div>
+
+        <!-- GitHub 开源项目 -->
+        <div class="task-section github-section">
+          <div class="task-section-box">
+            <h5 class="icon-class">
+              <img src="@/assets/icons/github-icon.png" class="tag-icon"/>
+              GitHub 开源项目推荐
+            </h5>
+            <ul v-if="task.github_resource && task.github_resource.length > 0">
+              <li v-for="(repo, idx) in task.github_resource.slice(0, getDisplayCount('github'))" :key="idx"
+                  class="github-item">
+                <a :href="repo.link" target="_blank" class="github-name">{{ repo.name }}</a>
+                <p class="github-desc">{{ repo.description }}</p>
+                <div class="github-meta">
+                  <span>⭐ {{ repo.stars }}</span>
+                </div>
+              </li>
+            </ul>
+            <p v-else>未检索到与目标对应的 GitHub 项目资源列表</p>
+          </div>
+        </div>
+
+        <!-- 在线资料 -->
+        <div class="task-section online-section">
+          <div class="task-section-box">
+            <h5 class="icon-class">
+              <img src="@/assets/icons/online-icon.png" class="tag-icon"/>
+              在线资料列表
+            </h5>
+            <ul v-if="task.article_resource && task.article_resource.length > 0">
+              <li v-for="(source, idx) in task.article_resource.slice(0, getDisplayCount('article'))" :key="idx">
+                <a :href="source.link" target="_blank">{{ source.title }}</a>
+                <p style="font-size: 0.85em; color: #666;">{{ source.introduce }}</p>
+              </li>
+            </ul>
+            <p v-else>未检索到与目标对应的在线资料列表</p>
+          </div>
+        </div>
+      </div>
         <el-divider/>
       </div>
     </div>

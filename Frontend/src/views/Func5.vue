@@ -1,8 +1,8 @@
 <template>
   <div class="mian_container">
     <div class="about">
-      <h2>智能练习</h2>
-      <h4>助学场景：AI自动出题</h4>
+      <h2>智能出题</h2>
+      <h4>助教场景：AI自动出题</h4>
     </div>
     <div class="editor-preview-container">
       <!-- @update-preview="updatePreview"：监听子组件Editor 触发的自定义事件 update-preview。
@@ -137,7 +137,7 @@ body {
   /* 使用flex布局 */
   gap: 25px;
   /* 子元素间距 */
-  height: 50vh;
+  height: 70vh;
   /* 设置固定高度 */
   margin-top: 20px;
   /* 添加上边距 */
